@@ -97,96 +97,91 @@ async function isTargetRefineryAsset(targetNetwork, tokenAddress, amount) {
     return false;
   }
 }
-class Category {
-  constructor() { }
-async categoriseSwapAssets(
-  sourceChainId,
-  sourcetokenAddress,
-  targetChainId,
-  targetTokenAddress,
-  inputAmount
-) {
-  // mapping source and target networs (go to Network.js file)
-  const sourceNetwork = networks[sourceChainId];
-  const targetNetwork = networks[targetChainId];
-  // source token contract
-  const sourceTokenContract = new ethers.Contract(
-    sourcetokenAddress,
-    tokenAbi.abi,
-    sourceNetwork.provider
-  );
-  //convert to wei
-  const sourceTokenDecimal = await sourceTokenContract.decimals();
-  const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
-  
-  //check source token type
-  let sourceAssetType;
-  let sourceBridgeAmount;
 
-  const isSourceTokenFoundryAsset = await sourceFACCheck(
-    sourceNetwork,
-    sourcetokenAddress,
-    amount
-  );
-  const isSourceTokenRefineryAsset = await isSourceRefineryAsset(
-    sourceNetwork,
-    sourcetokenAddress,
-    amount
-  );
+module.exports = {
 
-  if (isSourceTokenFoundryAsset) {
-    sourceAssetType = "Foundry";
-    sourceBridgeAmount = amount;
-  } else if (!isSourceTokenFoundryAsset && isSourceTokenRefineryAsset) {
-    sourceAssetType = "Refinery";
-    // get bridge foundry amount afeter swap refinery to foundry
-    let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
-    const amounts = await sourceNetwork.dexContract.getAmountsOut(amount, path);
-    const amountsOut = amounts[1];
-    sourceBridgeAmount = amountsOut;
-  } else if (!isSourceTokenFoundryAsset && !isSourceTokenRefineryAsset) {
-    sourceAssetType = "Ionic";
-    // get bridge foundry amount after swap ionic to foundry
-    let path = [
+  categoriseSwapAssets: async function (
+    sourceChainId,
+    sourcetokenAddress,
+    targetChainId,
+    targetTokenAddress,
+    inputAmount
+  ) {
+    // mapping source and target networs (go to Network.js file)
+    const sourceNetwork = networks[sourceChainId];
+    const targetNetwork = networks[targetChainId];
+    // source token contract
+    const sourceTokenContract = new ethers.Contract(
       sourcetokenAddress,
-      sourceNetwork.weth,
-      sourceNetwork.foundryTokenAddress,
-    ];
-    const amounts = await sourceNetwork.dexContract.getAmountsOut(amount, path);
-    const amountsOut = amounts[amounts.length - 1];
-    sourceBridgeAmount = amountsOut;
-  }
+      tokenAbi.abi,
+      sourceNetwork.provider
+    );
+    //convert to wei
+    const sourceTokenDecimal = await sourceTokenContract.decimals();
+    const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
 
-  //check target token type
-  let targetAssetType;
+    //check source token type
+    let sourceAssetType;
+    let sourceBridgeAmount;
 
-  const isTargetTokenFoundryAsset = await targetFACCheck(
-    targetNetwork,
-    targetTokenAddress,
-    sourceBridgeAmount
-  );
-  const isTargetTokenRefineryAsset = await isTargetRefineryAsset(
-    targetNetwork,
-    targetTokenAddress,
-    sourceBridgeAmount
-  );
-  if (isTargetTokenFoundryAsset) {
-    targetAssetType = "Foundry";
-  } else if (!isTargetTokenFoundryAsset && isTargetTokenRefineryAsset) {
-    targetAssetType = "Refinery";
-  } else if (!isTargetTokenFoundryAsset && !isTargetTokenRefineryAsset) {
-    targetAssetType = "Ionic";
-  }
+    const isSourceTokenFoundryAsset = await sourceFACCheck(
+      sourceNetwork,
+      sourcetokenAddress,
+      amount
+    );
+    const isSourceTokenRefineryAsset = await isSourceRefineryAsset(
+      sourceNetwork,
+      sourcetokenAddress,
+      amount
+    );
 
-  return {
-    sourceAssetType,
-    targetAssetType,
-  };
+    if (isSourceTokenFoundryAsset) {
+      sourceAssetType = "Foundry";
+      sourceBridgeAmount = amount;
+    } else if (!isSourceTokenFoundryAsset && isSourceTokenRefineryAsset) {
+      sourceAssetType = "Refinery";
+      // get bridge foundry amount afeter swap refinery to foundry
+      let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
+      const amounts = await sourceNetwork.dexContract.getAmountsOut(amount, path);
+      const amountsOut = amounts[1];
+      sourceBridgeAmount = amountsOut;
+    } else if (!isSourceTokenFoundryAsset && !isSourceTokenRefineryAsset) {
+      sourceAssetType = "Ionic";
+      // get bridge foundry amount after swap ionic to foundry
+      let path = [
+        sourcetokenAddress,
+        sourceNetwork.weth,
+        sourceNetwork.foundryTokenAddress,
+      ];
+      const amounts = await sourceNetwork.dexContract.getAmountsOut(amount, path);
+      const amountsOut = amounts[amounts.length - 1];
+      sourceBridgeAmount = amountsOut;
+    }
+
+    //check target token type
+    let targetAssetType;
+
+    const isTargetTokenFoundryAsset = await targetFACCheck(
+      targetNetwork,
+      targetTokenAddress,
+      sourceBridgeAmount
+    );
+    const isTargetTokenRefineryAsset = await isTargetRefineryAsset(
+      targetNetwork,
+      targetTokenAddress,
+      sourceBridgeAmount
+    );
+    if (isTargetTokenFoundryAsset) {
+      targetAssetType = "Foundry";
+    } else if (!isTargetTokenFoundryAsset && isTargetTokenRefineryAsset) {
+      targetAssetType = "Refinery";
+    } else if (!isTargetTokenFoundryAsset && !isTargetTokenRefineryAsset) {
+      targetAssetType = "Ionic";
+    }
+
+    return {
+      sourceAssetType,
+      targetAssetType,
+    };
   }
 }
-
-module.exports = Category;
-
-const category = new Category()
-
-category.categoriseSwapAssets(5, goerliAda, 97, bscAave, 12).then(console.log);

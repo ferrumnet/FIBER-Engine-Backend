@@ -1,33 +1,25 @@
-var HDWalletProvider = require("@truffle/hdwallet-provider");
-var Web3= require("web3");
-import crypto from 'crypto';
-var CryptoJS = require("crypto-js");
-
 module.exports = { 
 
   getTokenCategorizedInformation: async function (req: any) {
+
+    let categorizedInfo = await fiberNode.categoriseSwapAssets(req.query.sourceNetworkChainId, req.query.sourceTokenContractAddress, req.query.destinationNetworkChainId, req.query.destinationTokenContractAddress, req.query.sourceAmount);
+    console.log(categorizedInfo);
     let data: any = {};
 
-    let sourceTokenCategorizedInfo: any = {};
-    sourceTokenCategorizedInfo.isFoundary = true;
-    sourceTokenCategorizedInfo.isRefinary = true;
-    sourceTokenCategorizedInfo.isIonic = true;
-    sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
+    if(categorizedInfo){
+      let sourceTokenCategorizedInfo: any = {};
+      sourceTokenCategorizedInfo.type = categorizedInfo.sourceAssetType;
+      sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
+  
+      let destinationTokenCategorizedInfo: any = {};
+      destinationTokenCategorizedInfo.type = categorizedInfo.targetAssetType;
+      destinationTokenCategorizedInfo.sourceAmount = 20;
+  
+      data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
+      data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
+  
+    }
 
-    let destinationTokenCategorizedInfo: any = {};
-    destinationTokenCategorizedInfo.isFoundary = true;
-    destinationTokenCategorizedInfo.isRefinary = true;
-    destinationTokenCategorizedInfo.isIonic = true;
-    destinationTokenCategorizedInfo.sourceAmount = 20;
-
-    data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
-    data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
-
-    return data;
-  },
-
-  getApprovalSigned: async function (req: any) {
-    let data: any = {};
     return data;
   },
 

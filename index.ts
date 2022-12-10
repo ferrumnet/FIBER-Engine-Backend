@@ -65,6 +65,9 @@ if (
 // crons
 (global as any).removeRandomKeyJob = require("./app/lib/crons/removeRandomKeyJob");
 
+// fiber
+(global as any).fiberNode = require("./scripts/fiberNode");
+
 
 (global as any).kraken = app.kraken;
 
