@@ -6,7 +6,8 @@ stringHelper: any,
 authHelper: any,
 signatureHelper: any,
 multiSwapHelper: any,
-fiberNode: any
+fiberNode: any,
+fiberEngine: any
 
 
 

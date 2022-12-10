@@ -1,5 +1,6 @@
 const { ethers } = require("ethers");
 const axios = require("axios");
+const Web3 = require('web3');
 require("dotenv").config();
 const fundManagerAbi = require("../artifacts/contracts/upgradeable-Bridge/FundManager.sol/FundManager.json");
 const fiberRouterAbi = require("../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
@@ -42,17 +43,38 @@ const toEther = (i) => ethers.utils.formatEther(i);
 // user wallet
 const signer = new ethers.Wallet(global.environment.PRI_KEY);
 
-class Fiber {
-  constructor() {}
+module.exports = {
+
+  web3(rpcUrl) {
+    if (rpcUrl) {
+      return new Web3(new Web3.providers.HttpProvider(rpcUrl));
+    }
+    return null;
+  },
+
+  fiberRouterPool(rpcUrl, tokenContractAddress) {
+    let web3 = this.web3(rpcUrl).eth;
+    return new web3.Contract(fiberRouterAbi.abi, tokenContractAddress);
+  },
+
+  getTransactionsCount: async function(rpcUrl, walletAddress) {
+    let web3 = this.web3(rpcUrl).eth;
+    if (web3) {
+      let transactionCount = await web3.getTransactionCount(walletAddress, 'pending')
+      return transactionCount;
+    }
+    return null;
+  },
+
   //check the requested token exist on the Source network Fund Manager
-  async sourceFACCheck(sourceNetwork, tokenAddress) {
+  sourceFACCheck: async function(sourceNetwork, tokenAddress) {
     const isSourceTokenFoundryAsset =
       await sourceNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
     return isSourceTokenFoundryAsset;
-  }
+  },
 
   //check the requested token exist on the Source network Fund Manager
-  async targetFACCheck(targetNetwork, tokenAddress, amount) {
+  targetFACCheck: async function(targetNetwork, tokenAddress, amount) {
     const targetTokenContract = new ethers.Contract(
       tokenAddress,
       tokenAbi.abi,
@@ -71,10 +93,10 @@ class Fiber {
     } else {
       return false;
     }
-  }
+  },
 
   //check source toke is foundry asset
-  async isSourceRefineryAsset(sourceNetwork, tokenAddress, amount) {
+  isSourceRefineryAsset: async function(sourceNetwork, tokenAddress, amount) {
     try {
       const isTokenFoundryAsset = await this.sourceFACCheck(
         sourceNetwork,
@@ -95,10 +117,10 @@ class Fiber {
     } catch (error) {
       return false;
     }
-  }
+  },
 
   //check source token is foundry asset
-  async isTargetRefineryAsset(targetNetwork, tokenAddress, amount) {
+  isTargetRefineryAsset: async function (targetNetwork, tokenAddress, amount) {
     try {
       const isTokenFoundryAsset = await this.targetFACCheck(
         targetNetwork,
@@ -120,16 +142,16 @@ class Fiber {
     } catch (error) {
       return false;
     }
-  }
+  },
 
-  getDeadLine() {
+  getDeadLine: function() {
     const currentDate = new Date();
     const deadLine = currentDate.getTime() + 20 * 60000;
     return deadLine;
-  }
+  },
 
   //main function to bridge and swap tokens
-  async SWAP(
+  SWAP : async function (
     sourcetokenAddress,
     targetTokenAddress,
     sourceChainId,
@@ -368,20 +390,136 @@ class Fiber {
         }
       }
     }
+  },
+
+  SWAPForAbi : async function (
+    walletAddress,
+    sourcetokenAddress,
+    targetTokenAddress,
+    sourceChainId,
+    targetChainId,
+    inputAmount
+  ) {
+    // mapping source and target networs (go to Network.js file)
+    const sourceNetwork = networks[sourceChainId];
+    const targetNetwork = networks[targetChainId];
+
+    let fiberRouter = this.fiberRouterPool(sourceNetwork.rpc, sourceNetwork.fiberRouter);
+
+    //signers for both side networks
+    const sourceSigner = signer.connect(sourceNetwork.provider);
+    const targetSigner = signer.connect(targetNetwork.provider);
+    // source token contract (required to approve function)
+    const sourceTokenContract = new ethers.Contract(
+      sourcetokenAddress,
+      tokenAbi.abi,
+      sourceNetwork.provider
+    );
+
+    const sourceTokenDecimal = await sourceTokenContract.decimals();
+    const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
+    console.log("INIT: Swap Initiated for this Amount: ", inputAmount);
+    // is source token foundy asset
+    const isFoundryAsset = await this.sourceFACCheck(
+      sourceNetwork,
+      sourcetokenAddress
+    );
+    //is source token refinery asset
+    const isRefineryAsset = await this.isSourceRefineryAsset(
+      sourceNetwork,
+      sourcetokenAddress,
+      amount
+    );
+
+    let sourceBridgeAmount;
+    let swapResult;
+    if (isFoundryAsset) {
+      console.log("SN-1: Source Token is Foundry Asset");
+      console.log("SN-2: Add Foundry Asset in Source Network FundManager");
+      // approve to fiber router to transfer tokens to the fund manager contract
+      const targetFoundryTokenAddress = await sourceNetwork.fundManagerContract.allowedTargets(sourcetokenAddress, targetChainId);
+      // fiber router add foundry asset to fund manager
+      swapResult = fiberRouter.methods
+        .swap(
+          sourcetokenAddress,
+          amount,
+          targetChainId,
+          targetFoundryTokenAddress,
+          targetSigner.address,
+          { gasLimit: 1000000 }
+        );
+      //wait until the transaction be completed
+      sourceBridgeAmount = amount;
+    } else if (isRefineryAsset) {
+      console.log("SN-1: Source Token is Refinery Asset");
+      console.log("SN-2: Swap Refinery Asset to Foundry Asset ...");
+      //swap refinery token to the foundry token
+      let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
+
+      const amounts = await sourceNetwork.dexContract.getAmountsOut(
+        amount,
+        path
+      );
+      const amountsOut = amounts[1];
+      sourceBridgeAmount = amountsOut;
+      swapResult = fiberRouter.methods
+        .connect(sourceSigner)
+        .swapAndCross(
+          sourceNetwork.dexContract.address,
+          amount,
+          amountsOut,
+          path,
+          this.getDeadLine().toString(), // deadline
+          targetChainId,
+          targetNetwork.foundryTokenAddress
+        );
+    } else {
+      console.log("SN-1: Source Token is Ionic Asset");
+      console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
+      //swap refinery token to the foundry token
+      let path = [
+        sourcetokenAddress,
+        sourceNetwork.weth,
+        sourceNetwork.foundryTokenAddress,
+      ];
+      console.log("path", path);
+
+      const amounts = await sourceNetwork.dexContract.getAmountsOut(
+        amount,
+        path
+      );
+      const amountsOut = amounts[amounts.length - 1];
+      sourceBridgeAmount = amountsOut;
+      swapResult = fiberRouter.methods
+        .swapAndCross(
+          sourceNetwork.dexContract.address,
+          amount,
+          amountsOut,
+          path,
+          this.getDeadLine().toString(), // deadline
+          targetChainId,
+          targetNetwork.foundryTokenAddress,
+        );
+    }
+
+    let data = '';
+    let gasEstimation = 1000000;
+
+    if(swapResult){
+      data = swapResult.encodeABI();
+    }
+    let nonce = await this.getTransactionsCount(sourceNetwork.rpc, walletAddress);
+
+    return {
+      currency: sourceNetwork.shortName+':'+sourcetokenAddress,
+      from: walletAddress,
+      amount: '0',
+      contract: sourceNetwork.fiberRouter,
+      data: data,
+      gas: { gasPrice: '0', gasEstimation },
+      nonce,
+      description: `Swap `,
+    };
   }
+
 }
-module.exports = Fiber;
-const fiber = new Fiber();
-
-fiber.SWAP(
-  goerliUsdt, // goerli ada
-  goerliCudos, // bsc ada
-  5, // source chain id (goerli)
-  5, // target chain id (bsc)
-  10 //source token amount
-);
-
-
-
-//console.log(fiber.getDeadLine().toString())
-// fiber.sourceFACCheck(networks[97], bscUsdt, "10000000000000000000").then(console.log)
