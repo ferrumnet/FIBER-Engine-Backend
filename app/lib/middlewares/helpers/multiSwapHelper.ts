@@ -19,7 +19,6 @@ module.exports = {
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
   
     }
-
     return data;
   },
 
@@ -38,6 +37,13 @@ module.exports = {
 
   getWithdrawSigned: async function (req: any) {
     let data: any = {};
+    data = await fiberEngine.SWAP(
+      req.query.sourceTokenContractAddress, // goerli ada
+      req.query.destinationTokenContractAddress, // bsc ada
+      req.query.sourceNetworkChainId, // source chain id (goerli)
+      req.query.destinationNetworkChainId, // target chain id (bsc)
+      req.query.sourceAmount //source token amount
+    );
     // throw 'data error';
     return data;
   },
