@@ -13,7 +13,7 @@ module.exports = {
   
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.targetAssetType;
-      destinationTokenCategorizedInfo.sourceAmount = 20;
+      destinationTokenCategorizedInfo.destinationAmount = req.query.sourceAmount;
   
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;

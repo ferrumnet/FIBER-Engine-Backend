@@ -34,8 +34,8 @@ module.exports = function (router: any) {
 
     if (!req.query.walletAddress || !req.query.sourceTokenContractAddress || !req.query.sourceNetworkChainId 
       || !req.query.sourceAmount || !req.query.destinationTokenContractAddress
-      || !req.query.destinationNetworkChainId ) {
-      return res.http401('sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing');
+      || !req.query.destinationNetworkChainId || !req.query.transactionHash) {
+      return res.http401('sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & transactionHash are missing');
     }
 
     return res.http200({
