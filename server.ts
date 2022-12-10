@@ -7,9 +7,10 @@ var webSockets = require('./app/lib/webSockets')();
 var mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 (async () => {
-  await (global as any).awsHelper.awsSecretsManagerInit()
-  console.log('=========================')
-  console.log((global as any).environment)
+  await (global as any).awsHelper.awsSecretsManagerInit();
+  // console.log('=========================')
+  // console.log((global as any).environment);
+  (global as any).fiberEngine = require("./scripts/fiberEngine"); // this needs to move in index.ts
   var mongoString = (global as any).environment.mongoConnectionUrl;
   var mongoLogger = function(coll: any, method: any, query: any, doc: any) {
     (global as any).log.debug(coll + '.' + method + '( ' + JSON.stringify(query) +  ', ' + JSON.stringify(doc) + ' )');

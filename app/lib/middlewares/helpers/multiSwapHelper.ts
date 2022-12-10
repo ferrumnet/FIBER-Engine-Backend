@@ -25,6 +25,14 @@ module.exports = {
 
   getSwapSigned: async function (req: any) {
     let data: any = {};
+    data = await fiberEngine.SWAPForAbi(
+        req.query.walletAddress,
+        req.query.sourceTokenContractAddress, // goerli ada
+        req.query.destinationTokenContractAddress, // bsc ada
+        req.query.sourceNetworkChainId, // source chain id (goerli)
+        req.query.destinationNetworkChainId, // target chain id (bsc)
+        req.query.sourceAmount //source token amount
+      );
     return data;
   },
 

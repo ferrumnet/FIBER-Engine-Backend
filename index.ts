@@ -68,7 +68,6 @@ if (
 // fiber
 (global as any).fiberNode = require("./scripts/fiberNode");
 
-
 (global as any).kraken = app.kraken;
 
 app.use(kraken(options));

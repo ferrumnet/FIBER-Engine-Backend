@@ -95,6 +95,7 @@ const bscFiberRouterContract = new ethers.Contract(
 const networks = {
   5: {
     name: "goerli",
+    shortName: "goerli",
     rpc: goerliRPC,
     chainId: goerliChainId,
     fundManager: goerliFundManager,
@@ -109,6 +110,7 @@ const networks = {
   },
   97: {
     name: "bsc",
+    shortName: "bsc",
     rpc: bscRPC,
     chainId: bscChainId,
     fundManager: bscFundManager,
@@ -120,6 +122,7 @@ const networks = {
     fundManagerContract: bscFundMangerContract,
     fiberRouterContract: bscFiberRouterContract,
     wbnb: bscWbnb,
+    weth: bscWbnb,
   },
 };
 
