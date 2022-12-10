@@ -5,7 +5,8 @@ commonFunctions: any,
 stringHelper: any,
 authHelper: any,
 signatureHelper: any,
-multiSwapHelper: any
+multiSwapHelper: any,
+fiberNode: any
 
 
 
