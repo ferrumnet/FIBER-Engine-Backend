@@ -7,7 +7,8 @@ authHelper: any,
 signatureHelper: any,
 multiSwapHelper: any,
 fiberNode: any,
-fiberEngine: any
+fiberEngine: any,
+networksHelper: any
 
 
 

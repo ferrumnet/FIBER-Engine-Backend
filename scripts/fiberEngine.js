@@ -151,7 +151,7 @@ module.exports = {
   },
 
   //main function to bridge and swap tokens
-  SWAP : async function (
+  withdraw : async function (
     sourcetokenAddress,
     targetTokenAddress,
     sourceChainId,
@@ -187,6 +187,7 @@ module.exports = {
     );
 
     let receipt;
+    let transactionHash = '';
     let sourceBridgeAmount;
     let swapResult;
     if (isFoundryAsset) {
@@ -256,7 +257,10 @@ module.exports = {
             "SUCCESS: Foundry Assets are Successfully Withdrawn on Source Network !"
           );
           console.log("Cheers! your bridge and swap was successful !!!");
-          console.log("Transaction hash is: swapResult", swapResult);
+          if(swapResult && swapResult.hash){
+            transactionHash = swapResult.hash;
+            console.log("Transaction hash is: swapResult", swapResult.hash);
+          }
         }
       } else {
         const isTargetRefineryToken = await this.isTargetRefineryAsset(
@@ -296,7 +300,10 @@ module.exports = {
               "SUCCESS: Foundry Assets are Successfully swapped to Target Token !"
             );
             console.log("Cheers! your bridge and swap was successful !!!");
-            console.log("Transaction hash is:swapResult2 ", swapResult2);
+            if(swapResult2 && swapResult2.hash){
+              transactionHash = swapResult2.hash;
+              console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
+            }
           }
         } else {
           console.log("TN-1: Target Token is Ionic Asset");
@@ -334,16 +341,19 @@ module.exports = {
               "TN-3: Successfully Swapped Foundry Token to Target Token"
             );
             console.log("Cheers! your bridge and swap was successful !!!");
-            console.log("Transaction hash is: ", swapResult3.hash);          }
+            if(swapResult3 && swapResult3.hash){
+              transactionHash = swapResult3.hash;
+              console.log("Transaction hash is: ", swapResult3.hash);          
+            }
+          }
         }
       }
     }
+    
+    return transactionHash;
   },
 
- 
-
-
-  SWAPForAbi : async function (
+  swapForAbi : async function (
     walletAddress,
     sourcetokenAddress,
     targetTokenAddress,

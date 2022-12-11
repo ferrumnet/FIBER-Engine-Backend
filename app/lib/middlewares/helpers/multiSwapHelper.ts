@@ -13,7 +13,7 @@ module.exports = {
   
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.targetAssetType;
-      destinationTokenCategorizedInfo.sourceAmount = 20;
+      destinationTokenCategorizedInfo.destinationAmount = req.query.sourceAmount;
   
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
@@ -24,7 +24,7 @@ module.exports = {
 
   getSwapSigned: async function (req: any) {
     let data: any = {};
-    data = await fiberEngine.SWAPForAbi(
+    data = await fiberEngine.swapForAbi(
         req.query.walletAddress,
         req.query.sourceTokenContractAddress, // goerli ada
         req.query.destinationTokenContractAddress, // bsc ada
@@ -37,7 +37,7 @@ module.exports = {
 
   getWithdrawSigned: async function (req: any) {
     let data: any = {};
-    data = await fiberEngine.SWAP(
+    data = await fiberEngine.withdraw(
       req.query.sourceTokenContractAddress, // goerli ada
       req.query.destinationTokenContractAddress, // bsc ada
       req.query.sourceNetworkChainId, // source chain id (goerli)
