@@ -36,7 +36,7 @@ const {
   networks,
   goerliCudos,
   bscCudos,
-} = require("../network");
+} = global.networkHelper;
 const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
 

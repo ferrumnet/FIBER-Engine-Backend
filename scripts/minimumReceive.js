@@ -1,5 +1,5 @@
 const tokenAbi = require("../artifacts/contracts/token/Token.sol/Token.json");
-const { networks, goerliUsdt, goerliUsdc } = require("../Network");
+const { networks, goerliUsdt, goerliUsdc } = global;
 
 async function getMinimumReceivedAmount(
     chainId,

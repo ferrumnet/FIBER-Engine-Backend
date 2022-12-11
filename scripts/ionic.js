@@ -5,7 +5,7 @@ const fundManagerAbi = require("../artifacts/contracts/upgradeable-Bridge/FundMa
 const fiberRouterAbi = require("../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
 const tokenAbi = require("../artifacts/contracts/token/Token.sol/Token.json");
 const routerAbi = require("../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
-const { goerliAda } = require("../network");
+const { goerliAda } = global.networkHelper;
 const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
 

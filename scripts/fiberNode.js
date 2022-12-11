@@ -9,7 +9,7 @@ const {
   goerliUsdc,
   bscCake,
   goerliAda,
-} = require("../network");
+} = global.networkHelper;
 const { ethers } = require("ethers");
 async function sourceFACCheck(sourceNetwork, tokenAddress, amount) {
   const sourceTokenContract = new ethers.Contract(
