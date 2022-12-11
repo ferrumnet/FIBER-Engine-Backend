@@ -26,7 +26,7 @@ mongoose.Promise = require('bluebird');
   });
 
   var server = http.Server(app);
-  server.listen(process.env.PORT || 8080);
+  server.listen(process.env.PORT || 8081);
 
   server.on('listening', function () {
     (global as any).log.info('Server listening on http://localhost:%d', server.address().port);
