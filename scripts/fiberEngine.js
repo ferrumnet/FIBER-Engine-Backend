@@ -6,6 +6,7 @@ const fundManagerAbi = require("../artifacts/contracts/upgradeable-Bridge/FundMa
 const fiberRouterAbi = require("../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
 const tokenAbi = require("../artifacts/contracts/token/Token.sol/Token.json");
 const routerAbi = require("../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
+const { produecSignaturewithdrawHash, fixSig } = require("./utils/BridgeUtils");
 const {
   bscChainId,
   goerliChainId,
@@ -37,8 +38,10 @@ const {
   goerliCudos,
   bscCudos,
 } = global.networkHelper;
+const { ecsign, toRpcSig } = require("ethereumjs-util");
 const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
+const Salt = "0x" + "12".repeat(32);
 
 // user wallet
 const signer = new ethers.Wallet(global.environment.PRI_KEY);
@@ -242,15 +245,31 @@ module.exports = {
       if (isTargetTokenFoundry === true) {
         console.log("TN-1: Target Token is Foundry Asset");
         console.log("TN-2: Withdraw Foundry Asset...");
+        const hash = await produecSignaturewithdrawHash(
+          targetNetwork.chainId,
+          targetNetwork.fundManager,
+          targetTokenAddress,
+          targetSigner.address,
+          sourceBridgeAmount,
+          Salt
+        );
+        const sigP2 = ecsign(
+          Buffer.from(hash.replace("0x", ""), "hex"),
+          Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+        );
+        const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
         //if target token is foundry asset
         const swapResult = await targetNetwork.fiberRouterContract
           .connect(targetSigner)
-          .withdraw(
+          .withdrawSigned(
             targetTokenAddress, //token address on network 2
             targetSigner.address, //reciver
             sourceBridgeAmount, //targetToken amount
+            Salt,
+            sig2,
             { gasLimit: 1000000 }
           );
+
 
         const receipt = await swapResult.wait();
         if (receipt.status == 1) {
@@ -281,16 +300,33 @@ module.exports = {
             sourceBridgeAmount,
             path2
           );
+          const hash = await produecSignaturewithdrawHash(
+            targetNetwork.chainId,
+            targetNetwork.fundManager,
+            path2[0],
+            targetNetwork.fiberRouter,
+            sourceBridgeAmount,
+            Salt
+          );
+          const sigP2 = ecsign(
+            Buffer.from(hash.replace("0x", ""), "hex"),
+            Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+          );
+          const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
+          console.log("Sig produced2=====================>2", sig2, sigP2, targetSigner.address);
+
           const amountsOut2 = amounts2[1];
           const swapResult2 = await targetNetwork.fiberRouterContract
             .connect(targetSigner)
-            .withdrawAndSwap(
+            .withdrawSignedAndSwap(
               targetSigner.address,
               targetNetwork.router,
               sourceBridgeAmount,
               amountsOut2,
               path2,
               this.getDeadLine().toString(),
+              Salt,
+              sig2,
               {
                 gasLimit: 1000000,
               }
@@ -323,15 +359,34 @@ module.exports = {
           );
           console.log("sourceBridgeAmount", sourceBridgeAmount)
           const amountsOut2 = amounts2[amounts2.length - 1];
+          const hash = await produecSignaturewithdrawHash(
+            targetNetwork.chainId,
+            targetNetwork.fundManager,
+            path2[0],
+            targetNetwork.fiberRouter,
+            sourceBridgeAmount,
+            Salt
+          );
+
+          console.log("targetChainId", targetChainId, "targetNetwork.fundManager", targetNetwork.fundManager, "targetTokenAddress", targetTokenAddress, "=========>path2[0]", path2[0], "targetSigner.address", targetSigner.address, "sourceBridgeAmount", sourceBridgeAmount, "Salt", Salt)
+          const sigP2 = ecsign(
+            Buffer.from(hash.replace("0x", ""), "hex"),
+            Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+          );
+          const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
+          console.log("Sig produced2=====================>1", sig2, sigP2, targetSigner.address);
+
           const swapResult3 = await targetNetwork.fiberRouterContract
             .connect(targetSigner)
-            .withdrawAndSwap(
+            .withdrawSignedAndSwap(
               targetSigner.address,
               targetNetwork.router,
               sourceBridgeAmount,
               amountsOut2,
               path2,
               this.getDeadLine().toString(), //deadline
+              Salt,
+              sig2,
               {
                 gasLimit: 1000000,
               }

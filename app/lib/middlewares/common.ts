@@ -62,6 +62,17 @@ module.exports = {
       console.log(e);
       return '';
     }
+  },
+
+  getNetworkByChainId: function (chainId: any) {
+    try {
+      if ((global as any).networks) {
+        return (global as any).networks.find((item: any) => item.chainId === chainId);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+    return null;
   }
   
 };
