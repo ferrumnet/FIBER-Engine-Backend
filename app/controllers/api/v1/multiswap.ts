@@ -16,10 +16,10 @@ module.exports = function (router: any) {
 
   router.get('/swap/signed', asyncMiddleware(async (req: any, res: any) => {
 
-    if (!req.query.walletAddress || !req.query.sourceTokenContractAddress || !req.query.sourceNetworkChainId 
+    if (!req.query.sourceWalletAddress || !req.query.sourceTokenContractAddress || !req.query.sourceNetworkChainId 
       || !req.query.sourceAmount || !req.query.destinationTokenContractAddress
       || !req.query.destinationNetworkChainId ) {
-      return res.http401('walletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing');
+      return res.http401('sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing');
     }
 
     req.query.walletAddress = (req.query.walletAddress).toLowerCase();
