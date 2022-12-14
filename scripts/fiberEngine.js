@@ -519,7 +519,7 @@ module.exports = {
           this.getDeadLine().toString(), // deadline
           targetChainId,
           targetTokenAddress,
-          destinationWalletAddress, ,
+          destinationWalletAddress,
         );
     }
 
