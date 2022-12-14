@@ -249,7 +249,7 @@ module.exports = {
           targetNetwork.chainId,
           targetNetwork.fundManager,
           targetTokenAddress,
-          targetSigner.address,
+          destinationWalletAddress,
           sourceBridgeAmount,
           Salt
         );
@@ -263,7 +263,7 @@ module.exports = {
           .connect(targetSigner)
           .withdrawSigned(
             targetTokenAddress, //token address on network 2
-            targetSigner.address, //reciver
+            destinationWalletAddress, //reciver
             sourceBridgeAmount, //targetToken amount
             Salt,
             sig2,
@@ -319,7 +319,7 @@ module.exports = {
           const swapResult2 = await targetNetwork.fiberRouterContract
             .connect(targetSigner)
             .withdrawSignedAndSwap(
-              targetSigner.address,
+              destinationWalletAddress,
               targetNetwork.router,
               sourceBridgeAmount,
               amountsOut2,
@@ -379,7 +379,7 @@ module.exports = {
           const swapResult3 = await targetNetwork.fiberRouterContract
             .connect(targetSigner)
             .withdrawSignedAndSwap(
-              targetSigner.address,
+              destinationWalletAddress,
               targetNetwork.router,
               sourceBridgeAmount,
               amountsOut2,
@@ -466,8 +466,7 @@ module.exports = {
           amount,
           targetChainId,
           targetFoundryTokenAddress,
-          targetSigner.address,
-          { gasLimit: 1000000 }
+          destinationWalletAddress,
         );
       //wait until the transaction be completed
       sourceBridgeAmount = amount;
@@ -484,7 +483,6 @@ module.exports = {
       const amountsOut = amounts[1];
       sourceBridgeAmount = amountsOut;
       swapResult = fiberRouter.methods
-        .connect(sourceSigner)
         .swapAndCross(
           sourceNetwork.dexContract.address,
           amount,
@@ -492,7 +490,8 @@ module.exports = {
           path,
           this.getDeadLine().toString(), // deadline
           targetChainId,
-          targetNetwork.foundryTokenAddress
+          targetTokenAddress,
+          destinationWalletAddress,
         );
     } else {
       console.log("SN-1: Source Token is Ionic Asset");
@@ -519,7 +518,8 @@ module.exports = {
           path,
           this.getDeadLine().toString(), // deadline
           targetChainId,
-          targetNetwork.foundryTokenAddress,
+          targetTokenAddress,
+          destinationWalletAddress,
         );
     }
 
