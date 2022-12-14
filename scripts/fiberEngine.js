@@ -260,14 +260,15 @@ module.exports = {
         //if target token is foundry asset
         const swapResult = await targetNetwork.fiberRouterContract
           .connect(targetSigner)
-          .withdraw(
+          .withdrawSigned(
             targetTokenAddress, //token address on network 2
             targetSigner.address, //reciver
             sourceBridgeAmount, //targetToken amount
-            { gasLimit: 1000000 },
             Salt,
             sig2,
+            { gasLimit: 1000000 }
           );
+
 
         const receipt = await swapResult.wait();
         if (receipt.status == 1) {
