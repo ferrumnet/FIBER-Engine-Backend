@@ -156,7 +156,8 @@ module.exports = {
     targetTokenAddress,
     sourceChainId,
     targetChainId,
-    inputAmount
+    inputAmount,
+    destinationWalletAddress
   ) {
     // mapping source and target networs (go to Network.js file)
     const sourceNetwork = networks[sourceChainId];
@@ -354,12 +355,13 @@ module.exports = {
   },
 
   swapForAbi : async function (
-    walletAddress,
+    sourceWalletAddress,
     sourcetokenAddress,
     targetTokenAddress,
     sourceChainId,
     targetChainId,
-    inputAmount
+    inputAmount,
+    destinationWalletAddress
   ) {
     // mapping source and target networs (go to Network.js file)
     const sourceNetwork = networks[sourceChainId];
@@ -472,11 +474,11 @@ module.exports = {
     if(swapResult){
       data = swapResult.encodeABI();
     }
-    let nonce = await this.getTransactionsCount(sourceNetwork.rpc, walletAddress);
+    let nonce = await this.getTransactionsCount(sourceNetwork.rpc, sourceWalletAddress);
 
     return {
       currency: sourceNetwork.shortName+':'+sourcetokenAddress,
-      from: walletAddress,
+      from: sourceWalletAddress,
       amount: '0',
       contract: sourceNetwork.fiberRouter,
       data: data,
