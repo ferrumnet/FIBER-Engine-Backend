@@ -7,6 +7,7 @@ module.exports = function (router: any) {
       || !req.query.destinationNetworkChainId ) {
       return res.http401('sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing');
     }
+    
 
     return res.http200({
       data: await multiSwapHelper.getTokenCategorizedInformation(req)
