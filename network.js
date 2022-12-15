@@ -12,11 +12,11 @@ const goerliRPC =
 const bscRPC =
   "https://nd-409-138-440.p2pify.com/a2b2f87cd496703b1cc64ff8e91b7981";
 
-const goerliFundManager = "0x30D0d68f923C47BF07CdD55E910895B6215aa5E2"; //proxy
+const goerliFundManager = "0x9B887791463cc3BfEBB04D8f54603E5E9ed81f1C"; //proxy
 const bscFundManager = "0xE450A528532FaeF1Feb1094eA2674e7A1fAA3E78"; //proxy
 
-const goerliFiberRouter = '0x4Cf144fB8197bDf55849e10f1096c1580058C5dE'//proxy
-const bscFiberRouter = '0x04A2155e53585b617b4ECda0125624112B991928'//proxy
+const goerliFiberRouter = '0x13e6558F134a7a785A2B8CAcE3be0966161cac88'//proxy
+const bscFiberRouter = '0xb33074D5b4E81bFa64763450BD69420976b75F39'//proxy
 
 const bscRouter = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
 const goerliRouter = "0xEfF92A263d31888d860bD50809A8D171709b7b1c";
