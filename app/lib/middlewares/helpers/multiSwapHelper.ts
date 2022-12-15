@@ -1,4 +1,4 @@
-module.exports = { 
+module.exports = {
 
   getTokenCategorizedInformation: async function (req: any) {
 
@@ -6,18 +6,18 @@ module.exports = {
     console.log(categorizedInfo);
     let data: any = {};
 
-    if(categorizedInfo){
+    if (categorizedInfo) {
       let sourceTokenCategorizedInfo: any = {};
       sourceTokenCategorizedInfo.type = categorizedInfo.sourceAssetType;
       sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
-  
+
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.targetAssetType;
       destinationTokenCategorizedInfo.destinationAmount = req.query.sourceAmount;
-  
+
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
-  
+
     }
     return data;
   },
@@ -46,8 +46,15 @@ module.exports = {
       req.query.sourceAmount, //source token amount
       req.query.destinationWalletAddress // destination wallet address
     );
-    // throw 'data error';
     return data;
+  },
+
+  validatonForSameSourceAndDestination: function (req: any) {
+    if ((req.query.sourceTokenContractAddress).toLowerCase() == (req.query.destinationTokenContractAddress).toLowerCase()) {
+      if (req.query.sourceNetworkChainId == req.query.destinationNetworkChainId) {
+        throw 'From and to information cannot be same';
+      }
+    }
   },
 
 }
