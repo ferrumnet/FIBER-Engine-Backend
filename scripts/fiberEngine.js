@@ -467,6 +467,7 @@ module.exports = {
           targetChainId,
           targetFoundryTokenAddress,
           destinationWalletAddress,
+          { gasLimit: 1000000 }
         );
       //wait until the transaction be completed
       sourceBridgeAmount = amount;
@@ -490,8 +491,7 @@ module.exports = {
           path,
           this.getDeadLine().toString(), // deadline
           targetChainId,
-          targetTokenAddress,
-          destinationWalletAddress,
+          targetTokenAddress
         );
     } else {
       console.log("SN-1: Source Token is Ionic Asset");
@@ -519,7 +519,6 @@ module.exports = {
           this.getDeadLine().toString(), // deadline
           targetChainId,
           targetTokenAddress,
-          destinationWalletAddress,
         );
     }
 
