@@ -161,7 +161,6 @@ module.exports = {
     inputAmount,
     destinationWalletAddress
   ) {
-    const Salt = "0x" + "12".repeat(32);
     // mapping source and target networs (go to Network.js file)
     const sourceNetwork = networks[sourceChainId];
     const targetNetwork = networks[targetChainId];
@@ -242,6 +241,7 @@ module.exports = {
         targetTokenAddress,
         sourceBridgeAmount
       );
+      const Salt = "0x" + "12".repeat(32);
       if (isTargetTokenFoundry === true) {
         console.log("TN-1: Target Token is Foundry Asset");
         console.log("TN-2: Withdraw Foundry Asset...");
