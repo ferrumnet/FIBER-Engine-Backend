@@ -4,6 +4,12 @@ const fiberRouterAbi = require("./artifacts/contracts/upgradeable-Bridge/FiberRo
 const tokenAbi = require("./artifacts/contracts/token/Token.sol/Token.json");
 const routerAbi = require("./artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 
+const fundManagerAbiMainnet = require("./artifacts/contracts/upgradeable-Bridge/FundManager.sol/FundManager.json");
+const fiberRouterAbiMainnet = require("./artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
+const routerAbiMainnet = require("./artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
+
+/* ================================================================= */
+// TESTNET Configurations
 const bscChainId = 97;
 const goerliChainId = 5;
 
@@ -15,8 +21,8 @@ const bscRPC =
 const goerliFundManager = "0x9B887791463cc3BfEBB04D8f54603E5E9ed81f1C"; //proxy
 const bscFundManager = "0xE450A528532FaeF1Feb1094eA2674e7A1fAA3E78"; //proxy
 
-const goerliFiberRouter = '0x13e6558F134a7a785A2B8CAcE3be0966161cac88'//proxy
-const bscFiberRouter = '0xb33074D5b4E81bFa64763450BD69420976b75F39'//proxy
+const goerliFiberRouter = "0x13e6558F134a7a785A2B8CAcE3be0966161cac88"; //proxy
+const bscFiberRouter = "0xb33074D5b4E81bFa64763450BD69420976b75F39"; //proxy
 
 const bscRouter = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
 const goerliRouter = "0xEfF92A263d31888d860bD50809A8D171709b7b1c";
@@ -26,7 +32,6 @@ const goerliUsdt = "0x636b346942ee09Ee6383C22290e89742b55797c5";
 
 const goerliCake = '0xdb4d2a90C3dD45F72fA03A6FDAFe939cE52B2131';
 const bscCake = "0xFa60D973F7642B748046464e165A65B7323b0DEE";
-
 
 const bscUsdc = '0x2211593825f59ABcC809D1F64DE1930d56C7e483'
 const goerliUsdc = '0x54E1F0a14F5a901c54563c0Ea177eB5B43CeeFc0'
@@ -47,12 +52,11 @@ const goerliCudos = "0xe6A57A671F23CcB8cA54264e2cF5E05D47a200ED";
 const bscCudos = "0x34e93782447c34C1526f4A2C2c30B54178289d90";
 
 const goerliWeth = "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6";
-const bscWbnb = "0xae13d989dac2f0debff460ac112a837c89baa7cd";
+const bscWeth = "0xae13d989dac2f0debff460ac112a837c89baa7cd";
 
 const goerliAave = "0xbAa54514a31F64c1eB3340789943bCc0abb29f9f";
 const bscAave = "0x8834b57Fb0162977011C9D11dFF1d24b93073DA6";
 
-//network providers
 const goerliProvider = new ethers.providers.JsonRpcProvider(goerliRPC);
 const bscProvider = new ethers.providers.JsonRpcProvider(bscRPC);
 
@@ -92,10 +96,101 @@ const bscFiberRouterContract = new ethers.Contract(
   bscProvider
 );
 
+/* =================================================================== */
+//                   Mainnet Configurations 
+
+const bscMainnetChainId = 56;
+const polygonMainnetChainId = 137;
+
+const bscMainnetRPC = 'https://nd-217-204-155.p2pify.com/379ccd6673575fd7a096cc3f2a87be63';
+const polygonMainnetRPC = 'https://polygon-rpc.com';
+
+const bscMainnetProvider = new ethers.providers.JsonRpcProvider(bscMainnetRPC);
+const polygonMainnetProvider = new ethers.providers.JsonRpcProvider(polygonMainnetRPC);
+
+const bscMainnetDEXRouter = '0x10ED43C718714eb63d5aA57B78B54704E256024E';
+const polygonMainnetDEXRouter = '0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff';
+
+const bscMainnetFundManager = '0x42cEB2Bb4B04FC5A2D7621A382019F8E3ADB6B68';
+const polygonMainnetFundManager = '0x5c7c2b89113Bd94e4796cb2B06a81ef47Af1208B';
+
+const bscMainnetFiberRouter = '0x7cA60AA20761EBC81F70Bb93F5068Be4e6765E87';
+const polygonMainnetFiberRouter = '0x72329a50E785bc1A414022D319E3a10A6f12184f';
+
+const bscMainnetUsdc = '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d';
+const polygonMainnetUsdc = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174';
+
+const bscMainnetWeth = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
+const polygonMainnetWeth = '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270';
+
+// Mainnet Contract Configuration
+const bscMainnetDexContract = new ethers.Contract(
+  bscMainnetDEXRouter,
+  routerAbiMainnet.abi,
+  bscMainnetProvider
+);
+const polygonMainnetDexContract = new ethers.Contract(
+  polygonMainnetDEXRouter,
+  routerAbiMainnet.abi,
+  polygonMainnetProvider
+);
+
+// fund manager contracts
+const bscMainnetFundMangerContract = new ethers.Contract(
+  bscMainnetFundManager,
+  fundManagerAbiMainnet.abi,
+  bscMainnetProvider
+);
+const polygonMainnetFundMangerContract = new ethers.Contract(
+  polygonMainnetFundManager,
+  fundManagerAbiMainnet.abi,
+  polygonMainnetProvider
+);
+
+// goerli fund manager contract
+const bscMainnetFiberRouterContract = new ethers.Contract(
+  bscMainnetFiberRouter,
+  fiberRouterAbiMainnet.abi,
+  bscMainnetProvider
+);
+const polygonMainnetFiberRouterContract = new ethers.Contract(
+  polygonMainnetFiberRouter,
+  fiberRouterAbiMainnet.abi,
+  polygonMainnetProvider
+);
+
+
 const networks = {
+  56: {
+    name: "bscMainnet",
+    rpc: bscMainnetRPC,
+    chainId: bscMainnetChainId,
+    fundManager: bscMainnetFundManager,
+    fiberRouter: bscMainnetFiberRouter,
+    router: bscMainnetDEXRouter,
+    provider: bscMainnetProvider,
+    foundryTokenAddress: bscMainnetUsdc,
+    dexContract: bscMainnetDexContract,
+    fundManagerContract: bscMainnetFundMangerContract,
+    fiberRouterContract: bscMainnetFiberRouterContract,
+    weth: bscMainnetWeth,
+  },
+  137: {
+    name: "polygonMainnet",
+    rpc: polygonMainnetRPC,
+    chainId: polygonMainnetChainId,
+    fundManager: polygonMainnetFundManager,
+    fiberRouter: polygonMainnetFiberRouter,
+    router: polygonMainnetDEXRouter,
+    provider: polygonMainnetProvider,
+    foundryTokenAddress: polygonMainnetUsdc,
+    dexContract: polygonMainnetDexContract,
+    fundManagerContract: polygonMainnetFundMangerContract,
+    fiberRouterContract: polygonMainnetFiberRouterContract,
+    weth: polygonMainnetWeth,
+  },
   5: {
     name: "goerli",
-    shortName: "goerli",
     rpc: goerliRPC,
     chainId: goerliChainId,
     fundManager: goerliFundManager,
@@ -110,7 +205,6 @@ const networks = {
   },
   97: {
     name: "bsc",
-    shortName: "bsc",
     rpc: bscRPC,
     chainId: bscChainId,
     fundManager: bscFundManager,
@@ -121,8 +215,7 @@ const networks = {
     dexContract: bscDexContract,
     fundManagerContract: bscFundMangerContract,
     fiberRouterContract: bscFiberRouterContract,
-    wbnb: bscWbnb,
-    weth: bscWbnb,
+    weth: bscWeth,
   },
 };
 
@@ -151,6 +244,7 @@ module.exports = {
   bscAave,
   goerliCudos,
   bscCudos,
+  bscWeth,
   bscUsdtOracle,
   goerliUsdtOracle,
   bscLinkOracle,
