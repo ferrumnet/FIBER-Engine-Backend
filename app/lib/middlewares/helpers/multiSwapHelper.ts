@@ -2,8 +2,25 @@ module.exports = {
 
   getTokenCategorizedInformation: async function (req: any) {
 
-    let categorizedInfo = await fiberNode.categoriseSwapAssets(req.query.sourceNetworkChainId, req.query.sourceTokenContractAddress, req.query.destinationNetworkChainId, req.query.destinationTokenContractAddress, req.query.sourceAmount);
+    let categorizedInfo = await fiberNode.categoriseSwapAssets(
+      req.query.sourceNetworkChainId,
+      req.query.sourceTokenContractAddress,
+      req.query.destinationNetworkChainId,
+      req.query.destinationTokenContractAddress,
+      req.query.sourceAmount);
+
     console.log(categorizedInfo);
+
+    // let destinationAmount = await fiberEngine.getQuote(
+    //   req.query.sourceTokenContractAddress, // goerli ada
+    //   req.query.destinationTokenContractAddress, // bsc ada
+    //   req.query.sourceNetworkChainId, // source chain id (goerli)
+    //   req.query.destinationNetworkChainId, // target chain id (bsc)
+    //   req.query.sourceAmount //source token amount
+    // );
+
+    // console.log('destinationAmount', destinationAmount);
+
     let data: any = {};
 
     if (categorizedInfo) {
