@@ -491,7 +491,7 @@ module.exports = {
           path,
           this.getDeadLine().toString(), // deadline
           targetChainId,
-          targetTokenAddress
+          targetNetwork.foundryTokenAddress
         );
     } else {
       console.log("SN-1: Source Token is Ionic Asset");
@@ -518,7 +518,7 @@ module.exports = {
           path,
           this.getDeadLine().toString(), // deadline
           targetChainId,
-          targetTokenAddress,
+          targetNetwork.foundryTokenAddress
         );
     }
 
@@ -540,6 +540,141 @@ module.exports = {
       nonce,
       description: `Swap `,
     };
-  }
+  },
+
+
+  getQuote : async function (
+    sourcetokenAddress,
+    targetTokenAddress,
+    sourceChainId,
+    targetChainId,
+    inputAmount
+  ) {
+    // mapping source and target networs (go to Network.js file)
+    const sourceNetwork = networks[sourceChainId];
+    const targetNetwork = networks[targetChainId];
+    //signers for both side networks
+    const sourceSigner = signer.connect(sourceNetwork.provider);
+    const targetSigner = signer.connect(targetNetwork.provider);
+    // source token contract (required to approve function)
+    const sourceTokenContract = new ethers.Contract(
+      sourcetokenAddress,
+      tokenAbi.abi,
+      sourceNetwork.provider
+    );
+
+    const sourceTokenDecimal = await sourceTokenContract.decimals();
+    const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
+    console.log("INIT: Swap Initiated for this Amount: ", inputAmount);
+    // is source token foundy asset
+    const isFoundryAsset = await this.sourceFACCheck(
+      sourceNetwork,
+      sourcetokenAddress
+    );
+    //is source token refinery asset
+    const isRefineryAsset = await this.isSourceRefineryAsset(
+      sourceNetwork,
+      sourcetokenAddress,
+      amount
+    );
+
+    let receipt;
+    let transactionHash = '';
+    let sourceBridgeAmount;
+    let swapResult;
+    if (isFoundryAsset) {
+      console.log("SN-1: Source Token is Foundry Asset");
+      console.log("SN-2: Add Foundry Asset in Source Network FundManager");
+      // approve to fiber router to transfer tokens to the fund manager contract
+      const targetFoundryTokenAddress = await sourceNetwork.fundManagerContract.allowedTargets(sourcetokenAddress, targetChainId);
+      sourceBridgeAmount = amount;
+      // receipt = await swapResult.wait();
+    } else if (isRefineryAsset) {
+      console.log("SN-1: Source Token is Refinery Asset");
+      console.log("SN-2: Swap Refinery Asset to Foundry Asset ...");
+      //swap refinery token to the foundry token
+      let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
+
+      const amounts = await sourceNetwork.dexContract.getAmountsOut(
+        amount,
+        path
+      );
+      const amountsOut = amounts[1];
+    } else {
+      console.log("SN-1: Source Token is Ionic Asset");
+      console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
+      //swap refinery token to the foundry token
+      let path = [
+        sourcetokenAddress,
+        sourceNetwork.weth,
+        sourceNetwork.foundryTokenAddress,
+      ];
+
+      const amounts = await sourceNetwork.dexContract.getAmountsOut(
+        amount,
+        path
+      );
+      const amountsOut = amounts[amounts.length - 1];
+      sourceBridgeAmount = amountsOut;
+      //wait until the transaction be completed
+      receipt = { status: 1 }
+    }
+    if (receipt = 1) {
+      console.log(
+        "SUCCESS: Assets are successfully Swapped in Source Network !"
+      );
+      console.log("Cheers! your bridge and swap was successful !!!");
+      // console.log("Transaction hash is: swapResult===================>", swapResult);
+      const isTargetTokenFoundry = await this.targetFACCheck(
+        targetNetwork,
+        targetTokenAddress,
+        sourceBridgeAmount
+      );
+      if (isTargetTokenFoundry === true) {
+        console.log("TN-1: Target Token is Foundry Asset");
+        console.log("TN-2: Withdraw Foundry Asset...");
+        console.log('quote return 111',sourceBridgeAmount);
+
+      } else {
+        const isTargetRefineryToken = await this.isTargetRefineryAsset(
+          targetNetwork,
+          targetTokenAddress,
+          sourceBridgeAmount
+        );
+        console.log("isTargetRefineryToken", isTargetRefineryToken)
+        if (isTargetRefineryToken == true) {
+          console.log("TN-1: Target token is Refinery Asset");
+          console.log(
+            "TN-2: Withdraw and Swap Foundry Asset to Target Token ...."
+          );
+          let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
+          const amounts2 = await targetNetwork.dexContract.getAmountsOut(
+            sourceBridgeAmount,
+            path2
+          );
+          const amountsOut2 = amounts2[1];
+          console.log('quote return 222',amountsOut2);
+        } else {
+          console.log("TN-1: Target Token is Ionic Asset");
+          console.log(
+            "TN-2: Withdraw and Swap Foundry Token to Target Token ...."
+          );
+          let path2 = [
+            targetNetwork.foundryTokenAddress,
+            targetNetwork.weth,
+            targetTokenAddress,
+          ];
+          const amounts2 = await targetNetwork.dexContract.getAmountsOut(
+            sourceBridgeAmount,
+            path2
+          );
+          const amountsOut2 = amounts2[amounts2.length - 1];
+          console.log('quote return 333',amountsOut2);
+        }
+      }
+    }
+    
+    return transactionHash;
+  },
 
 }
