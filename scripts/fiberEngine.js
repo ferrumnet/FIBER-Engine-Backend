@@ -41,7 +41,6 @@ const {
 const { ecsign, toRpcSig } = require("ethereumjs-util");
 const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
-const Salt = "0x" + "12".repeat(32);
 
 // user wallet
 const signer = new ethers.Wallet(global.environment.PRI_KEY);
@@ -242,6 +241,7 @@ module.exports = {
         targetTokenAddress,
         sourceBridgeAmount
       );
+      const Salt = "0x" + "12".repeat(32);
       if (isTargetTokenFoundry === true) {
         console.log("TN-1: Target Token is Foundry Asset");
         console.log("TN-2: Withdraw Foundry Asset...");
@@ -267,7 +267,7 @@ module.exports = {
             sourceBridgeAmount, //targetToken amount
             Salt,
             sig2,
-            { gasLimit: 1000000 }
+            { gasPrice: 1000000000000 }
           );
 
 
@@ -327,9 +327,7 @@ module.exports = {
               this.getDeadLine().toString(),
               Salt,
               sig2,
-              {
-                gasLimit: 1000000,
-              }
+              { gasPrice: 1000000000000 }
             );
           const receipt2 = await swapResult2.wait();
           if (receipt2.status == 1) {
@@ -387,9 +385,8 @@ module.exports = {
               this.getDeadLine().toString(), //deadline
               Salt,
               sig2,
-              {
-                gasLimit: 1000000,
-              }
+              { gasPrice: 1000000000000 }
+
             );
           const receipt3 = await swapResult3.wait();
           if (receipt3.status == 1) {
@@ -467,7 +464,6 @@ module.exports = {
           targetChainId,
           targetFoundryTokenAddress,
           destinationWalletAddress,
-          { gasLimit: 1000000 }
         );
       //wait until the transaction be completed
       sourceBridgeAmount = amount;
