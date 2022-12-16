@@ -491,7 +491,7 @@ module.exports = {
           path,
           this.getDeadLine().toString(), // deadline
           targetChainId,
-          targetTokenAddress
+          targetNetwork.foundryTokenAddress
         );
     } else {
       console.log("SN-1: Source Token is Ionic Asset");
@@ -518,7 +518,7 @@ module.exports = {
           path,
           this.getDeadLine().toString(), // deadline
           targetChainId,
-          targetTokenAddress,
+          targetNetwork.foundryTokenAddress
         );
     }
 
@@ -540,6 +540,66 @@ module.exports = {
       nonce,
       description: `Swap `,
     };
-  }
+  },
+
+
+  getQuote : async function (
+    sourcetokenAddress,
+    targetTokenAddress,
+    sourceChainId,
+    targetChainId,
+    inputAmount,
+    destinationWalletAddress
+  ) {
+    let destinationAmount = null;
+    // mapping source and target networs (go to Network.js file)
+    const sourceNetwork = networks[sourceChainId];
+
+    const sourceTokenContract = new ethers.Contract(
+      sourcetokenAddress,
+      tokenAbi.abi,
+      sourceNetwork.provider
+    );
+
+    const sourceTokenDecimal = await sourceTokenContract.decimals();
+    const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
+    console.log("INIT: Swap Initiated for this Amount: ", inputAmount);
+    const isFoundryAsset = await this.sourceFACCheck(
+      sourceNetwork,
+      sourcetokenAddress
+    );
+    const isRefineryAsset = await this.isSourceRefineryAsset(
+      sourceNetwork,
+      sourcetokenAddress,
+      amount
+    );
+
+    if (isFoundryAsset) {
+      console.log("SN-1: Source Token is Foundry Asset");
+      destinationAmount = amount;
+    } else if (isRefineryAsset) {
+      console.log("SN-1: Source Token is Refinery Asset");
+      let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
+      const amounts = await sourceNetwork.dexContract.getAmountsOut(
+        amount,
+        path
+      );
+      destinationAmount = amounts[1];
+    } else {
+      console.log("SN-1: Source Token is Ionic Asset");
+      let path = [
+        sourcetokenAddress,
+        sourceNetwork.weth,
+        sourceNetwork.foundryTokenAddress,
+      ];
+      const amounts = await sourceNetwork.dexContract.getAmountsOut(
+        amount,
+        path
+      );
+      destinationAmount = amounts[amounts.length - 1];
+    }
+    
+    return destinationAmount;
+  },
 
 }
