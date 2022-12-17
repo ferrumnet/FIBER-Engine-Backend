@@ -1,3 +1,5 @@
+var Web3= require("web3");
+
 module.exports = {
 
   getTokenCategorizedInformation: async function (req: any) {
@@ -11,26 +13,25 @@ module.exports = {
 
     console.log(categorizedInfo);
 
-    // let destinationAmount = await fiberEngine.getQuote(
-    //   req.query.sourceTokenContractAddress, // goerli ada
-    //   req.query.destinationTokenContractAddress, // bsc ada
-    //   req.query.sourceNetworkChainId, // source chain id (goerli)
-    //   req.query.destinationNetworkChainId, // target chain id (bsc)
-    //   req.query.sourceAmount //source token amount
-    // );
-
-    // console.log('destinationAmount', destinationAmount);
-
     let data: any = {};
 
     if (categorizedInfo) {
+
+      let destinationAmount = 0;
+      if(categorizedInfo?.destination?.amount && typeof categorizedInfo?.destination?.amount === 'object'){
+        destinationAmount = Web3.utils.fromWei(String(categorizedInfo?.destination?.amount) || 0,'ether');
+      }else{
+        destinationAmount = categorizedInfo?.destination?.amount;
+      }
+      console.log('destinationAmount',destinationAmount);
+
       let sourceTokenCategorizedInfo: any = {};
-      sourceTokenCategorizedInfo.type = categorizedInfo.sourceAssetType;
+      sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
       sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
 
       let destinationTokenCategorizedInfo: any = {};
-      destinationTokenCategorizedInfo.type = categorizedInfo.targetAssetType;
-      destinationTokenCategorizedInfo.destinationAmount = req.query.sourceAmount;
+      destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
+      destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
 
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;

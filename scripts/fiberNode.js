@@ -179,9 +179,13 @@ module.exports = {
       targetAssetType = "Ionic";
     }
 
-    return {
-      sourceAssetType,
-      targetAssetType,
-    };
+    let data = {source: {}, destination: {}}
+    data.source.type = sourceAssetType;
+    data.source.amount = inputAmount;
+
+    data.destination.type = targetAssetType; 
+    data.destination.amount = commonFunctions.amountConversion(sourceBridgeAmount);
+
+    return data;
   }
 }
