@@ -59,7 +59,7 @@ module.exports = {
     return new web3.Contract(fiberRouterAbi.abi, tokenContractAddress);
   },
 
-  getTransactionsCount: async function(rpcUrl, walletAddress) {
+  getTransactionsCount: async function (rpcUrl, walletAddress) {
     let web3 = this.web3(rpcUrl).eth;
     if (web3) {
       let transactionCount = await web3.getTransactionCount(walletAddress, 'pending')
@@ -69,14 +69,14 @@ module.exports = {
   },
 
   //check the requested token exist on the Source network Fund Manager
-  sourceFACCheck: async function(sourceNetwork, tokenAddress) {
+  sourceFACCheck: async function (sourceNetwork, tokenAddress) {
     const isSourceTokenFoundryAsset =
       await sourceNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
     return isSourceTokenFoundryAsset;
   },
 
   //check the requested token exist on the Source network Fund Manager
-  targetFACCheck: async function(targetNetwork, tokenAddress, amount) {
+  targetFACCheck: async function (targetNetwork, tokenAddress, amount) {
     const targetTokenContract = new ethers.Contract(
       tokenAddress,
       tokenAbi.abi,
@@ -98,7 +98,7 @@ module.exports = {
   },
 
   //check source toke is foundry asset
-  isSourceRefineryAsset: async function(sourceNetwork, tokenAddress, amount) {
+  isSourceRefineryAsset: async function (sourceNetwork, tokenAddress, amount) {
     try {
       const isTokenFoundryAsset = await this.sourceFACCheck(
         sourceNetwork,
@@ -146,14 +146,14 @@ module.exports = {
     }
   },
 
-  getDeadLine: function() {
+  getDeadLine: function () {
     const currentDate = new Date();
     const deadLine = currentDate.getTime() + 20 * 60000;
     return deadLine;
   },
 
   //main function to bridge and swap tokens
-  withdraw : async function (
+  withdraw: async function (
     sourcetokenAddress,
     targetTokenAddress,
     sourceChainId,
@@ -277,7 +277,7 @@ module.exports = {
             "SUCCESS: Foundry Assets are Successfully Withdrawn on Source Network !"
           );
           console.log("Cheers! your bridge and swap was successful !!!");
-          if(swapResult && swapResult.hash){
+          if (swapResult && swapResult.hash) {
             transactionHash = swapResult.hash;
             console.log("Transaction hash is: swapResult", swapResult.hash);
           }
@@ -335,7 +335,7 @@ module.exports = {
               "SUCCESS: Foundry Assets are Successfully swapped to Target Token !"
             );
             console.log("Cheers! your bridge and swap was successful !!!");
-            if(swapResult2 && swapResult2.hash){
+            if (swapResult2 && swapResult2.hash) {
               transactionHash = swapResult2.hash;
               console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
             }
@@ -394,19 +394,19 @@ module.exports = {
               "TN-3: Successfully Swapped Foundry Token to Target Token"
             );
             console.log("Cheers! your bridge and swap was successful !!!");
-            if(swapResult3 && swapResult3.hash){
+            if (swapResult3 && swapResult3.hash) {
               transactionHash = swapResult3.hash;
-              console.log("Transaction hash is: ", swapResult3.hash);          
+              console.log("Transaction hash is: ", swapResult3.hash);
             }
           }
         }
       }
     }
-    
+
     return transactionHash;
   },
 
-  swapForAbi : async function (
+  swapForAbi: async function (
     sourceWalletAddress,
     sourcetokenAddress,
     targetTokenAddress,
@@ -521,13 +521,13 @@ module.exports = {
     let data = '';
     let gasEstimation = 1000000;
 
-    if(swapResult){
+    if (swapResult) {
       data = swapResult.encodeABI();
     }
     let nonce = await this.getTransactionsCount(sourceNetwork.rpc, sourceWalletAddress);
 
     return {
-      currency: sourceNetwork.shortName+':'+sourcetokenAddress,
+      currency: sourceNetwork.shortName + ':' + sourcetokenAddress,
       from: sourceWalletAddress,
       amount: '0',
       contract: sourceNetwork.fiberRouter,
@@ -537,65 +537,5 @@ module.exports = {
       description: `Swap `,
     };
   },
-
-
-  getQuote : async function (
-    sourcetokenAddress,
-    targetTokenAddress,
-    sourceChainId,
-    targetChainId,
-    inputAmount,
-    destinationWalletAddress
-  ) {
-    let destinationAmount = null;
-    // mapping source and target networs (go to Network.js file)
-    const sourceNetwork = networks[sourceChainId];
-
-    const sourceTokenContract = new ethers.Contract(
-      sourcetokenAddress,
-      tokenAbi.abi,
-      sourceNetwork.provider
-    );
-
-    const sourceTokenDecimal = await sourceTokenContract.decimals();
-    const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
-    console.log("INIT: Swap Initiated for this Amount: ", inputAmount);
-    const isFoundryAsset = await this.sourceFACCheck(
-      sourceNetwork,
-      sourcetokenAddress
-    );
-    const isRefineryAsset = await this.isSourceRefineryAsset(
-      sourceNetwork,
-      sourcetokenAddress,
-      amount
-    );
-
-    if (isFoundryAsset) {
-      console.log("SN-1: Source Token is Foundry Asset");
-      destinationAmount = amount;
-    } else if (isRefineryAsset) {
-      console.log("SN-1: Source Token is Refinery Asset");
-      let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
-      const amounts = await sourceNetwork.dexContract.getAmountsOut(
-        amount,
-        path
-      );
-      destinationAmount = amounts[1];
-    } else {
-      console.log("SN-1: Source Token is Ionic Asset");
-      let path = [
-        sourcetokenAddress,
-        sourceNetwork.weth,
-        sourceNetwork.foundryTokenAddress,
-      ];
-      const amounts = await sourceNetwork.dexContract.getAmountsOut(
-        amount,
-        path
-      );
-      destinationAmount = amounts[amounts.length - 1];
-    }
-    
-    return destinationAmount;
-  },
-
+  
 }

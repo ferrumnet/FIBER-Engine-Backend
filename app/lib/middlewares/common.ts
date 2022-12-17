@@ -73,6 +73,15 @@ module.exports = {
       console.log(e);
     }
     return null;
+  },
+
+  amountConversion: function(amount: any){
+    try{
+      
+    }catch(e){
+      console.log(e);
+    }
+    return amount;
   }
   
 };
