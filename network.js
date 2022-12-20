@@ -163,6 +163,7 @@ const polygonMainnetFiberRouterContract = new ethers.Contract(
 const networks = {
   56: {
     name: "bscMainnet",
+    shortName: "bsc",
     rpc: bscMainnetRPC,
     chainId: bscMainnetChainId,
     fundManager: bscMainnetFundManager,
@@ -177,6 +178,7 @@ const networks = {
   },
   137: {
     name: "polygonMainnet",
+    shortName: "polygon",
     rpc: polygonMainnetRPC,
     chainId: polygonMainnetChainId,
     fundManager: polygonMainnetFundManager,
@@ -191,6 +193,7 @@ const networks = {
   },
   5: {
     name: "goerli",
+    shortName: "goerliTestnet",
     rpc: goerliRPC,
     chainId: goerliChainId,
     fundManager: goerliFundManager,
@@ -205,6 +208,7 @@ const networks = {
   },
   97: {
     name: "bsc",
+    shortName: "bscTestnet",
     rpc: bscRPC,
     chainId: bscChainId,
     fundManager: bscFundManager,
