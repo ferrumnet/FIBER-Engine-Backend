@@ -286,11 +286,7 @@ module.exports = {
         sourceBridgeAmount
       );
       console.log("isTargetTokenFoundry", isTargetTokenFoundry)
-      // const Salt = Web3.utils.randomHex(32);
-      const Salt = "0x438cfb513fc97dbe1d986f9409d86c43d1b203bc90e237f85254e72c1387025c";
-
-
-      // const Salt = keccak256(Buffer.from(sourcetokenAddress + sourceBridgeAmount)).toString('hex');
+      const Salt = Web3.utils.randomHex(32);
       if (isTargetTokenFoundry === true) {
         console.log("TN-1: Target Token is Foundry Asset");
         console.log("TN-2: Withdraw Foundry Asset...");
