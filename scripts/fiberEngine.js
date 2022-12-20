@@ -160,22 +160,27 @@ module.exports = {
   },
 
   estimateGas: async function (sourceChainId, from, isForSwap = false) {
-    let estimatedGas
+    let estimatedGas = 0;
+    let gas = 1000000;
+    let gasPrice = 0;
     const network = networks[sourceChainId];
 
     const web3 = new Web3(network.rpc)
     
     if (sourceChainId = 137) {
-      let gas = await web3.eth.estimateGas({
+      gas = await web3.eth.estimateGas({
         from: from
       });
       gas = 60000 + gas;
-      let gasPrice = await web3.eth.getGasPrice();
+      gasPrice = await web3.eth.getGasPrice();
       gasPrice = new Big(gasPrice).mul(1.5).round().toString();
       estimatedGas = gasPrice;
     } else {
       if(isForSwap){
-        estimatedGas = 0;
+        return {
+          gasPrice: estimatedGas,
+          estimatedGas: gas
+        }
       }else {
         estimatedGas = 1000000000000;
       }
@@ -588,7 +593,7 @@ module.exports = {
       amount: '0',
       contract: sourceNetwork.fiberRouter,
       data: data,
-      gas: { gasPrice: gasEstimation, gasEstimation: 1000000 },
+      gas: gasEstimation,
       nonce,
       description: `Swap `,
     };
