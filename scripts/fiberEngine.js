@@ -571,7 +571,7 @@ module.exports = {
     }
 
     let data = '';
-    let gasEstimation = await this.estimateGas(targetChainId, destinationWalletAddress);
+    let gasEstimation = await this.estimateGas(sourceChainId, destinationWalletAddress);
 
     if (swapResult) {
       data = swapResult.encodeABI();
