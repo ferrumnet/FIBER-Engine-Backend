@@ -159,7 +159,7 @@ module.exports = {
     return deadLine;
   },
 
-  estimateGas: async function (sourceChainId, from) {
+  estimateGas: async function (sourceChainId, from, isForSwap = false) {
     let estimatedGas
     const network = networks[sourceChainId];
 
@@ -174,7 +174,11 @@ module.exports = {
       gasPrice = new Big(gasPrice).mul(1.5).round().toString();
       estimatedGas = gasPrice;
     } else {
-      estimatedGas = 1000000000000;
+      if(isForSwap){
+        estimatedGas = 0;
+      }else {
+        estimatedGas = 1000000000000;
+      }
     }
     return estimatedGas;
   },
@@ -188,7 +192,7 @@ module.exports = {
     inputAmount,
     destinationWalletAddress
   ) {
-    const gas = await this.estimateGas(targetChainId, destinationWalletAddress);
+    const gas = await this.estimateGas(targetChainId, destinationWalletAddress, false);
     // mapping source and target networs (go to Network.js file)
     const sourceNetwork = networks[sourceChainId];
     const targetNetwork = networks[targetChainId];
@@ -584,7 +588,7 @@ module.exports = {
       amount: '0',
       contract: sourceNetwork.fiberRouter,
       data: data,
-      gas: { gasPrice: '0', gasEstimation },
+      gas: { gasPrice: gasEstimation, gasEstimation: 1000000 },
       nonce,
       description: `Swap `,
     };
