@@ -18,11 +18,12 @@ module.exports = {
     if (categorizedInfo) {
 
       let destinationAmount = 0;
-      if(categorizedInfo?.destination?.amount && typeof categorizedInfo?.destination?.amount === 'object'){
-        destinationAmount = Web3.utils.fromWei(String(categorizedInfo?.destination?.amount) || 0,'ether');
-      }else{
-        destinationAmount = categorizedInfo?.destination?.amount;
-      }
+      destinationAmount = Web3.utils.fromWei(categorizedInfo?.destination?.amount || 0, 'ether');
+
+      // if(categorizedInfo?.destination?.amount && typeof categorizedInfo?.destination?.amount === 'object'){
+      // }else{
+      //   destinationAmount = categorizedInfo?.destination?.amount;
+      // }
       console.log('destinationAmount',destinationAmount);
 
       let sourceTokenCategorizedInfo: any = {};
