@@ -39,6 +39,7 @@ const {
   bscCudos,
 } = global.networkHelper;
 const { ecsign, toRpcSig } = require("ethereumjs-util");
+const Big = require('big.js');
 const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
 
@@ -84,9 +85,15 @@ module.exports = {
     );
     const isTargetTokenFoundryAsset =
       await targetNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
+    console.log("isTargetTokenFoundryAsset111", isTargetTokenFoundryAsset)
     const targetFoundryAssetLiquidity = await targetTokenContract.balanceOf(
       targetNetwork.fundManagerContract.address
     );
+    console.log("targetFoundryAssetLiquidity1111", targetFoundryAssetLiquidity)
+    console.log("amountamount", amount)
+
+
+    
     if (
       isTargetTokenFoundryAsset === true &&
       Number(targetFoundryAssetLiquidity) > Number(amount)
@@ -152,6 +159,26 @@ module.exports = {
     return deadLine;
   },
 
+  estimateGas: async function (sourceChainId, from) {
+    let estimatedGas
+    const network = networks[sourceChainId];
+
+    const web3 = new Web3(network.rpc)
+    
+    if (sourceChainId = 137) {
+      let gas = await web3.eth.estimateGas({
+        from: from
+      });
+      gas = 60000 + gas;
+      let gasPrice = await web3.eth.getGasPrice();
+      gasPrice = new Big(gasPrice).mul(1.5).round().toString();
+      estimatedGas = gasPrice;
+    } else {
+      estimatedGas = 1000000000000;
+    }
+    return estimatedGas;
+  },
+
   //main function to bridge and swap tokens
   withdraw: async function (
     sourcetokenAddress,
@@ -161,6 +188,7 @@ module.exports = {
     inputAmount,
     destinationWalletAddress
   ) {
+    const gas = await this.estimateGas(targetChainId, destinationWalletAddress);
     // mapping source and target networs (go to Network.js file)
     const sourceNetwork = networks[sourceChainId];
     const targetNetwork = networks[targetChainId];
@@ -174,7 +202,15 @@ module.exports = {
       sourceNetwork.provider
     );
 
+    // source token contract
+    const targetTokenContract = new ethers.Contract(
+      targetTokenAddress,
+      tokenAbi.abi,
+      targetNetwork.provider
+    );
+  //convert to wei
     const sourceTokenDecimal = await sourceTokenContract.decimals();
+    const targetTokenDecimal = await targetTokenContract.decimals();
     const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
     console.log("INIT: Swap Initiated for this Amount: ", inputAmount);
     // is source token foundy asset
@@ -197,34 +233,42 @@ module.exports = {
       console.log("SN-1: Source Token is Foundry Asset");
       console.log("SN-2: Add Foundry Asset in Source Network FundManager");
       // approve to fiber router to transfer tokens to the fund manager contract
-      const targetFoundryTokenAddress = await sourceNetwork.fundManagerContract.allowedTargets(sourcetokenAddress, targetChainId);
-      sourceBridgeAmount = amount;
+      sourceBridgeAmount = (inputAmount * 10 ** Number(targetTokenDecimal)).toString();
       // receipt = await swapResult.wait();
     } else if (isRefineryAsset) {
       console.log("SN-1: Source Token is Refinery Asset");
       console.log("SN-2: Swap Refinery Asset to Foundry Asset ...");
       //swap refinery token to the foundry token
-      let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
-
-      const amounts = await sourceNetwork.dexContract.getAmountsOut(
-        amount,
-        path
-      );
+      let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
+      let amounts;
+      try {
+        amounts = await sourceNetwork.dexContract.getAmountsOut(
+          amount,
+          path
+        );
+      } catch (error) {
+        throw "ALERT: DEX doesn't have liquidity for this pair"
+      }
       const amountsOut = amounts[1];
+      sourceBridgeAmount = amountsOut;
     } else {
       console.log("SN-1: Source Token is Ionic Asset");
       console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
       //swap refinery token to the foundry token
       let path = [
-        sourcetokenAddress,
+        sourceTokenAddress,
         sourceNetwork.weth,
         sourceNetwork.foundryTokenAddress,
       ];
-
-      const amounts = await sourceNetwork.dexContract.getAmountsOut(
-        amount,
-        path
-      );
+      let amounts;
+      try {
+        amounts = await sourceNetwork.dexContract.getAmountsOut(
+          amount,
+          path
+        );
+      } catch (error) {
+        throw "ALERT: DEX doesn't have liquidity for this pair"
+      }
       const amountsOut = amounts[amounts.length - 1];
       sourceBridgeAmount = amountsOut;
       //wait until the transaction be completed
@@ -241,7 +285,8 @@ module.exports = {
         targetTokenAddress,
         sourceBridgeAmount
       );
-      const Salt = "0x" + "12".repeat(32);
+      console.log("isTargetTokenFoundry", isTargetTokenFoundry)
+      const Salt = Web3.utils.randomHex(32);
       if (isTargetTokenFoundry === true) {
         console.log("TN-1: Target Token is Foundry Asset");
         console.log("TN-2: Withdraw Foundry Asset...");
@@ -267,8 +312,7 @@ module.exports = {
             sourceBridgeAmount, //targetToken amount
             Salt,
             sig2,
-            { gasPrice: 1000000000000 }
-          );
+            { gasPrice: gas }  );
 
 
         const receipt = await swapResult.wait();
@@ -296,10 +340,15 @@ module.exports = {
             "TN-2: Withdraw and Swap Foundry Asset to Target Token ...."
           );
           let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
-          const amounts2 = await targetNetwork.dexContract.getAmountsOut(
-            sourceBridgeAmount,
-            path2
-          );
+          let amounts2;
+          try {
+            amounts2 = await targetNetwork.dexContract.getAmountsOut(
+              sourceBridgeAmount,
+              path2
+            );
+          } catch (error) {
+            throw "ALERT: DEX doesn't have liquidity for this pair"
+          }
           const hash = await produecSignaturewithdrawHash(
             targetNetwork.chainId,
             targetNetwork.fundManager,
@@ -327,7 +376,7 @@ module.exports = {
               this.getDeadLine().toString(),
               Salt,
               sig2,
-              { gasPrice: 1000000000000 }
+              { gasPrice: gas }
             );
           const receipt2 = await swapResult2.wait();
           if (receipt2.status == 1) {
@@ -351,11 +400,15 @@ module.exports = {
             targetNetwork.weth,
             targetTokenAddress,
           ];
-          const amounts2 = await targetNetwork.dexContract.getAmountsOut(
-            sourceBridgeAmount,
-            path2
-          );
-          console.log("sourceBridgeAmount", sourceBridgeAmount)
+          let amounts2;
+          try {
+            amounts2 = await targetNetwork.dexContract.getAmountsOut(
+              sourceBridgeAmount,
+              path2
+            );
+          } catch (error) {
+            throw "ALERT: DEX doesn't have liquidity for this pair"
+          }
           const amountsOut2 = amounts2[amounts2.length - 1];
           const hash = await produecSignaturewithdrawHash(
             targetNetwork.chainId,
@@ -385,8 +438,7 @@ module.exports = {
               this.getDeadLine().toString(), //deadline
               Salt,
               sig2,
-              { gasPrice: 1000000000000 }
-
+              { gasPrice: gas }
             );
           const receipt3 = await swapResult3.wait();
           if (receipt3.status == 1) {
@@ -519,7 +571,7 @@ module.exports = {
     }
 
     let data = '';
-    let gasEstimation = 1000000;
+    let gasEstimation = await this.estimateGas(targetChainId, destinationWalletAddress);
 
     if (swapResult) {
       data = swapResult.encodeABI();
