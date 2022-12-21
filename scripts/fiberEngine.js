@@ -159,33 +159,47 @@ module.exports = {
     return deadLine;
   },
 
-  estimateGas: async function (sourceChainId, from, isForSwap = false) {
-    let estimatedGas = 0;
-    let gas = 1000000;
-    let gasPrice = 0;
+  estimateGasForWithdraw: async function (sourceChainId, from) {
+    let estimatedGas
     const network = networks[sourceChainId];
 
     const web3 = new Web3(network.rpc)
     
     if (sourceChainId = 137) {
-      gas = await web3.eth.estimateGas({
+      let gas = await web3.eth.estimateGas({
         from: from
       });
       gas = 60000 + gas;
-      gasPrice = await web3.eth.getGasPrice();
+      let gasPrice = await web3.eth.getGasPrice();
       gasPrice = new Big(gasPrice).mul(1.5).round().toString();
       estimatedGas = gasPrice;
     } else {
-      if(isForSwap){
-        return {
-          gasPrice: estimatedGas,
-          estimatedGas: gas
-        }
-      }else {
-        estimatedGas = 1000000000000;
-      }
+      estimatedGas = 1000000000000;
     }
     return estimatedGas;
+  },
+
+  estimateGasForSwap: async function (sourceChainId, from) {
+    let data = {};
+    if(sourceChainId == 137){
+      let maxFeePerGas = '60';
+      let maxPriorityFeePerGas = '60';
+      let gasLimit = '2000000';
+
+      let item = await db.GasFees.findOne({type: 'polygon'});
+      if(item){
+        maxFeePerGas = item.maxFeePerGas;
+        maxPriorityFeePerGas = item.maxPriorityFeePerGas;
+        gasLimit = item.gasLimit;
+      }
+
+      data.maxFeePerGas = Web3.utils.toHex(Web3.utils.toWei(maxFeePerGas, 'gwei'));
+      data.maxPriorityFeePerGas = Web3.utils.toHex(Web3.utils.toWei(maxPriorityFeePerGas, 'gwei'));
+      data.gas = {gasLimit: gasLimit};
+    }else {
+      data.gas = {};
+    }
+    return data;
   },
 
   //main function to bridge and swap tokens
@@ -197,7 +211,7 @@ module.exports = {
     inputAmount,
     destinationWalletAddress
   ) {
-    const gas = await this.estimateGas(targetChainId, destinationWalletAddress, false);
+    const gas = await this.estimateGasForWithdraw(targetChainId, destinationWalletAddress);
     // mapping source and target networs (go to Network.js file)
     const sourceNetwork = networks[sourceChainId];
     const targetNetwork = networks[targetChainId];
@@ -248,7 +262,7 @@ module.exports = {
       console.log("SN-1: Source Token is Refinery Asset");
       console.log("SN-2: Swap Refinery Asset to Foundry Asset ...");
       //swap refinery token to the foundry token
-      let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
+      let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
       let amounts;
       try {
         amounts = await sourceNetwork.dexContract.getAmountsOut(
@@ -265,7 +279,7 @@ module.exports = {
       console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
       //swap refinery token to the foundry token
       let path = [
-        sourceTokenAddress,
+        sourcetokenAddress,
         sourceNetwork.weth,
         sourceNetwork.foundryTokenAddress,
       ];
@@ -580,8 +594,6 @@ module.exports = {
     }
 
     let data = '';
-    let gasEstimation = await this.estimateGas(sourceChainId, destinationWalletAddress);
-
     if (swapResult) {
       data = swapResult.encodeABI();
     }
@@ -593,9 +605,9 @@ module.exports = {
       amount: '0',
       contract: sourceNetwork.fiberRouter,
       data: data,
-      gas: gasEstimation,
       nonce,
       description: `Swap `,
+      ...await this.estimateGasForSwap(sourceChainId, destinationWalletAddress)
     };
   },
   
