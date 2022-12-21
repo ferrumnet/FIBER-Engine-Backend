@@ -18,7 +18,7 @@ module.exports = {
     if (categorizedInfo) {
 
       let destinationAmount = 0;
-      destinationAmount = Web3.utils.fromWei(categorizedInfo?.destination?.amount || 0, 'ether');
+      destinationAmount = categorizedInfo?.destination?.amount;
 
       // if(categorizedInfo?.destination?.amount && typeof categorizedInfo?.destination?.amount === 'object'){
       // }else{
