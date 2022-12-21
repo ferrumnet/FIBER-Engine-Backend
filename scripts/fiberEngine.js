@@ -179,12 +179,23 @@ module.exports = {
     return estimatedGas;
   },
 
-  estimateGasForSwap: function (sourceChainId, from) {
+  estimateGasForSwap: async function (sourceChainId, from) {
     let data = {};
     if(sourceChainId == 137){
-      data.maxFeePerGas = Web3.utils.toHex(Web3.utils.toWei('60', 'gwei'));
-      data.maxPriorityFeePerGas = Web3.utils.toHex(Web3.utils.toWei('60', 'gwei'));
-      data.gas = {gasLimit: '2000000'};
+      let maxFeePerGas = '60';
+      let maxPriorityFeePerGas = '60';
+      let gasLimit = '2000000';
+
+      let item = await db.GasFees.findOne({type: 'polygon'});
+      if(item){
+        maxFeePerGas = item.maxFeePerGas;
+        maxPriorityFeePerGas = item.maxPriorityFeePerGas;
+        gasLimit = item.gasLimit;
+      }
+
+      data.maxFeePerGas = Web3.utils.toHex(Web3.utils.toWei(maxFeePerGas, 'gwei'));
+      data.maxPriorityFeePerGas = Web3.utils.toHex(Web3.utils.toWei(maxPriorityFeePerGas, 'gwei'));
+      data.gas = {gasLimit: gasLimit};
     }else {
       data.gas = {};
     }
@@ -596,7 +607,7 @@ module.exports = {
       data: data,
       nonce,
       description: `Swap `,
-      ...this.estimateGasForSwap(sourceChainId, destinationWalletAddress)
+      ...await this.estimateGasForSwap(sourceChainId, destinationWalletAddress)
     };
   },
   
