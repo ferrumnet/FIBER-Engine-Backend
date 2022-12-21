@@ -8,6 +8,8 @@ module.exports = function (router: any) {
       return res.http401('sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing');
     }
 
+    multiSwapHelper.validatonForSameSourceAndDestination(req);
+
     return res.http200({
       data: await multiSwapHelper.getTokenCategorizedInformation(req)
      });
