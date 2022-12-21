@@ -12,26 +12,7 @@ const {
 } = global.networkHelper;
 const { ethers } = require("ethers");
 const signer = new ethers.Wallet(global.environment.PRI_KEY);
-async function sourceFACCheck(sourceNetwork, tokenAddress, amount) {
-  const sourceTokenContract = new ethers.Contract(
-    tokenAddress,
-    tokenAbi.abi,
-    sourceNetwork.provider
-  );
-  const isSourceTokenFoundryAsset =
-    await sourceNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
-  const sourceFoundryAssetLiquidity = await sourceTokenContract.balanceOf(
-    sourceNetwork.fundManager
-  );
-  if (
-    isSourceTokenFoundryAsset === true &&
-    Number(sourceFoundryAssetLiquidity) > Number(amount)
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-}
+
 
 //check the requested token exist on the Source network Fund Manager
 async function targetFACCheck(targetNetwork, tokenAddress, amount) {
@@ -60,8 +41,7 @@ async function isSourceRefineryAsset(sourceNetwork, tokenAddress, amount) {
   try {
     const isTokenFoundryAsset = await sourceFACCheck(
       sourceNetwork,
-      tokenAddress,
-      amount
+      tokenAddress
     );
 
     let path = [tokenAddress, sourceNetwork.foundryTokenAddress];
@@ -100,6 +80,13 @@ async function isTargetRefineryAsset(targetNetwork, tokenAddress, amount) {
 }
 
 module.exports = {
+
+  //check the requested token exist on the Source network Fund Manager
+  sourceFACCheck: async function (sourceNetwork, tokenAddress) {
+    const isSourceTokenFoundryAsset =
+      await sourceNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
+    return isSourceTokenFoundryAsset;
+  },
 
   categoriseSwapAssets: async function (
     sourceChainId,
@@ -140,7 +127,7 @@ module.exports = {
     const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
     console.log("INIT: Swap Initiated for this Amount: ", inputAmount);
     // is source token foundy asset
-    const isFoundryAsset = await sourceFACCheck(
+    const isFoundryAsset = await this.sourceFACCheck(
       sourceNetwork,
       sourcetokenAddress
     );
@@ -159,6 +146,7 @@ module.exports = {
       console.log("SN-1: Source Token is Foundry Asset");
       // approve to fiber router to transfer tokens to the fund manager contract
       sourceBridgeAmount = (inputAmount * 10 ** Number(targetTokenDecimal)).toString();
+      console.log("sourceBridgeAmount foundry", sourceBridgeAmount)
       // receipt = await swapResult.wait();
     } else if (isRefineryAsset) {
       console.log("SN-1: Source Token is Refinery Asset");
@@ -198,18 +186,22 @@ module.exports = {
       receipt = { status: 1 }
     }
     if (receipt = 1) {
+      // console.log("sourceBridgeAmount", sourceBridgeAmount)
+      // console.log("sourceTokenDecimalsourceTokenDecimal", sourceTokenDecimal)
+      // let bridgeAmount = (sourceBridgeAmount / 10 ** Number(sourceTokenDecimal)).toString();
+      // console.log("bridgeAmountbridgeAmount", bridgeAmount)
+      let amountIn = (inputAmount * 10 ** Number(targetTokenDecimal)).toString();
       // console.log("Transaction hash is: swapResult===================>", swapResult);
       const isTargetTokenFoundry = await targetFACCheck(
         targetNetwork,
         targetTokenAddress,
-        sourceBridgeAmount
+        Math.floor(amountIn)
       );
       console.log("isTargetTokenFoundry", isTargetTokenFoundry)
       // const Salt = keccak256(Buffer.from(sourcetokenAddress + sourceBridgeAmount)).toString('hex');
-      if (isTargetTokenFoundry === true) {
+      if (isTargetTokenFoundry) {
 
-        destinationAmountOut = inputAmount 
-
+        destinationAmountOut = Math.floor(amountIn)
       } else {
         const isTargetRefineryToken = await isTargetRefineryAsset(
           targetNetwork,
@@ -263,11 +255,6 @@ module.exports = {
       } else {
         sourceAssetType = "Ionic";
       }
-      const isTargetTokenFoundryAsset = await targetFACCheck(
-        targetNetwork,
-        targetTokenAddress,
-        sourceBridgeAmount
-      );
       const isTargetTokenRefineryAsset = await isTargetRefineryAsset(
         targetNetwork,
         targetTokenAddress,
@@ -275,7 +262,7 @@ module.exports = {
       );
 
       console.log("isTargetTokenFoundryAsset", isTargetTokenFoundry)
-      if (isTargetTokenFoundryAsset) {
+      if (isTargetTokenFoundry) {
         targetAssetType = "Foundry";
       } else if (isTargetTokenRefineryAsset) {
         targetAssetType = "Refinery";
@@ -290,7 +277,8 @@ module.exports = {
       data.source.amount = inputAmount;
 
       data.destination.type = targetAssetType;
-      data.destination.amount = (destinationAmountOut * 10 ** Number(targetTokenDecimal)).toString();
+      // data.destination.amount = destinationAmountOut 
+      data.destination.amount = (destinationAmountOut / 10 ** Number(targetTokenDecimal)).toString();
       return data;
     }
   }
