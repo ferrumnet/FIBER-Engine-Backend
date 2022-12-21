@@ -159,7 +159,7 @@ module.exports = {
     return deadLine;
   },
 
-  estimateGas: async function (sourceChainId, from) {
+  estimateGasForWithdraw: async function (sourceChainId, from) {
     let estimatedGas
     const network = networks[sourceChainId];
 
@@ -179,6 +179,29 @@ module.exports = {
     return estimatedGas;
   },
 
+  estimateGasForSwap: async function (sourceChainId, from) {
+    let data = {};
+    if(sourceChainId == 137){
+      let maxFeePerGas = '60';
+      let maxPriorityFeePerGas = '60';
+      let gasLimit = '2000000';
+
+      let item = await db.GasFees.findOne({type: 'polygon'});
+      if(item){
+        maxFeePerGas = item.maxFeePerGas;
+        maxPriorityFeePerGas = item.maxPriorityFeePerGas;
+        gasLimit = item.gasLimit;
+      }
+
+      data.maxFeePerGas = Web3.utils.toHex(Web3.utils.toWei(maxFeePerGas, 'gwei'));
+      data.maxPriorityFeePerGas = Web3.utils.toHex(Web3.utils.toWei(maxPriorityFeePerGas, 'gwei'));
+      data.gas = {gasLimit: gasLimit};
+    }else {
+      data.gas = {};
+    }
+    return data;
+  },
+
   //main function to bridge and swap tokens
   withdraw: async function (
     sourcetokenAddress,
@@ -188,7 +211,7 @@ module.exports = {
     inputAmount,
     destinationWalletAddress
   ) {
-    const gas = await this.estimateGas(targetChainId, destinationWalletAddress);
+    const gas = await this.estimateGasForWithdraw(targetChainId, destinationWalletAddress);
     // mapping source and target networs (go to Network.js file)
     const sourceNetwork = networks[sourceChainId];
     const targetNetwork = networks[targetChainId];
@@ -239,7 +262,7 @@ module.exports = {
       console.log("SN-1: Source Token is Refinery Asset");
       console.log("SN-2: Swap Refinery Asset to Foundry Asset ...");
       //swap refinery token to the foundry token
-      let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
+      let path = [sourcetokenAddress, sourceNetwork.foundryTokenAddress];
       let amounts;
       try {
         amounts = await sourceNetwork.dexContract.getAmountsOut(
@@ -256,7 +279,7 @@ module.exports = {
       console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
       //swap refinery token to the foundry token
       let path = [
-        sourceTokenAddress,
+        sourcetokenAddress,
         sourceNetwork.weth,
         sourceNetwork.foundryTokenAddress,
       ];
@@ -571,8 +594,6 @@ module.exports = {
     }
 
     let data = '';
-    let gasEstimation = await this.estimateGas(targetChainId, destinationWalletAddress);
-
     if (swapResult) {
       data = swapResult.encodeABI();
     }
@@ -584,9 +605,9 @@ module.exports = {
       amount: '0',
       contract: sourceNetwork.fiberRouter,
       data: data,
-      gas: { gasPrice: '0', gasEstimation },
       nonce,
       description: `Swap `,
+      ...await this.estimateGasForSwap(sourceChainId, destinationWalletAddress)
     };
   },
   
