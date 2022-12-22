@@ -56,6 +56,7 @@ module.exports = {
   },
 
   getWithdrawSigned: async function (req: any) {
+    let log = await this.saveTransactionLog(req);
     let data: any = {};
     data = await fiberEngine.withdraw(
       req.query.sourceTokenContractAddress, // goerli ada
@@ -65,6 +66,7 @@ module.exports = {
       req.query.sourceAmount, //source token amount
       req.query.destinationWalletAddress // destination wallet address
     );
+    await this.updateTransactionLog(data, log);
     return data;
   },
 
@@ -73,6 +75,25 @@ module.exports = {
       if (req.query.sourceNetworkChainId == req.query.destinationNetworkChainId) {
         throw 'From and to information cannot be same';
       }
+    }
+  },
+
+  saveTransactionLog: async function (req: any) {
+    try{
+      let body = req.query;
+      body.createdAt = new Date();
+      body.updatedAt = new Date();
+      return await db.TransactionLogs.create(body);
+    }catch(e){
+      console.log('createTransactionLog',e)
+    }
+  },
+
+  updateTransactionLog: async function (withdrawHash: any, log: any) {
+    try{
+      await db.TransactionLogs.findOneAndUpdate({ _id: log._id }, { withdrawTransactionHash: withdrawHash, updatedAt: new Date()}, { new: true })
+    }catch(e){
+      console.log('updateTransactionLog',e)
     }
   },
 
