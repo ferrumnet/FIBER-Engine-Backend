@@ -42,6 +42,9 @@ const { ecsign, toRpcSig } = require("ethereumjs-util");
 const Big = require('big.js');
 const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
+const MAX_FEE_PER_GAS = '60';
+const MAX_PRIORITY_FEE_PER_GAS = '60';
+const GAS_LIMIT = '2000000';
 
 // user wallet
 const signer = new ethers.Wallet(global.environment.PRI_KEY);
@@ -160,31 +163,35 @@ module.exports = {
   },
 
   estimateGasForWithdraw: async function (sourceChainId, from) {
-    let estimatedGas
-    const network = networks[sourceChainId];
+    let data = {};
+    if (sourceChainId == 137) {
+      let maxFeePerGas = MAX_FEE_PER_GAS;
+      let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
+      let gasLimit = GAS_LIMIT;
 
-    const web3 = new Web3(network.rpc)
-    
-    if (sourceChainId = 137) {
-      let gas = await web3.eth.estimateGas({
-        from: from
-      });
-      gas = 60000 + gas;
-      let gasPrice = await web3.eth.getGasPrice();
-      gasPrice = new Big(gasPrice).mul(1.5).round().toString();
-      estimatedGas = gasPrice;
+      let item = await db.GasFees.findOne({type: 'polygon'});
+      if(item){
+        maxFeePerGas = item.maxFeePerGas;
+        maxPriorityFeePerGas = item.maxPriorityFeePerGas;
+        gasLimit = item.gasLimit;
+      }
+
+      data.maxFeePerGas = Web3.utils.toHex(Web3.utils.toWei(maxFeePerGas, 'gwei'));
+      data.maxPriorityFeePerGas = Web3.utils.toHex(Web3.utils.toWei(maxPriorityFeePerGas, 'gwei'));
+      data.gasLimit = gasLimit;
+
     } else {
-      estimatedGas = 1000000000000;
+      data.gasPrice = 1000000000000
     }
-    return estimatedGas;
+    return data;
   },
 
   estimateGasForSwap: async function (sourceChainId, from) {
     let data = {};
     if(sourceChainId == 137){
-      let maxFeePerGas = '60';
-      let maxPriorityFeePerGas = '60';
-      let gasLimit = '2000000';
+      let maxFeePerGas = MAX_FEE_PER_GAS;
+      let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
+      let gasLimit = GAS_LIMIT;
 
       let item = await db.GasFees.findOne({type: 'polygon'});
       if(item){
@@ -212,6 +219,7 @@ module.exports = {
     destinationWalletAddress
   ) {
     const gas = await this.estimateGasForWithdraw(targetChainId, destinationWalletAddress);
+    console.log('gas==========',gas)
     // mapping source and target networs (go to Network.js file)
     const sourceNetwork = networks[sourceChainId];
     const targetNetwork = networks[targetChainId];
@@ -335,7 +343,7 @@ module.exports = {
             sourceBridgeAmount, //targetToken amount
             Salt,
             sig2,
-            { gasPrice: gas }  );
+            gas  );
 
 
         const receipt = await swapResult.wait();
@@ -399,7 +407,7 @@ module.exports = {
               this.getDeadLine().toString(),
               Salt,
               sig2,
-              { gasPrice: gas }
+              gas
             );
           const receipt2 = await swapResult2.wait();
           if (receipt2.status == 1) {
@@ -461,7 +469,7 @@ module.exports = {
               this.getDeadLine().toString(), //deadline
               Salt,
               sig2,
-              { gasPrice: gas }
+              gas
             );
           const receipt3 = await swapResult3.wait();
           if (receipt3.status == 1) {
