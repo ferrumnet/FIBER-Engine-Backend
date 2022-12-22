@@ -103,7 +103,8 @@ const bscMainnetChainId = 56;
 const polygonMainnetChainId = 137;
 
 const bscMainnetRPC = 'https://nd-217-204-155.p2pify.com/379ccd6673575fd7a096cc3f2a87be63';
-const polygonMainnetRPC = 'https://polygon-rpc.com';
+// const polygonMainnetRPC = 'https://polygon-rpc.com';
+const polygonMainnetRPC = 'https://nd-003-843-665.p2pify.com/7af52d3a77b5d19f11de64357253ca16';
 
 const bscMainnetProvider = new ethers.providers.JsonRpcProvider(bscMainnetRPC);
 const polygonMainnetProvider = new ethers.providers.JsonRpcProvider(polygonMainnetRPC);
