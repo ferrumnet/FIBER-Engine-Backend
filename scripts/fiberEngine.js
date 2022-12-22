@@ -310,11 +310,12 @@ module.exports = {
         "SUCCESS: Assets are successfully Swapped in Source Network !"
       );
       console.log("Cheers! your bridge and swap was successful !!!");
+      let amountIn = (inputAmount * 10 ** Number(targetTokenDecimal)).toString();
       // console.log("Transaction hash is: swapResult===================>", swapResult);
       const isTargetTokenFoundry = await this.targetFACCheck(
         targetNetwork,
         targetTokenAddress,
-        sourceBridgeAmount
+        Math.floor(amountIn)
       );
       console.log("isTargetTokenFoundry", isTargetTokenFoundry)
       const Salt = Web3.utils.randomHex(32);
@@ -370,6 +371,7 @@ module.exports = {
           console.log(
             "TN-2: Withdraw and Swap Foundry Asset to Target Token ...."
           );
+          console.log("sourceBridgeAmountsourceBridgeAmountsourceBridgeAmountsourceBridgeAmountsourceBridgeAmount", sourceBridgeAmount)
           let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
           let amounts2;
           try {
