@@ -181,7 +181,7 @@ module.exports = {
       data.gasLimit = gasLimit;
 
     } else {
-      data.gasPrice = 1000000000000
+      data.gasPrice = 15000000000
     }
     return data;
   },
