@@ -22,6 +22,7 @@ module.exports = {
       let url = `${baseUrl}/networks/list?isPagination=false`;
       let res = await axios.get(url);
       (global as any).networks = res.data.body.networks
+      console.log('Refresh netwroks',(global as any).networks.length)
       return res.data.body.networks;
     } catch (error) {
       console.log(error);

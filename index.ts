@@ -65,6 +65,7 @@ if (
 
 // crons
 (global as any).removeRandomKeyJob = require("./app/lib/crons/removeRandomKeyJob");
+(global as any).getAllNetworkJob = require("./app/lib/crons/getAllNetworkJob");
 
 // fiber
 (global as any).networkHelper = require("./network");

@@ -8,7 +8,9 @@ signatureHelper: any,
 multiSwapHelper: any,
 fiberNode: any,
 fiberEngine: any,
-networksHelper: any
+networksHelper: any,
+removeRandomKeyJob: any,
+getAllNetworkJob: any
 
 
 
