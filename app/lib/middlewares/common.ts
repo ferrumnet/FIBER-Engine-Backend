@@ -2,6 +2,7 @@ import crypto from 'crypto';
 var CryptoJS = require("crypto-js");
 import * as jwt from 'jsonwebtoken';
 var fs = require("fs");
+var { Big } =  require("big.js");
 const { ethers } = require("ethers");
 const routerAbiMainnet = require("../../../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const fundManagerAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FundManager.sol/FundManager.json");
@@ -125,7 +126,6 @@ module.exports = {
         for (let index = 0;  index < networks.length; index++) {
           let network = networks[index];
           if(network){
-            console.log('network',network);
             let multiswapNetworkFIBERInformation: any = {...network.multiswapNetworkFIBERInformation};
             multiswapNetworkFIBERInformation.name =  network.name;
             multiswapNetworkFIBERInformation.shortName =  network.networkShortName;
@@ -163,6 +163,30 @@ module.exports = {
       console.log(e);
     }
     return amount;
-  }
+  },
+
+  async amountToHuman(rpcUrl: any, tokenContractAddress: any, amount: number) {
+		let decimal = await this.decimals(rpcUrl, tokenContractAddress);
+		if (decimal) {
+			let decimalFactor = 10 ** decimal;
+			return new Big(amount).div(decimalFactor).toFixed();
+		}
+
+		return null;
+	},
+
+	async decimals(rpcUrl: any, tokenContractAddress: any) {
+
+		if (rpcUrl && tokenContractAddress) {
+
+			let con = web3ConfigurationHelper.erc20(rpcUrl, tokenContractAddress)
+			if (con) {
+				return await con.methods.decimals().call();
+			}
+
+		}
+
+		return null;
+	},
   
 };

@@ -7,29 +7,35 @@ module.exports = {
     try{
       let data: any = {};
       let sourceNetwork = commonFunctions.getNetworkByChainId(req.query.sourceNetworkChainId);
-      console.log('sourceNetwork',sourceNetwork);
+      console.log('sourceNetwork',sourceNetwork.name);
       if(sourceNetwork){
         let receipt = await receiptsHelper.getReceiptBySwapHash(req.query.swapTransactionHash, sourceNetwork._id);
-        // check receipt status here
-        console.log('swap receipt',receipt);
-        let web3 = web3ConfigurationHelper.web3(sourceNetwork.rpcUrl).eth;
-        let transaction = await web3.getTransaction(req.query.swapTransactionHash);
-        console.log('swap transaction',transaction);
-        if (transaction) {
-          data.sourceAmount = await this.getValueFromWebTransaction(transaction, 'amountIn');
-          if(!data.sourceAmount){
-            data.sourceAmount = await this.getValueFromWebTransaction(transaction, 'amount');
+        if(receipt){
+          let web3 = web3ConfigurationHelper.web3(sourceNetwork.rpcUrl).eth;
+          let transaction = await web3.getTransaction(req.query.swapTransactionHash);
+          if (transaction) {
+            data.sourceAmount = await this.getValueFromWebTransaction(transaction, 'amountIn');
+            if(!data.sourceAmount){
+              data.sourceAmount = await this.getValueFromWebTransaction(transaction, 'amount');
+            }
+            data.sourceWalletAddress = transaction.from;
+            data.destinationWalletAddress = await this.getValueFromWebTransaction(transaction, 'targetAddress');
+            if(data.sourceWalletAddress){
+              data.sourceWalletAddress = (data.sourceWalletAddress).toLowerCase();
+            }
+            if(data.destinationWalletAddress){
+              data.destinationWalletAddress = (data.destinationWalletAddress).toLowerCase();
+            }
+            data.sourceTokenContractAddress = await this.getValueFromWebTransaction(transaction, 'token');
+            data.destinationTokenContractAddress = await this.getValueFromWebTransaction(transaction, 'targetToken');
+            data.sourceNetworkChainId = sourceNetwork.chainId;
+            data.destinationNetworkChainId = await this.getValueFromWebTransaction(transaction, 'targetNetwork');
+            if(data.sourceAmount){
+              data.sourceAmount = await commonFunctions.amountToHuman(sourceNetwork.multiswapNetworkFIBERInformation.rpcUrl, data.sourceTokenContractAddress, data.sourceAmount);
+            }
+            console.log('swap req data object',data);
           }
-          data.sourceWalletAddress = transaction.from;
-          data.destinationWalletAddress = await this.getValueFromWebTransaction(transaction, 'targetAddress');
-          if(data.sourceWalletAddress){
-            data.sourceWalletAddress = (data.sourceWalletAddress).toLowerCase();
-          }
-          if(data.destinationWalletAddress){
-            data.destinationWalletAddress = (data.destinationWalletAddress).toLowerCase();
-          }
-          console.log('swap req data object',data);
-        }
+        }        
       }
       
 
