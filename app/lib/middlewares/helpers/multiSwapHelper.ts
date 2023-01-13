@@ -57,6 +57,7 @@ module.exports = {
 
   getWithdrawSigned: async function (req: any) {
     let log = await this.saveTransactionLog(req);
+    // await withdrawHelper.getWithdrawReqObject(req);
     let data: any = {};
     data = await fiberEngine.withdraw(
       req.query.sourceTokenContractAddress, // goerli ada
