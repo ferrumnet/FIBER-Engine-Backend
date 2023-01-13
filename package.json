@@ -32,6 +32,7 @@
     "@openzeppelin/contracts-upgradeable": "^4.8.0-rc.1",
     "@openzeppelin/hardhat-upgrades": "^1.21.0",
     "@truffle/hdwallet-provider": "^2.0.14",
+    "abi-decoder": "^2.4.0",
     "algosdk": "^1.16.0",
     "array-unique": "^0.3.2",
     "authorizenet": "^1.0.8",
