@@ -10,8 +10,11 @@ fiberNode: any,
 fiberEngine: any,
 networksHelper: any,
 removeRandomKeyJob: any,
-getAllNetworkJob: any
-
+getAllNetworkJob: any,
+receiptsHelper: any,
+web3ConfigurationHelper: any,
+web3Helper: any,
+withdrawHelper: any
 
 
 module.exports = function () {
