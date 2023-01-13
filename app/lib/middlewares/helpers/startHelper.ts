@@ -7,6 +7,7 @@ module.exports = {
     let starterObject = {
       environmentTag : 'dev',
       isCronEnvironmentSupportedForDeleteRandomKey: 'no',
+      isCronEnvironmentSupportedForGetAllNetwork: 'no',
     }
     if(process && process.argv && process.argv.length > 0){
       console.log(process.argv);
@@ -18,7 +19,8 @@ module.exports = {
       }
       if(environmentType){
         if(environmentType == 'cron'){
-          starterObject.isCronEnvironmentSupportedForDeleteRandomKey = 'yes'
+          starterObject.isCronEnvironmentSupportedForDeleteRandomKey = 'yes',
+          starterObject.isCronEnvironmentSupportedForGetAllNetwork = 'yes'
         }
       }
 

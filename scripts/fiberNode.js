@@ -102,9 +102,8 @@ module.exports = {
       return;
     }
 
-    // mapping source and target networs (go to Network.js file)
-    const sourceNetwork = networks[sourceChainId];
-    const targetNetwork = networks[targetChainId];
+    const sourceNetwork = global.commonFunctions.getNetworkByChainId(sourceChainId).multiswapNetworkFIBERInformation;
+    const targetNetwork = global.commonFunctions.getNetworkByChainId(targetChainId).multiswapNetworkFIBERInformation;
     //signers for both side networks
     const sourceSigner = signer.connect(sourceNetwork.provider);
     const targetSigner = signer.connect(targetNetwork.provider);
