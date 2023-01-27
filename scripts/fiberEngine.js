@@ -216,10 +216,10 @@ module.exports = {
     sourceChainId,
     targetChainId,
     inputAmount,
-    destinationWalletAddress
+    destinationWalletAddress,
+    salt
   ) {
-    const gas = await this.estimateGasForWithdraw(targetChainId, destinationWalletAddress);
-    console.log('gas==========',gas)
+    const gas = await estimateGasForWithdraw(targetChainId, destinationWalletAddress);
     const sourceNetwork = global.commonFunctions.getNetworkByChainId(sourceChainId).multiswapNetworkFIBERInformation;
     const targetNetwork = global.commonFunctions.getNetworkByChainId(targetChainId).multiswapNetworkFIBERInformation;
 
@@ -318,7 +318,6 @@ module.exports = {
         Math.floor(amountIn)
       );
       console.log("isTargetTokenFoundry", isTargetTokenFoundry)
-      const Salt = Web3.utils.randomHex(32);
       if (isTargetTokenFoundry === true) {
         console.log("TN-1: Target Token is Foundry Asset");
         console.log("TN-2: Withdraw Foundry Asset...");
@@ -328,7 +327,7 @@ module.exports = {
           targetTokenAddress,
           destinationWalletAddress,
           sourceBridgeAmount,
-          Salt
+          salt
         );
         const sigP2 = ecsign(
           Buffer.from(hash.replace("0x", ""), "hex"),
@@ -342,7 +341,7 @@ module.exports = {
             targetTokenAddress, //token address on network 2
             destinationWalletAddress, //reciver
             sourceBridgeAmount, //targetToken amount
-            Salt,
+            salt,
             sig2,
             gas  );
 
@@ -388,7 +387,7 @@ module.exports = {
             path2[0],
             targetNetwork.fiberRouter,
             sourceBridgeAmount,
-            Salt
+            salt
           );
           const sigP2 = ecsign(
             Buffer.from(hash.replace("0x", ""), "hex"),
@@ -407,7 +406,7 @@ module.exports = {
               amountsOut2,
               path2,
               this.getDeadLine().toString(),
-              Salt,
+              salt,
               sig2,
               gas
             );
@@ -449,10 +448,10 @@ module.exports = {
             path2[0],
             targetNetwork.fiberRouter,
             sourceBridgeAmount,
-            Salt
+            salt
           );
 
-          console.log("targetChainId", targetChainId, "targetNetwork.fundManager", targetNetwork.fundManager, "targetTokenAddress", targetTokenAddress, "=========>path2[0]", path2[0], "targetSigner.address", targetSigner.address, "sourceBridgeAmount", sourceBridgeAmount, "Salt", Salt)
+          console.log("targetChainId", targetChainId, "targetNetwork.fundManager", targetNetwork.fundManager, "targetTokenAddress", targetTokenAddress, "=========>path2[0]", path2[0], "targetSigner.address", targetSigner.address, "sourceBridgeAmount", sourceBridgeAmount, "salt", salt)
           const sigP2 = ecsign(
             Buffer.from(hash.replace("0x", ""), "hex"),
             Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
@@ -469,7 +468,7 @@ module.exports = {
               amountsOut2,
               path2,
               this.getDeadLine().toString(), //deadline
-              Salt,
+              salt,
               sig2,
               gas
             );

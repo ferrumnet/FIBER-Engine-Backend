@@ -4,11 +4,11 @@ const abiDecoder = require('abi-decoder'); // NodeJS
 module.exports = {
 
   getWithdrawReqObject: async function (req: any) {
+    let data: any = {};
     try{
-      let data: any = {};
       let sourceNetwork = commonFunctions.getNetworkByChainId(req.query.sourceNetworkChainId);
-      console.log('sourceNetwork',sourceNetwork.name);
-      if(sourceNetwork){
+      if (sourceNetwork) {
+        console.log('sourceNetwork', sourceNetwork.name);
         let receipt = await receiptsHelper.getReceiptBySwapHash(req.query.swapTransactionHash, sourceNetwork._id);
         if(receipt){
           let web3 = web3ConfigurationHelper.web3(sourceNetwork.rpcUrl).eth;
@@ -37,11 +37,11 @@ module.exports = {
           }
         }        
       }
-      
-
     }catch(e){
       console.log('error',e)
     }
+
+    return data;
   },
 
   getValueFromWebTransaction: async function (transaction: any, paramName: any) {

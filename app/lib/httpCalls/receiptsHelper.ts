@@ -4,8 +4,7 @@ module.exports = {
 
   async getReceiptBySwapHash(swapHash: any, sourceNetworkId: any) {
     try {
-      // let baseUrl = ((global as any) as any).environment.baseUrlGatewayBackend;
-      let baseUrl = 'http://localhost:8080/api/v1';
+      let baseUrl = ((global as any) as any).environment.baseUrlGatewayBackend;
       let url = `${baseUrl}/transactions/receipt/by/hash/${swapHash}?sourceNetworkId=${sourceNetworkId}`;
       let res = await axios.get(url);
       console.log(res.data.body.receipt)

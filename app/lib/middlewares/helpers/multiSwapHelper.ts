@@ -57,15 +57,21 @@ module.exports = {
 
   getWithdrawSigned: async function (req: any) {
     let log = await this.saveTransactionLog(req);
-    // await withdrawHelper.getWithdrawReqObject(req);
+    let query = await withdrawHelper.getWithdrawReqObject(req);
+    if (!query || !query.sourceWalletAddress || !query.sourceTokenContractAddress || !query.sourceNetworkChainId
+      || !query.sourceAmount || !query.destinationTokenContractAddress
+      || !query.destinationNetworkChainId) {
+      throw 'sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing';
+    }
     let data: any = {};
     data = await fiberEngine.withdraw(
-      req.query.sourceTokenContractAddress, // goerli ada
-      req.query.destinationTokenContractAddress, // bsc ada
-      req.query.sourceNetworkChainId, // source chain id (goerli)
-      req.query.destinationNetworkChainId, // target chain id (bsc)
-      req.query.sourceAmount, //source token amount
-      req.query.destinationWalletAddress // destination wallet address
+      query.sourceTokenContractAddress,
+      query.destinationTokenContractAddress,
+      query.sourceNetworkChainId, 
+      query.destinationNetworkChainId,
+      query.sourceAmount,
+      query.destinationWalletAddress
+      req.query.swapTransactionHash,
     );
     await this.updateTransactionLog(data, log);
     return data;
