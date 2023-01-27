@@ -219,7 +219,7 @@ module.exports = {
     destinationWalletAddress,
     salt
   ) {
-    const gas = await estimateGasForWithdraw(targetChainId, destinationWalletAddress);
+    const gas = await this.estimateGasForWithdraw(targetChainId, destinationWalletAddress);
     const sourceNetwork = global.commonFunctions.getNetworkByChainId(sourceChainId).multiswapNetworkFIBERInformation;
     const targetNetwork = global.commonFunctions.getNetworkByChainId(targetChainId).multiswapNetworkFIBERInformation;
 

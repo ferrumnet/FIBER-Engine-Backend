@@ -12,7 +12,7 @@ async function start() {
 
   try {
 
-    let task = cron.schedule('1 */1 * * * *', async () => {
+    let task = cron.schedule('1 */5 * * * *', async () => {
       console.log(moment().utc(),':::')
       console.log('getAllNetworkJob cron triggered:::')
       triggerJobs()
