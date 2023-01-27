@@ -70,7 +70,7 @@ module.exports = {
       query.sourceNetworkChainId, 
       query.destinationNetworkChainId,
       query.sourceAmount,
-      query.destinationWalletAddress
+      query.destinationWalletAddress,
       req.query.swapTransactionHash,
     );
     await this.updateTransactionLog(data, log);
