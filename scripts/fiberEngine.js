@@ -219,6 +219,7 @@ module.exports = {
     destinationWalletAddress,
     salt
   ) {
+    salt = Web3.utils.randomHex(32);
     const gas = await this.estimateGasForWithdraw(targetChainId, destinationWalletAddress);
     const sourceNetwork = global.commonFunctions.getNetworkByChainId(sourceChainId).multiswapNetworkFIBERInformation;
     const targetNetwork = global.commonFunctions.getNetworkByChainId(targetChainId).multiswapNetworkFIBERInformation;
@@ -258,6 +259,7 @@ module.exports = {
 
     let receipt;
     let transactionHash = '';
+    let destinationAmount = '';
     let sourceBridgeAmount;
     let swapResult;
     if (isFoundryAsset) {
@@ -344,8 +346,6 @@ module.exports = {
             salt,
             sig2,
             gas  );
-
-
         const receipt = await swapResult.wait();
         if (receipt.status == 1) {
           console.log(
@@ -353,6 +353,7 @@ module.exports = {
           );
           console.log("Cheers! your bridge and swap was successful !!!");
           if (swapResult && swapResult.hash) {
+            destinationAmount = sourceBridgeAmount;
             transactionHash = swapResult.hash;
             console.log("Transaction hash is: swapResult", swapResult.hash);
           }
@@ -417,6 +418,7 @@ module.exports = {
             );
             console.log("Cheers! your bridge and swap was successful !!!");
             if (swapResult2 && swapResult2.hash) {
+              destinationAmount = amountsOut2;
               transactionHash = swapResult2.hash;
               console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
             }
@@ -479,6 +481,7 @@ module.exports = {
             );
             console.log("Cheers! your bridge and swap was successful !!!");
             if (swapResult3 && swapResult3.hash) {
+              destinationAmount = amountsOut2;
               transactionHash = swapResult3.hash;
               console.log("Transaction hash is: ", swapResult3.hash);
             }
@@ -486,8 +489,10 @@ module.exports = {
         }
       }
     }
-
-    return transactionHash;
+    let data = {}
+    data.txHash = transactionHash;
+    data.destinationAmount = destinationAmount;
+    return data;
   },
 
   swapForAbi: async function (
