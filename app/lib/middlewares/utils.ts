@@ -14,7 +14,8 @@ getAllNetworkJob: any,
 receiptsHelper: any,
 web3ConfigurationHelper: any,
 web3Helper: any,
-withdrawHelper: any
+withdrawHelper: any,
+cudosPriceHelper:any
 
 
 module.exports = function () {
