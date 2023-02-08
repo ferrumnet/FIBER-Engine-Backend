@@ -66,6 +66,7 @@ if (
 (global as any).web3ConfigurationHelper = require("./app/lib/middlewares/helpers/web3Helpers/web3ConfigurationHelper");
 (global as any).web3Helper = require("./app/lib/middlewares/helpers/web3Helpers/web3Helper");
 (global as any).withdrawHelper = require("./app/lib/middlewares/helpers/withdrawHelper");
+(global as any).cudosPriceHelper = require("./app/lib/httpCalls/cudosPriceHelper");
 
 // crons
 (global as any).removeRandomKeyJob = require("./app/lib/crons/removeRandomKeyJob");

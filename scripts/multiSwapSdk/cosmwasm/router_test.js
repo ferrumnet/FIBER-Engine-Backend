@@ -2,15 +2,15 @@ const { FIBERRouterContract } = require("./router");
 require("dotenv").config();
 
 async function main() {
-  let denom = global.environment.DENOM;
-  let wallet2 = global.environment.WALLET2;
+  let denom = process.env.DENOM;
+  let wallet2 = process.env.WALLET2;
 
   helper = new FIBERRouterContract(
-    global.environment.ROUTER || "",
-    global.environment.NODE || "",
+    process.env.ROUTER || "",
+    process.env.NODE || "",
     // cudos-noded tx bank send validator cudos1nysrj2xxpm77xpkvglne0zcvnxuq0laacc7nrv 100000000stake --keyring-backend=test --chain-id=test
-    global.environment.ADMIN_PRIVKEY || "",
-    global.environment.GAS_PRICE || ""
+    process.env.ADMIN_PRIVKEY || "",
+    process.env.GAS_PRICE || ""
   );
   // await helper.owner();
   let pool = await helper.pool();

@@ -130,11 +130,16 @@ module.exports = {
             multiswapNetworkFIBERInformation.name =  network.name;
             multiswapNetworkFIBERInformation.shortName =  network.networkShortName;
             multiswapNetworkFIBERInformation.rpc =  multiswapNetworkFIBERInformation.rpcUrl;
-            multiswapNetworkFIBERInformation.chainId =  network.chainId;
-            multiswapNetworkFIBERInformation.provider = this.getProvider(multiswapNetworkFIBERInformation.rpc);
-            multiswapNetworkFIBERInformation.dexContract = this.getDexContract(multiswapNetworkFIBERInformation);
-            multiswapNetworkFIBERInformation.fundManagerContract = this.getFundManagerContract(multiswapNetworkFIBERInformation);
-            multiswapNetworkFIBERInformation.fiberRouterContract = this.getFiberRouterContract(multiswapNetworkFIBERInformation);
+            multiswapNetworkFIBERInformation.chainId = network.chainId;
+            multiswapNetworkFIBERInformation.isNonEVM = network.isNonEVM;
+            if (network.isNonEVM != null && network.isNonEVM == false) {
+              multiswapNetworkFIBERInformation.provider = this.getProvider(multiswapNetworkFIBERInformation.rpc); 
+              multiswapNetworkFIBERInformation.dexContract = this.getDexContract(multiswapNetworkFIBERInformation);
+              multiswapNetworkFIBERInformation.fundManagerContract = this.getFundManagerContract(multiswapNetworkFIBERInformation);
+              multiswapNetworkFIBERInformation.fiberRouterContract = this.getFiberRouterContract(multiswapNetworkFIBERInformation);
+            } else {
+              multiswapNetworkFIBERInformation.decimals = 18;
+            }
             network.multiswapNetworkFIBERInformation = multiswapNetworkFIBERInformation;
           }
         }
