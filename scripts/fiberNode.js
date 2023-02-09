@@ -151,7 +151,7 @@ module.exports = {
           throw "ALERT: DEX doesn't have liquidity for this pair"
         }
         const amountsOut = amounts[1];
-        sourceBridgeAmount = (amountsOut * 10 / Number(sourceTokenDecimal)).toString();;
+        sourceBridgeAmount = (amountsOut * 10 / Number(sourceTokenDecimal)).toString();
       } else {
         console.log("SN-1: Source Token is Ionic Asset");
         //swap refinery token to the foundry token
@@ -242,7 +242,7 @@ module.exports = {
             }
             const amountsOut2 = amounts2[1];
 
-            destinationAmountOut = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();;
+            destinationAmountOut = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();
 
           } else {
             console.log("TN-1: Target Token is Ionic Asset");
@@ -265,7 +265,7 @@ module.exports = {
             }
             const amountsOut2 = amounts2[amounts2.length - 1];
 
-            destinationAmountOut = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();;
+            destinationAmountOut = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();
 
           } 
 
