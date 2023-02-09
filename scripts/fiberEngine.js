@@ -43,8 +43,6 @@ const { ecsign, toRpcSig } = require("ethereumjs-util");
 const Big = require('big.js');
 const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
-const { CLIENT_RENEG_LIMIT } = require("tls");
-const { CloudWatchLogs } = require("aws-sdk");
 const MAX_FEE_PER_GAS = '60';
 const MAX_PRIORITY_FEE_PER_GAS = '60';
 const GAS_LIMIT = '2000000';
