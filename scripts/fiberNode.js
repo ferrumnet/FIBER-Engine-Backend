@@ -180,7 +180,7 @@ module.exports = {
       console.log("recentCudosPriceInDollars", recentCudosPriceInDollars)
       console.log("inputAmount", inputAmount)
       sourceBridgeAmount = await inputAmount * recentCudosPriceInDollars;
-      sourceAssetType = 'Foundry'
+      sourceAssetType = "Foundry"
     }
     if (!targetNetwork.isNonEVM) {
       // ==========================================
@@ -275,7 +275,7 @@ module.exports = {
       const recentCudosPriceInDollars = await cudosPriceHelper.getCudosPrice();
       console.log("amount 1", recentCudosPriceInDollars)
       destinationAmountOut = await sourceBridgeAmount / recentCudosPriceInDollars;
-      targetAssetType = 'found'
+      targetAssetType = "Foundry"
     }
 
       console.log("destinationAmountOut", destinationAmountOut)
