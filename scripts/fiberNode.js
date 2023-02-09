@@ -151,7 +151,7 @@ module.exports = {
           throw "ALERT: DEX doesn't have liquidity for this pair"
         }
         const amountsOut = amounts[1];
-        sourceBridgeAmount = (amountsOut * 10 / Number(sourceTokenDecimal)).toString();;
+        sourceBridgeAmount = (amountsOut * 10 / Number(sourceTokenDecimal)).toString();
       } else {
         console.log("SN-1: Source Token is Ionic Asset");
         //swap refinery token to the foundry token
@@ -180,7 +180,7 @@ module.exports = {
       console.log("recentCudosPriceInDollars", recentCudosPriceInDollars)
       console.log("inputAmount", inputAmount)
       sourceBridgeAmount = await inputAmount * recentCudosPriceInDollars;
-      sourceAssetType = 'cudos'
+      sourceAssetType = "Foundry"
     }
     if (!targetNetwork.isNonEVM) {
       // ==========================================
@@ -242,7 +242,7 @@ module.exports = {
             }
             const amountsOut2 = amounts2[1];
 
-                destinationAmountOut = amountsOut2;
+            destinationAmountOut = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();
 
           } else {
             console.log("TN-1: Target Token is Ionic Asset");
@@ -265,7 +265,7 @@ module.exports = {
             }
             const amountsOut2 = amounts2[amounts2.length - 1];
 
-            destinationAmountOut = amountsOut2;
+            destinationAmountOut = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();
 
           } 
 
@@ -275,7 +275,7 @@ module.exports = {
       const recentCudosPriceInDollars = await cudosPriceHelper.getCudosPrice();
       console.log("amount 1", recentCudosPriceInDollars)
       destinationAmountOut = await sourceBridgeAmount / recentCudosPriceInDollars;
-      targetAssetType = 'cudos'
+      targetAssetType = "Foundry"
     }
 
       console.log("destinationAmountOut", destinationAmountOut)
@@ -286,7 +286,7 @@ module.exports = {
 
       data.destination.type = targetAssetType;
       // data.destination.amount = destinationAmountOut 
-      data.destination.amount = destinationAmountOut
+      data.destination.amount = String(destinationAmountOut)
       return data;
     }
   }
