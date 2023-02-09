@@ -242,7 +242,7 @@ module.exports = {
             }
             const amountsOut2 = amounts2[1];
 
-                destinationAmountOut = amountsOut2;
+            destinationAmountOut = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();;
 
           } else {
             console.log("TN-1: Target Token is Ionic Asset");
@@ -265,7 +265,7 @@ module.exports = {
             }
             const amountsOut2 = amounts2[amounts2.length - 1];
 
-            destinationAmountOut = amountsOut2;
+            destinationAmountOut = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();;
 
           } 
 
@@ -286,7 +286,7 @@ module.exports = {
 
       data.destination.type = targetAssetType;
       // data.destination.amount = destinationAmountOut 
-      data.destination.amount = destinationAmountOut
+      data.destination.amount = String(destinationAmountOut)
       return data;
     }
   }
