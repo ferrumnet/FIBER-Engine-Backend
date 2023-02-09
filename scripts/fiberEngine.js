@@ -44,6 +44,7 @@ const Big = require('big.js');
 const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
 const { CLIENT_RENEG_LIMIT } = require("tls");
+const { CloudWatchLogs } = require("aws-sdk");
 const MAX_FEE_PER_GAS = '60';
 const MAX_PRIORITY_FEE_PER_GAS = '60';
 const GAS_LIMIT = '2000000';
@@ -325,7 +326,10 @@ module.exports = {
           "SUCCESS: Assets are successfully Swapped in Source Network !"
         );
         console.log("Cheers! your bridge and swap was successful !!!");
+        console.log("sourceBridgeAmount withdraw", sourceBridgeAmount)
+
         let amountIn = (sourceBridgeAmount * 10 ** Number(targetTokenDecimal)).toString();
+        console.log("amountInamountInamountIn", amountIn)
         const isTargetTokenFoundry = await this.targetFACCheck(
           targetNetwork,
           targetTokenAddress,
