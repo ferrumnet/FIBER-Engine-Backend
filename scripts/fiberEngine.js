@@ -7,6 +7,7 @@ const fiberRouterAbi = require("../artifacts/contracts/upgradeable-Bridge/FiberR
 const tokenAbi = require("../artifacts/contracts/token/Token.sol/Token.json");
 const routerAbi = require("../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const { produecSignaturewithdrawHash, fixSig } = require("./utils/BridgeUtils");
+const { BigNumber } = require("ethers")
 const {
   bscChainId,
   goerliChainId,
@@ -188,7 +189,7 @@ module.exports = {
 
   estimateGasForSwap: async function (sourceChainId, from) {
     let data = {};
-    if (sourceChainId == 137 || sourceChainId == 250)){
+    if (sourceChainId == 137 || sourceChainId == 250){
       let maxFeePerGas = MAX_FEE_PER_GAS;
       let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
       let gasLimit = GAS_LIMIT;
@@ -342,7 +343,7 @@ module.exports = {
             targetNetwork.fundManager,
             targetTokenAddress,
             destinationWalletAddress,
-            Math.floor(amountIn),
+            String(Math.floor(amountIn)),
             salt
           );
           const sigP2 = ecsign(
@@ -356,7 +357,7 @@ module.exports = {
             .withdrawSigned(
               targetTokenAddress, //token address on network 2
               destinationWalletAddress, //reciver
-              Math.floor(amountIn), //targetToken amount
+              String(Math.floor(amountIn)), //targetToken amount
               salt,
               sig2,
               gas);
@@ -418,8 +419,8 @@ module.exports = {
               .withdrawSignedAndSwap(
                 destinationWalletAddress,
                 targetNetwork.router,
-                Math.floor(amountIn),
-                amountsOut2,
+                String(Math.floor(amountIn)),
+                String(amountsOut2),
                 path2,
                 this.getDeadLine().toString(),
                 salt,
@@ -483,8 +484,8 @@ module.exports = {
               .withdrawSignedAndSwap(
                 destinationWalletAddress,
                 targetNetwork.router,
-                amountIn,
-                amountsOut2,
+                String(amountIn),
+                String(amountsOut2),
                 path2,
                 this.getDeadLine().toString(), //deadline
                 salt,
