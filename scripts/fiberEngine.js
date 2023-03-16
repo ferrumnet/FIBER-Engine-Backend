@@ -89,14 +89,9 @@ module.exports = {
     );
     const isTargetTokenFoundryAsset =
       await targetNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
-    console.log("isTargetTokenFoundryAsset111", isTargetTokenFoundryAsset)
     const targetFoundryAssetLiquidity = await targetTokenContract.balanceOf(
       targetNetwork.fundManagerContract.address
     );
-    console.log("targetFoundryAssetLiquidity1111", targetFoundryAssetLiquidity)
-    console.log("amountamount", amount)
-
-
     
     if (
       isTargetTokenFoundryAsset === true &&
@@ -118,7 +113,7 @@ module.exports = {
 
       let path = [tokenAddress, sourceNetwork.foundryTokenAddress];
       const amounts = await sourceNetwork.dexContract.getAmountsOut(
-        amount,
+        String(amount),
         path
       );
       const amountsOut = amounts[1];
@@ -143,7 +138,7 @@ module.exports = {
 
       let path = [targetNetwork.foundryTokenAddress, tokenAddress];
       const amounts = await targetNetwork.dexContract.getAmountsOut(
-        amount,
+        String(amount),
         path
       );
       const amountsOut = amounts[1];
@@ -221,7 +216,6 @@ module.exports = {
     salt
   ) {
     console.log(1)
-    salt = Web3.utils.randomHex(32);
     const gas = await this.estimateGasForWithdraw(targetChainId, destinationWalletAddress);
     const sourceNetwork = global.commonFunctions.getNetworkByChainId(sourceChainId).multiswapNetworkFIBERInformation;
     const targetNetwork = global.commonFunctions.getNetworkByChainId(targetChainId).multiswapNetworkFIBERInformation;
@@ -266,14 +260,14 @@ module.exports = {
       let amounts;
       try {
         amounts = await sourceNetwork.dexContract.getAmountsOut(
-          amount,
+          String(amount),
           path
         );
       } catch (error) {
         throw "ALERT: DEX doesn't have liquidity for this pair"
       }
       const amountsOut = amounts[1];
-        sourceBridgeAmount = (amountsOut * 10 / Number(sourceTokenDecimal)).toString();;
+      sourceBridgeAmount = (amountsOut / 10 ** Number(sourceTokenDecimal)).toString();
     } else {
       console.log("SN-1: Source Token is Ionic Asset");
       console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
@@ -286,14 +280,14 @@ module.exports = {
       let amounts;
       try {
         amounts = await sourceNetwork.dexContract.getAmountsOut(
-          amount,
+          String(amount),
           path
         );
       } catch (error) {
         throw "ALERT: DEX doesn't have liquidity for this pair"
       }
       const amountsOut = amounts[amounts.length - 1];
-      sourceBridgeAmount = amountsOut;
+      sourceBridgeAmount = (amountsOut / 10 ** Number(sourceTokenDecimal)).toString();
       //wait until the transaction be completed
       receipt = { status: 1 }
     }
@@ -317,18 +311,23 @@ module.exports = {
         tokenAbi.abi,
         targetNetwork.provider
       );
+      const targetFoundryTokenContract = new ethers.Contract(
+        targetNetwork.foundryTokenAddress,
+        tokenAbi.abi,
+        targetNetwork.provider
+      );
       //convert to wei
       const targetTokenDecimal = await targetTokenContract.decimals();
+      const targetFoundryTokenDecimal = await targetFoundryTokenContract.decimals();
+
 
       if (receipt = 1) {
         console.log(
           "SUCCESS: Assets are successfully Swapped in Source Network !"
         );
         console.log("Cheers! your bridge and swap was successful !!!");
-        console.log("sourceBridgeAmount withdraw", sourceBridgeAmount)
 
-        let amountIn = (sourceBridgeAmount * 10 ** Number(targetTokenDecimal)).toString();
-        console.log("amountInamountInamountIn", amountIn)
+        let amountIn = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();
         const isTargetTokenFoundry = await this.targetFACCheck(
           targetNetwork,
           targetTokenAddress,
@@ -360,7 +359,7 @@ module.exports = {
               String(Math.floor(amountIn)), //targetToken amount
               salt,
               sig2,
-              gas);
+              gas);          
           const receipt = await swapResult.wait();
           if (receipt.status == 1) {
             console.log(
@@ -374,7 +373,7 @@ module.exports = {
             }
           }
         } else {
-          let amountIn = (sourceBridgeAmount * 10 ** Number(targetTokenDecimal)).toString();
+          let amountIn = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();
           const isTargetRefineryToken = await this.isTargetRefineryAsset(
             targetNetwork,
             targetTokenAddress,
@@ -387,12 +386,11 @@ module.exports = {
             console.log(
               "TN-2: Withdraw and Swap Foundry Asset to Target Token ...."
             );
-            console.log("sourceBridgeAmountsourceBridgeAmountsourceBridgeAmountsourceBridgeAmountsourceBridgeAmount", sourceBridgeAmount)
             let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
             let amounts2;
             try {
               amounts2 = await targetNetwork.dexContract.getAmountsOut(
-                Math.floor(amountIn),
+                String(Math.floor(amountIn)),
                 path2
               );
             } catch (error) {
@@ -403,7 +401,7 @@ module.exports = {
               targetNetwork.fundManager,
               path2[0],
               targetNetwork.fiberRouter,
-              Math.floor(amountIn),
+              String(Math.floor(amountIn)),
               salt
             );
             const sigP2 = ecsign(
@@ -411,8 +409,6 @@ module.exports = {
               Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
             );
             const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
-            console.log("Sig produced2=====================>2", sig2, sigP2, targetSigner.address);
-
             const amountsOut2 = amounts2[1];
             const swapResult2 = await targetNetwork.fiberRouterContract
               .connect(targetSigner)
@@ -434,7 +430,7 @@ module.exports = {
               );
               console.log("Cheers! your bridge and swap was successful !!!");
               if (swapResult2 && swapResult2.hash) {
-                destinationAmount = amountsOut2;
+                destinationAmount = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();
                 transactionHash = swapResult2.hash;
                 console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
               }
@@ -445,8 +441,8 @@ module.exports = {
             console.log(
               "TN-2: Withdraw and Swap Foundry Token to Target Token ...."
             );
-            let amountIn = (sourceBridgeAmount * 10 ** Number(targetTokenDecimal)).toString();
-
+          
+            let amountIn = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();
             let path2 = [
               targetNetwork.foundryTokenAddress,
               targetNetwork.weth,
@@ -455,7 +451,7 @@ module.exports = {
             let amounts2;
             try {
               amounts2 = await targetNetwork.dexContract.getAmountsOut(
-                amountIn,
+                String(amountIn),
                 path2
               );
             } catch (error) {
@@ -470,14 +466,11 @@ module.exports = {
               amountIn,
               salt
             );
-
-            console.log("targetChainId", targetChainId, "targetNetwork.fundManager", targetNetwork.fundManager, "targetTokenAddress", targetTokenAddress, "=========>path2[0]", path2[0], "targetSigner.address", targetSigner.address, "sourceBridgeAmount", sourceBridgeAmount, "salt", salt)
             const sigP2 = ecsign(
               Buffer.from(hash.replace("0x", ""), "hex"),
               Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
             );
             const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
-            console.log("Sig produced2=====================>1", sig2, sigP2, targetSigner.address);
 
             const swapResult3 = await targetNetwork.fiberRouterContract
               .connect(targetSigner)
@@ -499,7 +492,7 @@ module.exports = {
               );
               console.log("Cheers! your bridge and swap was successful !!!");
               if (swapResult3 && swapResult3.hash) {
-                destinationAmount = amountsOut2;
+                destinationAmount = (amountsOut2 / 10 ** Number(targetTokenDecimal)).toString();
                 transactionHash = swapResult3.hash;
                 console.log("Transaction hash is: ", swapResult3.hash);
               }
@@ -533,7 +526,7 @@ module.exports = {
     }
     let data = {}
     data.txHash = transactionHash;
-    data.destinationAmount = destinationAmount;
+    data.destinationAmount = String(destinationAmount);
     return data;
   },
 
@@ -630,7 +623,7 @@ module.exports = {
           let amounts;
           try {
             amounts = await sourceNetwork.dexContract.getAmountsOut(
-              amount,
+              String(amount),
               path
             );
           } catch (error) {
@@ -658,7 +651,7 @@ module.exports = {
           let amounts;
           try {
             amounts = await sourceNetwork.dexContract.getAmountsOut(
-              amount,
+              String(amount),
               path
             );
           } catch (error) {
@@ -691,7 +684,7 @@ module.exports = {
           let amounts;
           try {
             amounts = await sourceNetwork.dexContract.getAmountsOut(
-              amount,
+              String(amount),
               path
             );
           } catch (error) {
@@ -723,7 +716,7 @@ module.exports = {
           let amounts;
           try {
             amounts = await sourceNetwork.dexContract.getAmountsOut(
-              amount,
+              String(amount),
               path
             );
           } catch (error) {
