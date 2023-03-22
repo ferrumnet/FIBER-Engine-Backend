@@ -1,7 +1,6 @@
 module.exports = function (router: any) {
 
   router.post('/withdraw/signed/:txHash', asyncMiddleware(async (req: any, res: any) => {
-
     if (!req.body.sourceWalletAddress || !req.body.sourceTokenContractAddress
       || !req.body.sourceNetworkChainId
       || !req.body.sourceAmount || !req.body.destinationTokenContractAddress
@@ -32,7 +31,6 @@ module.exports = function (router: any) {
       data: data.txHash,
       withdraw: data
     });
-
   }));
 
 };

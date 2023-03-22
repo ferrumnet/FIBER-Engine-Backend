@@ -1,46 +1,75 @@
-var HDWalletProvider = require("@truffle/hdwallet-provider");
-var Web3= require("web3");
-import crypto from 'crypto';
-var CryptoJS = require("crypto-js");
+import { produecSignaturewithdrawHash, fixSig } from '../../../../scripts/utils/BridgeUtils';
+import { ecsign, toRpcSig } from "ethereumjs-util";
 
-module.exports = { 
+interface SignatureResponse {
+  hash: String;
+  salt: String;
+  signature: String;
+}
 
-  createSignature: async function (model: any, network: any) {
-    var privateAccountKey = this.decryptApiKey(((global as any) as any).environment.walletAccountPrivateKey);
-    let provider = new HDWalletProvider(privateAccountKey, network.rpcUrl);
-    var web3 = new Web3(provider);
-    var key = crypto.randomBytes(20).toString('hex');
-    key = Web3.utils.keccak256(
-			key
-		);
-    model.key = key;
-    var hash = this.getMessageHash(model);
-    var signature = await web3.eth.sign(hash, ((global as any) as any).environment.walletPublicAddress);
-    console.log('signature:::',signature)
-    return {
-      signature: signature,
-      salt: hash,
-      key: key
+interface LocalSignatureData {
+  targetNetworkChainId: String;
+  targetNetworkFundManager: String;
+  targetTokenAddress: String;
+  address: String;
+  amount: String;
+  salt: String
+}
+
+module.exports = {
+
+  getSignature: async function (paramsBody: any, assetType: String, localSignatureData: LocalSignatureData): Promise<SignatureResponse> {
+    let signatureResponse: SignatureResponse = {
+      hash: "",
+      salt: "",
+      signature: ""
     };
-  },
+    if (paramsBody && paramsBody.salt && paramsBody.hash && paramsBody.signatures) {
+      // fethc signature data from api req body for v2
+      signatureResponse.hash = paramsBody.hash;
+      signatureResponse.salt = paramsBody.salt;
+      if (assetType == (global as any).utils.assetType.FOUNDARY) {
+        signatureResponse.signature = paramsBody.signatures.length > 0 ? paramsBody.signatures[0] : ''
+      } else {
+        signatureResponse.signature = paramsBody.signatures.length > 0 ? paramsBody.signatures[1] : ''
+      }
+      console.log('fetch signature data from api req body for v2', signatureResponse);
+    } else {
+      // create local signature for v1
+      const hash = await produecSignaturewithdrawHash(
+        localSignatureData.targetNetworkChainId,
+        localSignatureData.targetNetworkFundManager,
+        localSignatureData.targetTokenAddress,
+        localSignatureData.address,
+        localSignatureData.amount,
+        localSignatureData.salt
+      );
+      const sigP2 = ecsign(
+        Buffer.from(hash.replace("0x", ""), "hex"),
+        Buffer.from((global as any).environment.SIGNER.replace("0x", ""), "hex")
+      );
+      const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
+      signatureResponse.hash = hash;
+      signatureResponse.salt = localSignatureData.salt;
+      signatureResponse.signature = sig2;
+      console.log('create local signature for v1', signatureResponse);
 
-  getMessageHash: function (model: any) {
-    let body = Web3.utils.encodePacked(model.name, model.tokenContractAddress, model.key, model.chainId);
-    let hash = Web3.utils.keccak256(
-			body
-		);
-    return hash;
-  },
-
-  decryptApiKey: function (data: any) {
-    try{
-      var bytes  = CryptoJS.AES.decrypt(data, (global as any).environment.jwtSecret);
-      var originalText = bytes.toString(CryptoJS.enc.Utf8);   
-      return originalText;   
-    }catch(e){
-      console.log(e);
-      return '';
     }
+    return signatureResponse;
+  },
+
+  createLocalSignatureDataObject: function (targetNetworkChainId: string,
+    targetNetworkFundManager: string, targetTokenAddress: string,
+    address: string, amount: string, salt: string) {
+    let localSignatureData: LocalSignatureData = {
+      targetNetworkChainId: targetNetworkChainId,
+      targetNetworkFundManager: targetNetworkFundManager,
+      targetTokenAddress: targetTokenAddress,
+      address: address,
+      amount: amount,
+      salt: salt
+    };
+    return localSignatureData;
   }
 
 }
