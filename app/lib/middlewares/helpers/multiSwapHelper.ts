@@ -3,7 +3,6 @@ var Web3= require("web3");
 module.exports = {
 
   getTokenCategorizedInformation: async function (req: any) {
-
     let categorizedInfo = await fiberNode.categoriseSwapAssets(
       req.query.sourceNetworkChainId,
       req.query.sourceTokenContractAddress,
@@ -66,16 +65,17 @@ module.exports = {
     //   throw 'sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing';
     // }
     let data: any = {};
-    // data = await fiberEngine.withdraw(
-    //   query.sourceTokenContractAddress,
-    //   query.destinationTokenContractAddress,
-    //   query.sourceNetworkChainId, 
-    //   query.destinationNetworkChainId,
-    //   query.sourceAmount,
-    //   query.destinationWalletAddress,
-    //   req.query.swapTransactionHash,
-    // );
-    // await this.updateTransactionLog(data.txHash, log);
+    data = await fiberEngine.withdraw(
+      query.sourceTokenContractAddress,
+      query.destinationTokenContractAddress,
+      query.sourceNetworkChainId, 
+      query.destinationNetworkChainId,
+      query.sourceAmount,
+      query.destinationWalletAddress,
+      req.query.swapTransactionHash,
+      req.body
+    );
+    await this.updateTransactionLog(data.txHash, log);
     return data;
   },
 
