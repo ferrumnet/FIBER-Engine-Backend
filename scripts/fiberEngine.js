@@ -213,7 +213,8 @@ module.exports = {
     targetChainId,
     inputAmount,
     destinationWalletAddress,
-    salt
+    salt,
+    body
   ) {
     console.log(1)
     const gas = await this.estimateGasForWithdraw(targetChainId, destinationWalletAddress);
@@ -226,6 +227,7 @@ module.exports = {
     let sourceBridgeAmount;
     let swapResult;
 
+    // calculate amount
     if (!sourceNetwork.isNonEVM) {
       // source token contract (required to approve function)
       const sourceTokenContract = new ethers.Contract(
@@ -300,6 +302,8 @@ module.exports = {
 
       console.log("sourceBridgeAmount", sourceBridgeAmount)
     }
+
+    // withdraw
     if (!targetNetwork.isNonEVM) {
       // ==========================================
 
@@ -337,7 +341,21 @@ module.exports = {
         if (isTargetTokenFoundry === true) {
           console.log("TN-1: Target Token is Foundry Asset");
           console.log("TN-2: Withdraw Foundry Asset...");
-          const hash = await produecSignaturewithdrawHash(
+          // const hash = await produecSignaturewithdrawHash(
+          //   targetNetwork.chainId,
+          //   targetNetwork.fundManager,
+          //   targetTokenAddress,
+          //   destinationWalletAddress,
+          //   String(Math.floor(amountIn)),
+          //   salt
+          // );
+          // const sigP2 = ecsign(
+          //   Buffer.from(hash.replace("0x", ""), "hex"),
+          //   Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+          // );
+          // let sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
+          //if target token is foundry asset
+          let localSignatureData = global.signatureHelper.createLocalSignatureDataObject(
             targetNetwork.chainId,
             targetNetwork.fundManager,
             targetTokenAddress,
@@ -345,20 +363,19 @@ module.exports = {
             String(Math.floor(amountIn)),
             salt
           );
-          const sigP2 = ecsign(
-            Buffer.from(hash.replace("0x", ""), "hex"),
-            Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+          let signatureResponse = await global.signatureHelper.getSignature(
+            body,
+            utils.assetType.FOUNDARY,
+            localSignatureData
           );
-          const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
-          //if target token is foundry asset
           const swapResult = await targetNetwork.fiberRouterContract
             .connect(targetSigner)
             .withdrawSigned(
               targetTokenAddress, //token address on network 2
               destinationWalletAddress, //reciver
               String(Math.floor(amountIn)), //targetToken amount
-              salt,
-              sig2,
+              signatureResponse.salt,
+              String(signatureResponse.signature),
               gas);          
           const receipt = await swapResult.wait();
           if (receipt.status == 1) {
@@ -396,7 +413,20 @@ module.exports = {
             } catch (error) {
               throw "ALERT: DEX doesn't have liquidity for this pair"
             }
-            const hash = await produecSignaturewithdrawHash(
+            // const hash = await produecSignaturewithdrawHash(
+            //   targetNetwork.chainId,
+            //   targetNetwork.fundManager,
+            //   path2[0],
+            //   targetNetwork.fiberRouter,
+            //   String(Math.floor(amountIn)),
+            //   salt
+            // );
+            // const sigP2 = ecsign(
+            //   Buffer.from(hash.replace("0x", ""), "hex"),
+            //   Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+            // );
+            // const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
+            let localSignatureData = global.signatureHelper.createLocalSignatureDataObject(
               targetNetwork.chainId,
               targetNetwork.fundManager,
               path2[0],
@@ -404,11 +434,11 @@ module.exports = {
               String(Math.floor(amountIn)),
               salt
             );
-            const sigP2 = ecsign(
-              Buffer.from(hash.replace("0x", ""), "hex"),
-              Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+            let signatureResponse = await global.signatureHelper.getSignature(
+              body,
+              utils.assetType.REFINERY,
+              localSignatureData
             );
-            const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
             const amountsOut2 = amounts2[1];
             const swapResult2 = await targetNetwork.fiberRouterContract
               .connect(targetSigner)
@@ -419,8 +449,8 @@ module.exports = {
                 String(amountsOut2),
                 path2,
                 this.getDeadLine().toString(),
-                salt,
-                sig2,
+                signatureResponse.salt,
+                String(signatureResponse.signature),
                 gas
               );
             const receipt2 = await swapResult2.wait();
@@ -458,7 +488,20 @@ module.exports = {
               throw "ALERT: DEX doesn't have liquidity for this pair"
             }
             const amountsOut2 = amounts2[amounts2.length - 1];
-            const hash = await produecSignaturewithdrawHash(
+            // const hash = await produecSignaturewithdrawHash(
+            //   targetNetwork.chainId,
+            //   targetNetwork.fundManager,
+            //   path2[0],
+            //   targetNetwork.fiberRouter,
+            //   amountIn,
+            //   salt
+            // );
+            // const sigP2 = ecsign(
+            //   Buffer.from(hash.replace("0x", ""), "hex"),
+            //   Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+            // );
+            // const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
+            let localSignatureData = global.signatureHelper.createLocalSignatureDataObject(
               targetNetwork.chainId,
               targetNetwork.fundManager,
               path2[0],
@@ -466,12 +509,11 @@ module.exports = {
               amountIn,
               salt
             );
-            const sigP2 = ecsign(
-              Buffer.from(hash.replace("0x", ""), "hex"),
-              Buffer.from(global.environment.SIGNER.replace("0x", ""), "hex")
+            let signatureResponse = await global.signatureHelper.getSignature(
+              body,
+              utils.assetType.IONIC,
+              localSignatureData
             );
-            const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
-
             const swapResult3 = await targetNetwork.fiberRouterContract
               .connect(targetSigner)
               .withdrawSignedAndSwap(
@@ -481,8 +523,8 @@ module.exports = {
                 String(amountsOut2),
                 path2,
                 this.getDeadLine().toString(), //deadline
-                salt,
-                sig2,
+                signatureResponse.salt,
+                String(signatureResponse.signature),
                 gas
               );
             const receipt3 = await swapResult3.wait();
