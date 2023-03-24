@@ -209,24 +209,24 @@ module.exports = {
           targetTokenAddress,
           Math.floor(amountIn)
         );
+        const isTargetRefineryToken = await isTargetRefineryAsset(
+          targetNetwork,
+          targetTokenAddress,
+          Math.floor(amountIn)
+        );
+        if (isTargetTokenFoundry) {
+          targetAssetType = "Foundry";
+        } else if (isTargetRefineryToken) {
+          targetAssetType = "Refinery";
+        } else {
+          targetAssetType = "Ionic";
+        }
         if (isTargetTokenFoundry === true) {
           console.log("TN-1: Target Token is Foundry Asset")
           destinationAmountOut = sourceBridgeAmount;
 
         } else {
           let amountIn = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();
-          const isTargetRefineryToken = await isTargetRefineryAsset(
-            targetNetwork,
-            targetTokenAddress,
-            Math.floor(amountIn)
-          );
-          if (isTargetTokenFoundry) {
-            targetAssetType = "Foundry";
-          } else if (isTargetRefineryToken) {
-            targetAssetType = "Refinery";
-          } else {
-            targetAssetType = "Ionic";
-          }
           if (isTargetTokenFoundry === true) {
             console.log("TN-1: Target Token is Foundry Asset");
             destinationAmountOut = sourceBridgeAmount;
