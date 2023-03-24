@@ -105,6 +105,7 @@ module.exports = {
     let receipt;
     let sourceBridgeAmount;
     let destinationAmountOut;
+    let machineSourceBridgeAmount;
 
     if (!sourceNetwork.isNonEVM) {
       // source token contract (required to approve function)
@@ -224,7 +225,7 @@ module.exports = {
         if (isTargetTokenFoundry === true) {
           console.log("TN-1: Target Token is Foundry Asset")
           destinationAmountOut = sourceBridgeAmount;
-
+          machineSourceBridgeAmount = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();;
         } else {
           let amountIn = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();
           if (isTargetTokenFoundry === true) {
@@ -237,7 +238,7 @@ module.exports = {
             console.log("isTargetRefineryToken", isTargetRefineryToken)
             if (isTargetRefineryToken == true) {
               console.log("TN-1: Target token is Refinery Asset");
-
+              machineSourceBridgeAmount = amountIn;
               let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
               let amounts2;
               try {
@@ -255,6 +256,7 @@ module.exports = {
             } else {
               console.log("TN-1: Target Token is Ionic Asset");
               let amountIn = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();
+              machineSourceBridgeAmount = amountIn;
               let path2 = [
                 targetNetwork.foundryTokenAddress,
                 targetNetwork.weth,
@@ -286,14 +288,15 @@ module.exports = {
     }
 
     console.log("destinationAmountOut", destinationAmountOut)
+    console.log("machineSourceBridgeAmount", Math.floor(machineSourceBridgeAmount))
 
     let data = { source: {}, destination: {} }
     data.source.type = sourceAssetType;
     data.source.amount = inputAmount;
 
     data.destination.type = targetAssetType;
-    // data.destination.amount = destinationAmountOut 
     data.destination.amount = String(destinationAmountOut)
+    data.destination.bridgeAmount = String(Math.floor(machineSourceBridgeAmount)) 
     return data;
   }
 

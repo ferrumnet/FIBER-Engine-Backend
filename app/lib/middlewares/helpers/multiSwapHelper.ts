@@ -18,11 +18,6 @@ module.exports = {
 
       let destinationAmount = 0;
       destinationAmount = categorizedInfo?.destination?.amount;
-
-      // if(categorizedInfo?.destination?.amount && typeof categorizedInfo?.destination?.amount === 'object'){
-      // }else{
-      //   destinationAmount = categorizedInfo?.destination?.amount;
-      // }
       console.log('destinationAmount',destinationAmount);
 
       let sourceTokenCategorizedInfo: any = {};
@@ -32,6 +27,7 @@ module.exports = {
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
+      destinationTokenCategorizedInfo.bridgeAmount = categorizedInfo?.destination?.bridgeAmount;
 
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
