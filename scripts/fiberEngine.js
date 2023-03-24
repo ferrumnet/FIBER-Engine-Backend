@@ -681,7 +681,8 @@ module.exports = {
               path,
               this.getDeadLine().toString(), // deadline
               targetChainId,
-              targetNetwork.foundryTokenAddress
+              targetNetwork.foundryTokenAddress,
+              destinationWalletAddress
             );
         }
         else if (targetNetwork.isNonEVM) {
@@ -709,7 +710,8 @@ module.exports = {
               path,
               this.getDeadLine().toString(), // deadline
               targetChainId,
-              targetNetwork.foundryTokenAddress
+              targetNetwork.foundryTokenAddress,
+              destinationWalletAddress
             );
         }
       } else {
@@ -742,7 +744,8 @@ module.exports = {
               path,
               this.getDeadLine().toString(), // deadline
               targetChainId,
-              targetNetwork.foundryTokenAddress
+              targetNetwork.foundryTokenAddress,
+              destinationWalletAddress
             );
         }
         else if (targetNetwork.isNonEVM) { 
@@ -774,7 +777,8 @@ module.exports = {
               path,
               this.getDeadLine().toString(), // deadline
               targetChainId,
-              targetNetwork.foundryTokenAddress
+              targetNetwork.foundryTokenAddress,
+              destinationWalletAddress
             );
         }
         
