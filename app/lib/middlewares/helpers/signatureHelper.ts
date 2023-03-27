@@ -1,5 +1,6 @@
 import { produecSignaturewithdrawHash, fixSig } from '../../../../scripts/utils/BridgeUtils';
 import { ecsign, toRpcSig } from "ethereumjs-util";
+import Web3 from 'web3';
 
 interface SignatureResponse {
   hash: String;
@@ -61,6 +62,9 @@ module.exports = {
   createLocalSignatureDataObject: function (targetNetworkChainId: string,
     targetNetworkFundManager: string, targetTokenAddress: string,
     address: string, amount: string, salt: string) {
+    salt = Web3.utils.keccak256(
+      salt.toLocaleLowerCase(),
+    );
     let localSignatureData: LocalSignatureData = {
       targetNetworkChainId: targetNetworkChainId,
       targetNetworkFundManager: targetNetworkFundManager,
