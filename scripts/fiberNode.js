@@ -114,7 +114,13 @@ module.exports = {
         tokenAbi.abi,
         sourceNetwork.provider
       );
+      const sourceFoundryTokenContract = new ethers.Contract(
+        sourceNetwork.foundryTokenAddress,
+        tokenAbi.abi,
+        sourceNetwork.provider
+      );
       const sourceTokenDecimal = await sourceTokenContract.decimals();
+      const sourceFoundryTokenDecimal = await sourceFoundryTokenContract.decimals();
       const amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
       // is source token foundy asset
       const isFoundryAsset = await sourceFACCheck(
@@ -153,7 +159,7 @@ module.exports = {
           throw "ALERT: DEX doesn't have liquidity for this pair"
         }
         const amountsOut = amounts[1];
-        sourceBridgeAmount = (amountsOut / 10 ** Number(sourceTokenDecimal)).toString();
+        sourceBridgeAmount = (amountsOut / 10 ** Number(sourceFoundryTokenDecimal)).toString();
       } else {
         console.log("SN-1: Source Token is Ionic Asset");
         //swap refinery token to the foundry token
@@ -172,7 +178,7 @@ module.exports = {
           throw "ALERT: DEX doesn't have liquidity for this pair"
         }
         const amountsOut = amounts[amounts.length - 1];
-        sourceBridgeAmount = (amountsOut / 10 ** Number(sourceTokenDecimal)).toString();
+        sourceBridgeAmount = (amountsOut / 10 ** Number(sourceFoundryTokenDecimal)).toString();
         //wait until the transaction be completed
         receipt = { status: 1 }
       }
@@ -292,7 +298,7 @@ module.exports = {
 
     data.destination.type = targetAssetType;
     data.destination.amount = String(destinationAmountOut)
-    data.destination.bridgeAmount = String(Math.floor(machineSourceBridgeAmount)) 
+    data.destination.bridgeAmount = String(Math.floor(machineSourceBridgeAmount))
     return data;
   }
 
