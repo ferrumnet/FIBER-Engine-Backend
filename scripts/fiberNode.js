@@ -227,14 +227,11 @@ module.exports = {
           destinationAmountOut = sourceBridgeAmount;
           machineSourceBridgeAmount = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();;
         } else {
-          let amountIn = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();
           if (isTargetTokenFoundry === true) {
             console.log("TN-1: Target Token is Foundry Asset");
             destinationAmountOut = sourceBridgeAmount;
 
           } else {
-            let amountIn = (sourceBridgeAmount * 10 ** Number(targetTokenDecimal)).toString();
-
             console.log("isTargetRefineryToken", isTargetRefineryToken)
             if (isTargetRefineryToken == true) {
               console.log("TN-1: Target token is Refinery Asset");
@@ -255,7 +252,6 @@ module.exports = {
 
             } else {
               console.log("TN-1: Target Token is Ionic Asset");
-              let amountIn = (sourceBridgeAmount * 10 ** Number(targetFoundryTokenDecimal)).toString();
               machineSourceBridgeAmount = amountIn;
               let path2 = [
                 targetNetwork.foundryTokenAddress,
