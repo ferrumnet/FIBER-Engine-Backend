@@ -3,7 +3,6 @@ var Web3= require("web3");
 module.exports = {
 
   getTokenCategorizedInformation: async function (req: any) {
-
     let categorizedInfo = await fiberNode.categoriseSwapAssets(
       req.query.sourceNetworkChainId,
       req.query.sourceTokenContractAddress,
@@ -19,11 +18,6 @@ module.exports = {
 
       let destinationAmount = 0;
       destinationAmount = categorizedInfo?.destination?.amount;
-
-      // if(categorizedInfo?.destination?.amount && typeof categorizedInfo?.destination?.amount === 'object'){
-      // }else{
-      //   destinationAmount = categorizedInfo?.destination?.amount;
-      // }
       console.log('destinationAmount',destinationAmount);
 
       let sourceTokenCategorizedInfo: any = {};
@@ -33,6 +27,7 @@ module.exports = {
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
+      destinationTokenCategorizedInfo.bridgeAmount = categorizedInfo?.destination?.bridgeAmount;
 
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
@@ -57,16 +52,26 @@ module.exports = {
 
   getWithdrawSigned: async function (req: any) {
     let log = await this.saveTransactionLog(req);
+    let query = req.query;
+    console.log(query)
+    // let query = await withdrawHelper.getWithdrawReqObject(req);
+    // if (!query || !query.sourceWalletAddress || !query.sourceTokenContractAddress || !query.sourceNetworkChainId
+    //   || !query.sourceAmount || !query.destinationTokenContractAddress
+    //   || !query.destinationNetworkChainId) {
+    //   throw 'sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing';
+    // }
     let data: any = {};
     data = await fiberEngine.withdraw(
-      req.query.sourceTokenContractAddress, // goerli ada
-      req.query.destinationTokenContractAddress, // bsc ada
-      req.query.sourceNetworkChainId, // source chain id (goerli)
-      req.query.destinationNetworkChainId, // target chain id (bsc)
-      req.query.sourceAmount, //source token amount
-      req.query.destinationWalletAddress // destination wallet address
+      query.sourceTokenContractAddress,
+      query.destinationTokenContractAddress,
+      query.sourceNetworkChainId, 
+      query.destinationNetworkChainId,
+      query.sourceAmount,
+      query.destinationWalletAddress,
+      req.query.swapTransactionHash,
+      req.body
     );
-    await this.updateTransactionLog(data, log);
+    await this.updateTransactionLog(data.txHash, log);
     return data;
   },
 

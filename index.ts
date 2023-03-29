@@ -62,9 +62,15 @@ if (
 (global as any).signatureHelper = require("./app/lib/middlewares/helpers/signatureHelper");
 (global as any).multiSwapHelper = require("./app/lib/middlewares/helpers/multiSwapHelper");
 (global as any).networksHelper = require("./app/lib/httpCalls/networksHelper");
+(global as any).receiptsHelper = require("./app/lib/httpCalls/receiptsHelper");
+(global as any).web3ConfigurationHelper = require("./app/lib/middlewares/helpers/web3Helpers/web3ConfigurationHelper");
+(global as any).web3Helper = require("./app/lib/middlewares/helpers/web3Helpers/web3Helper");
+(global as any).withdrawHelper = require("./app/lib/middlewares/helpers/withdrawHelper");
+(global as any).cudosPriceHelper = require("./app/lib/httpCalls/cudosPriceHelper");
 
 // crons
 (global as any).removeRandomKeyJob = require("./app/lib/crons/removeRandomKeyJob");
+(global as any).getAllNetworkJob = require("./app/lib/crons/getAllNetworkJob");
 
 // fiber
 (global as any).networkHelper = require("./network");

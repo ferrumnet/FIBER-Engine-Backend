@@ -95,7 +95,7 @@ module.exports = {
   },
 
   async createAuthToken() {
-    let timelapse = 1;
+    let timelapse = 5;
     let currentTime = new Date();
     let startDateTime = moment(currentTime).subtract('minutes', timelapse).utc().format();
     let endDateTime = moment(currentTime).add('minutes', timelapse).utc().format();

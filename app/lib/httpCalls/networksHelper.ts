@@ -19,9 +19,12 @@ module.exports = {
   async getAllNetworks() {
     try {
       let baseUrl = ((global as any) as any).environment.baseUrlGatewayBackend;
-      let url = `${baseUrl}/networks/list?isPagination=false`;
+      let url = `${baseUrl}/networks/list?isNonEVM=&isAllowedOnMultiSwap=true&allowFIBERData=${(global as any).environment.apiKeyForGateway}&isPagination=false`;
       let res = await axios.get(url);
-      (global as any).networks = res.data.body.networks
+      if(res.data.body && res.data.body.networks && res.data.body.networks.length){
+        (global as any).networks = await (global as any).commonFunctions.convertIntoFIBERNetworks(res.data.body.networks);
+        console.log('Refresh netwroks',(global as any).networks.length)
+      }
       return res.data.body.networks;
     } catch (error) {
       console.log(error);

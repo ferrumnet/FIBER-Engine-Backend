@@ -23,6 +23,8 @@ mongoose.Promise = require('bluebird');
     if (error) {
       (global as any).log.error(error);
     } else {
+      (global as any).removeRandomKeyJob();
+      (global as any).getAllNetworkJob();
       (global as any).log.info('Connected to MongoDB');
     }
   });

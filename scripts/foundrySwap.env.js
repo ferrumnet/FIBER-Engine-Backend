@@ -9,13 +9,13 @@ const toWei = (i) => ethers.utils.parseEther(i);
 const toEther = (i) => ethers.utils.formatEther(i);
 
 //goerli rpc
-const sourceNetwork = global.environment.SOURCE_CHAIN_RPC;
+const sourceNetwork = process.env.SOURCE_CHAIN_RPC;
 //bsc rpc
-const targetNetwork = global.environment.DESTINATION_CHAIN_RPC;
+const targetNetwork = process.env.DESTINATION_CHAIN_RPC;
 
 //networks chain id
-const sourceChainId = global.environment.SOURCE_CHAIN_ID;
-const targetChainId = global.environment.DESTINATION_CHAIN_ID;
+const sourceChainId = process.env.SOURCE_CHAIN_ID;
+const targetChainId = process.env.DESTINATION_CHAIN_ID;
 
 //network providers
 const sourceProvider = new ethers.providers.JsonRpcProvider(sourceNetwork);
@@ -23,16 +23,16 @@ const targetProvider = new ethers.providers.JsonRpcProvider(targetNetwork);
 
 // user wallet
 const sourceSigner = new ethers.Wallet(
-  global.environment.SOURCE_CHAIN_PRIV_KEY
+  process.env.SOURCE_CHAIN_PRIV_KEY
 ).connect(sourceProvider);
 const targetSigner = new ethers.Wallet(
-  global.environment.DESTINATION_CHAIN_PRIV_KEY
+  process.env.DESTINATION_CHAIN_PRIV_KEY
 ).connect(targetProvider);
 
 // goerli fundManager contract
-const sourcefundMangerAddress = global.environment.SOURCE_FUND_MANAGER_CONTRACT;
+const sourcefundMangerAddress = process.env.SOURCE_FUND_MANAGER_CONTRACT;
 // bsc fundManager contract
-const targetFundManagerAddress = global.environment.DESTINATION_FUND_MANAGER_CONTRACT;
+const targetFundManagerAddress = process.env.DESTINATION_FUND_MANAGER_CONTRACT;
 
 // goerli fund manager contract
 const sourceFundMangerContract = new ethers.Contract(
@@ -49,9 +49,9 @@ const targetFundMangerContract = new ethers.Contract(
 );
 
 // goerli fundManager contract
-const sourceFiberRouterAddress = global.environment.SOURCE_FIBER_ROUTER_CONTRACT;
+const sourceFiberRouterAddress = process.env.SOURCE_FIBER_ROUTER_CONTRACT;
 // bsc fundManager contract
-const targetFiberRouterAddress = global.environment.DESTINATION_FIBER_ROUTER_CONTRACT;
+const targetFiberRouterAddress = process.env.DESTINATION_FIBER_ROUTER_CONTRACT;
 
 // goerli fund manager contract
 const sourceFiberRouterContract = new ethers.Contract(
@@ -146,8 +146,8 @@ async function swap(
 }
 
 swap(
-  global.environment.SOURCE_CHAIN_TOKEN,
-  global.environment.DESTINATION_CHAIN_SOURCE_TOKEN,
-  global.environment.DESTINATION_CHAIN_TOKEN,
+  process.env.SOURCE_CHAIN_TOKEN,
+  process.env.DESTINATION_CHAIN_SOURCE_TOKEN,
+  process.env.DESTINATION_CHAIN_TOKEN,
   "10000000000000000000"
 );
