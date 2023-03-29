@@ -11,7 +11,7 @@ mongoose.Promise = require('bluebird');
   (global as any).fiberEngine = require("./scripts/fiberEngine"); // this needs to move in index.ts
   (global as any).fiberNode = require("./scripts/fiberNode"); // this needs to move in index.ts
 
-  await (global as any).networksHelper.getAllNetworks();
+  await (global as any).networksAxiosHelper.getAllNetworks();
   var mongoString = (global as any).environment.mongoConnectionUrl;
   var mongoLogger = function(coll: any, method: any, query: any, doc: any) {
     (global as any).log.debug(coll + '.' + method + '( ' + JSON.stringify(query) +  ', ' + JSON.stringify(doc) + ' )');
