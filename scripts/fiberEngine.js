@@ -295,7 +295,7 @@ module.exports = {
     }
     } else if (sourceNetwork.isNonEVM) {
       
-      const recentCudosPriceInDollars = await cudosPriceHelper.getCudosPrice();
+      const recentCudosPriceInDollars = await cudosPriceAxiosHelper.getCudosPrice();
       console.log("recentCudosPriceInDollars", recentCudosPriceInDollars)
       console.log("inputAmount", inputAmount)
       sourceBridgeAmount = await inputAmount * recentCudosPriceInDollars;
@@ -543,7 +543,7 @@ module.exports = {
         }
       }
     } else if (targetNetwork.isNonEVM) {
-      const recentCudosPriceInDollars = await cudosPriceHelper.getCudosPrice();
+      const recentCudosPriceInDollars = await cudosPriceAxiosHelper.getCudosPrice();
       console.log("amount 1", recentCudosPriceInDollars)
       sourceBridgeAmount = await sourceBridgeAmount / recentCudosPriceInDollars;
       destinationAmount = sourceBridgeAmount

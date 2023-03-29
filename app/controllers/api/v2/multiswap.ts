@@ -26,11 +26,8 @@ module.exports = function (router: any) {
     } else {
       req.query.destinationWalletAddress = req.query.sourceWalletAddress;
     }
-    let data = await multiSwapHelper.getWithdrawSigned(req);
-    return res.http200({
-      data: data.txHash,
-      withdraw: data
-    });
+    let data = await multiSwapHelper.getWithdrawSigned(req, 'v2');
+    return res.http200(data);
   }));
 
 };
