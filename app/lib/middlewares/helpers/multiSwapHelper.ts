@@ -50,28 +50,17 @@ module.exports = {
     return data;
   },
 
-  getWithdrawSigned: async function (req: any) {
+  getWithdrawSigned: async function (req: any, version: string) {
     let log = await this.saveTransactionLog(req);
     let query = req.query;
     console.log(query)
-    // let query = await withdrawHelper.getWithdrawReqObject(req);
-    // if (!query || !query.sourceWalletAddress || !query.sourceTokenContractAddress || !query.sourceNetworkChainId
-    //   || !query.sourceAmount || !query.destinationTokenContractAddress
-    //   || !query.destinationNetworkChainId) {
-    //   throw 'sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing';
-    // }
     let data: any = {};
-    data = await fiberEngine.withdraw(
-      query.sourceTokenContractAddress,
-      query.destinationTokenContractAddress,
-      query.sourceNetworkChainId, 
-      query.destinationNetworkChainId,
-      query.sourceAmount,
-      query.destinationWalletAddress,
-      req.query.swapTransactionHash,
-      req.body
-    );
-    await this.updateTransactionLog(data.txHash, log);
+    if(version == 'v2'){
+      this.doWithdraw(req, query, version);
+      return null;
+    }else {
+      data = await this.doWithdraw(req, query, version);
+    }
     return data;
   },
 
@@ -94,12 +83,34 @@ module.exports = {
     }
   },
 
-  updateTransactionLog: async function (withdrawHash: any, log: any) {
+  updateTransactionLog: async function (withdrawHash: any, swapTransactionHash: any) {
     try{
-      await db.TransactionLogs.findOneAndUpdate({ _id: log._id }, { withdrawTransactionHash: withdrawHash, updatedAt: new Date()}, { new: true })
+      await db.TransactionLogs.findOneAndUpdate({ swapTransactionHash: swapTransactionHash }, { withdrawTransactionHash: withdrawHash, updatedAt: new Date()}, { new: true })
     }catch(e){
       console.log('updateTransactionLog',e)
     }
+  },
+
+  doWithdraw: async function (req: any, query: any, version: string) {
+    let data = await fiberEngine.withdraw(
+      query.sourceTokenContractAddress,
+      query.destinationTokenContractAddress,
+      query.sourceNetworkChainId, 
+      query.destinationNetworkChainId,
+      query.sourceAmount,
+      query.destinationWalletAddress,
+      req.query.swapTransactionHash,
+      req.body
+    ); 
+    await this.updateTransactionLog(data.txHash, req.query.swapTransactionHash);
+    if(version == 'v2'){
+      data = {
+        data: data.txHash,
+        withdraw: data
+      }
+      await await transactionUpdateAxiosHelper.updateTransactionJobStatus(req.query.swapTransactionHash, data);
+    }
+    return data;
   },
 
 }
