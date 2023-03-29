@@ -56,7 +56,7 @@ module.exports = function (router: any) {
     }else {
       req.query.destinationWalletAddress = req.query.sourceWalletAddress;
     }
-    let data = await multiSwapHelper.getWithdrawSigned(req);
+    let data = await multiSwapHelper.getWithdrawSigned(req, 'v1');
     return res.http200({
       data: data.txHash,
       withdraw: data

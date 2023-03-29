@@ -177,7 +177,7 @@ module.exports = {
         receipt = { status: 1 }
       }
     } else if (sourceNetwork.isNonEVM) {
-      const recentCudosPriceInDollars = await cudosPriceHelper.getCudosPrice();
+      const recentCudosPriceInDollars = await cudosPriceAxiosHelper.getCudosPrice();
       sourceBridgeAmount = await inputAmount * recentCudosPriceInDollars;
       sourceAssetType = "Foundry"
     }
@@ -278,7 +278,7 @@ module.exports = {
       }
     }
     else if (targetNetwork.isNonEVM) {
-      const recentCudosPriceInDollars = await cudosPriceHelper.getCudosPrice();
+      const recentCudosPriceInDollars = await cudosPriceAxiosHelper.getCudosPrice();
       destinationAmountOut = await sourceBridgeAmount / recentCudosPriceInDollars;
       targetAssetType = "Foundry"
     }

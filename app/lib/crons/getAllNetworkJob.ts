@@ -28,5 +28,5 @@ async function start() {
 }
 
 async function triggerJobs() {
-  await (global as any).networksHelper.getAllNetworks();
+  await (global as any).networksAxiosHelper.getAllNetworks();
 }
