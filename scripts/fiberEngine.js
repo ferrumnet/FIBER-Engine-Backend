@@ -589,8 +589,6 @@ module.exports = {
       if (sourceNetwork.isNonEVM) {
         throw "CUDOS Swap: Please Perform Swap From Frontend";
       }
-      console.log("target Network", targetNetwork)
-      console.log("source Network", sourceNetwork)
     let fiberRouter = this.fiberRouterPool(sourceNetwork.rpc, sourceNetwork.fiberRouter);
 
     //signers for both side networks
