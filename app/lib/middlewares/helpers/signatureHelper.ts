@@ -73,6 +73,7 @@ module.exports = {
       amount: amount,
       salt: salt
     };
+    console.log(localSignatureData, 'localSignatureData')
     return localSignatureData;
   }
 
