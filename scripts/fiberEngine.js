@@ -379,7 +379,7 @@ module.exports = {
             .withdrawSigned(
               targetTokenAddress, //token address on network 2
               destinationWalletAddress, //reciver
-              String(Math.floor(amountIn)), //targetToken amount
+              String(signatureResponse.amount), //targetToken amount
               signatureResponse.salt,
               String(signatureResponse.signature),
               gas);          
@@ -410,15 +410,6 @@ module.exports = {
               "TN-2: Withdraw and Swap Foundry Asset to Target Token ...."
             );
             let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
-            let amounts2;
-            try {
-              amounts2 = await targetNetwork.dexContract.getAmountsOut(
-                String(Math.floor(amountIn)),
-                path2
-              );
-            } catch (error) {
-              throw "ALERT: DEX doesn't have liquidity for this pair"
-            }
             // const hash = await produecSignaturewithdrawHash(
             //   targetNetwork.chainId,
             //   targetNetwork.fundManager,
@@ -445,13 +436,23 @@ module.exports = {
               utils.assetType.REFINERY,
               localSignatureData
             );
+            let amounts2;
+            try {
+              amounts2 = await targetNetwork.dexContract.getAmountsOut(
+                String(signatureResponse.amount),
+                path2
+              );
+            } catch (error) {
+              throw "ALERT: DEX doesn't have liquidity for this pair"
+            }
             const amountsOut2 = amounts2[1];
+            console.log('amountsOut2',amountsOut2)
             const swapResult2 = await targetNetwork.fiberRouterContract
               .connect(targetSigner)
               .withdrawSignedAndSwap(
                 destinationWalletAddress,
                 targetNetwork.router,
-                String(Math.floor(amountIn)),
+                String(signatureResponse.amount),
                 String(amountsOut2),
                 path2,
                 this.getDeadLine().toString(),
@@ -484,16 +485,6 @@ module.exports = {
               targetNetwork.weth,
               targetTokenAddress,
             ];
-            let amounts2;
-            try {
-              amounts2 = await targetNetwork.dexContract.getAmountsOut(
-                String(amountIn),
-                path2
-              );
-            } catch (error) {
-              throw "ALERT: DEX doesn't have liquidity for this pair"
-            }
-            const amountsOut2 = amounts2[amounts2.length - 1];
             // const hash = await produecSignaturewithdrawHash(
             //   targetNetwork.chainId,
             //   targetNetwork.fundManager,
@@ -520,12 +511,23 @@ module.exports = {
               utils.assetType.IONIC,
               localSignatureData
             );
+            let amounts2;
+            try {
+              amounts2 = await targetNetwork.dexContract.getAmountsOut(
+                String(signatureResponse.amount),
+                path2
+              );
+            } catch (error) {
+              throw "ALERT: DEX doesn't have liquidity for this pair"
+            }
+            const amountsOut2 = amounts2[amounts2.length - 1];
+            console.log('amountsOut2',amountsOut2)
             const swapResult3 = await targetNetwork.fiberRouterContract
               .connect(targetSigner)
               .withdrawSignedAndSwap(
                 destinationWalletAddress,
                 targetNetwork.router,
-                String(amountIn),
+                String(signatureResponse.amount),
                 String(amountsOut2),
                 path2,
                 this.getDeadLine().toString(), //deadline
