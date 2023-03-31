@@ -6,6 +6,7 @@ interface SignatureResponse {
   hash: String;
   salt: String;
   signature: String;
+  amount: String;
 }
 
 interface LocalSignatureData {
@@ -23,12 +24,14 @@ module.exports = {
     let signatureResponse: SignatureResponse = {
       hash: "",
       salt: "",
-      signature: ""
+      signature: "",
+      amount: ""
     };
     if (paramsBody && paramsBody.salt && paramsBody.hash && paramsBody.signatures) {
       // fethc signature data from api req body for v2
       signatureResponse.hash = paramsBody.hash;
       signatureResponse.salt = paramsBody.salt;
+      signatureResponse.amount = paramsBody.bridgeAmount;
       if (assetType == (global as any).utils.assetType.FOUNDARY) {
         signatureResponse.signature = paramsBody.signatures.length > 0 ? paramsBody.signatures[0] : ''
       } else {
@@ -52,6 +55,7 @@ module.exports = {
       const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
       signatureResponse.hash = hash;
       signatureResponse.salt = localSignatureData.salt;
+      signatureResponse.amount = localSignatureData.amount;
       signatureResponse.signature = sig2;
       console.log('create local signature for v1', signatureResponse);
 
