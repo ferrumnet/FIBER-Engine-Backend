@@ -631,18 +631,34 @@ module.exports = {
         10 ** Number(targetNetwork.decimals)
       ).toString();
       console.log("sourceBridgeAmount final", sourceBridgeAmount);
+      let localSignatureData = (
+        global as any
+      ).signatureHelper.createLocalSignatureDataObject(
+        targetNetwork.chainId,
+        targetNetwork.fundManager,
+        "",
+        targetNetwork.fiberRouter,
+        sourceBridgeAmount,
+        salt
+      );
+      let signatureResponse = await (
+        global as any
+      ).signatureHelper.getSignature(
+        body,
+        (global as any).utils.assetType.IONIC,
+        localSignatureData
+      );
       const swapResult = await cudosWithdraw(
-        "acudos",
-        sourceTokenAddress,
         targetTokenAddress,
-        String(Math.floor(sourceBridgeAmount)),
+        String(Math.floor(signatureResponse.amount)),
         destinationWalletAddress,
-        targetChainId,
         targetNetwork.fundManager,
         targetNetwork.fiberRouter,
         targetNetwork.rpcUrl,
         (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
-        (global as any).environment.CUDOS_GAS_PRICE
+        (global as any).environment.CUDOS_GAS_PRICE,
+        signatureResponse.salt,
+        String(signatureResponse.signature)
       );
       console.log("swapResult.transactionHash", swapResult.transactionHash);
       transactionHash = await swapResult.transactionHash;
