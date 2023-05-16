@@ -306,6 +306,7 @@ module.exports = {
         await cudosPriceAxiosHelper.getCudosPrice();
       destinationAmountOut =
         (await sourceBridgeAmount) / recentCudosPriceInDollars;
+      machineSourceBridgeAmount = destinationAmountOut * 10 ** 18;
       targetAssetType = "Foundry";
     }
 
