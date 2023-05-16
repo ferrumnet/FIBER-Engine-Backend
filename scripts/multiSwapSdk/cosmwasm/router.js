@@ -214,9 +214,10 @@ class FIBERRouterContract {
           },
         },
       ],
-      calculateFee(200000, gasPrice)
+      calculateFee(400000, gasPrice)
     );
     console.log("Executed withdrawSigned", tx);
+    return tx;
   }
 
   async withdraw(token, user, amount) {
@@ -260,7 +261,12 @@ class FIBERRouterContract {
     console.log("Executed withdraw router1", tx);
   }
 
-  async withdrawAndSwapToFoundry(foundryToken, token, amount, destinationWalletAddress) {
+  async withdrawAndSwapToFoundry(
+    foundryToken,
+    token,
+    amount,
+    destinationWalletAddress
+  ) {
     let gasPrice = GasPrice.fromString(this.gasPrice);
     let wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.mnemonic, {
       prefix: "cudos",
