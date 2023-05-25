@@ -650,7 +650,7 @@ module.exports = {
       );
       const swapResult = await cudosWithdraw(
         targetTokenAddress,
-        String(Math.floor(signatureResponse.amount)),
+        String(signatureResponse.amount),
         destinationWalletAddress,
         targetNetwork.fundManager,
         targetNetwork.fiberRouter,

@@ -307,14 +307,15 @@ module.exports = {
       destinationAmountOut =
         (await sourceBridgeAmount) / recentCudosPriceInDollars;
       machineSourceBridgeAmount = destinationAmountOut * 10 ** 18;
+      machineSourceBridgeAmount = this.convert(machineSourceBridgeAmount);
       targetAssetType = "Foundry";
     }
 
-    console.log("destinationAmountOut", destinationAmountOut);
-    console.log(
-      "machineSourceBridgeAmount",
-      Math.floor(machineSourceBridgeAmount)
-    );
+    console.log("machineSourceBridgeAmount", machineSourceBridgeAmount);
+    if (!targetNetwork.isNonEVM) {
+      machineSourceBridgeAmount = String(Math.floor(machineSourceBridgeAmount));
+      console.log("machineSourceBridgeAmount", machineSourceBridgeAmount);
+    }
 
     let data: any = { source: {}, destination: {} };
     data.source.type = sourceAssetType;
@@ -322,9 +323,31 @@ module.exports = {
 
     data.destination.type = targetAssetType;
     data.destination.amount = String(destinationAmountOut);
-    data.destination.bridgeAmount = String(
-      Math.floor(machineSourceBridgeAmount)
-    );
+    data.destination.bridgeAmount = machineSourceBridgeAmount;
     return data;
+  },
+
+  convert(n: any) {
+    var sign = +n < 0 ? "-" : "",
+      toStr = n.toString();
+    if (!/e/i.test(toStr)) {
+      return n;
+    }
+    var [lead, decimal, pow] = n
+      .toString()
+      .replace(/^-/, "")
+      .replace(/^([0-9]+)(e.*)/, "$1.$2")
+      .split(/e|\./);
+    return +pow < 0
+      ? sign +
+          "0." +
+          "0".repeat(Math.max(Math.abs(pow) - 1 || 0, 0)) +
+          lead +
+          decimal
+      : sign +
+          lead +
+          (+pow >= decimal.length
+            ? decimal + "0".repeat(Math.max(+pow - decimal.length || 0, 0))
+            : decimal.slice(0, +pow) + "." + decimal.slice(+pow));
   },
 };
