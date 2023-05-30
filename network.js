@@ -21,8 +21,8 @@ const bscRPC =
 const goerliFundManager = "0x9B887791463cc3BfEBB04D8f54603E5E9ed81f1C"; //proxy
 const bscFundManager = "0xE450A528532FaeF1Feb1094eA2674e7A1fAA3E78"; //proxy
 
-const goerliFiberRouter = "0x13e6558F134a7a785A2B8CAcE3be0966161cac88"; //proxy
-const bscFiberRouter = "0xb33074D5b4E81bFa64763450BD69420976b75F39"; //proxy
+const goerliFiberRouter = "0x47C9f492c14bb23ED88Df2EE250E3baC45283019"; //proxy
+const bscFiberRouter = "0x116321eF4642518774E00528Facf8C825552cd2B"; //proxy
 
 const bscRouter = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
 const goerliRouter = "0xEfF92A263d31888d860bD50809A8D171709b7b1c";
@@ -102,8 +102,10 @@ const bscFiberRouterContract = new ethers.Contract(
 const bscMainnetChainId = 56;
 const polygonMainnetChainId = 137;
 
-const bscMainnetRPC = 'https://nd-217-204-155.p2pify.com/379ccd6673575fd7a096cc3f2a87be63';
-const polygonMainnetRPC = 'https://polygon-rpc.com';
+// const bscMainnetRPC = 'https://nd-217-204-155.p2pify.com/379ccd6673575fd7a096cc3f2a87be63';
+const bscMainnetRPC = 'https://bsc-dataseed1.binance.org';
+// const polygonMainnetRPC = 'https://polygon-rpc.com';
+const polygonMainnetRPC = 'https://nd-003-843-665.p2pify.com/7af52d3a77b5d19f11de64357253ca16';
 
 const bscMainnetProvider = new ethers.providers.JsonRpcProvider(bscMainnetRPC);
 const polygonMainnetProvider = new ethers.providers.JsonRpcProvider(polygonMainnetRPC);
@@ -163,6 +165,7 @@ const polygonMainnetFiberRouterContract = new ethers.Contract(
 const networks = {
   56: {
     name: "bscMainnet",
+    shortName: "bsc",
     rpc: bscMainnetRPC,
     chainId: bscMainnetChainId,
     fundManager: bscMainnetFundManager,
@@ -177,6 +180,7 @@ const networks = {
   },
   137: {
     name: "polygonMainnet",
+    shortName: "polygon",
     rpc: polygonMainnetRPC,
     chainId: polygonMainnetChainId,
     fundManager: polygonMainnetFundManager,
@@ -191,6 +195,7 @@ const networks = {
   },
   5: {
     name: "goerli",
+    shortName: "goerliTestnet",
     rpc: goerliRPC,
     chainId: goerliChainId,
     fundManager: goerliFundManager,
@@ -205,6 +210,7 @@ const networks = {
   },
   97: {
     name: "bsc",
+    shortName: "bscTestnet",
     rpc: bscRPC,
     chainId: bscChainId,
     fundManager: bscFundManager,

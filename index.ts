@@ -61,14 +61,18 @@ if (
 (global as any).awsHelper = require("./app/lib/middlewares/helpers/awsHelper");
 (global as any).signatureHelper = require("./app/lib/middlewares/helpers/signatureHelper");
 (global as any).multiSwapHelper = require("./app/lib/middlewares/helpers/multiSwapHelper");
-(global as any).networksHelper = require("./app/lib/httpCalls/networksHelper");
+(global as any).networksAxiosHelper = require("./app/lib/httpCalls/networksAxiosHelper");
+(global as any).web3ConfigurationHelper = require("./app/lib/middlewares/helpers/web3Helpers/web3ConfigurationHelper");
+(global as any).web3Helper = require("./app/lib/middlewares/helpers/web3Helpers/web3Helper");
+(global as any).cudosPriceAxiosHelper = require("./app/lib/httpCalls/cudosPriceAxiosHelper");
+(global as any).transactionUpdateAxiosHelper = require("./app/lib/httpCalls/transactionUpdateAxiosHelper");
 
 // crons
 (global as any).removeRandomKeyJob = require("./app/lib/crons/removeRandomKeyJob");
+(global as any).getAllNetworkJob = require("./app/lib/crons/getAllNetworkJob");
 
 // fiber
 (global as any).networkHelper = require("./network");
-(global as any).fiberNode = require("./scripts/fiberNode");
 
 (global as any).kraken = app.kraken;
 

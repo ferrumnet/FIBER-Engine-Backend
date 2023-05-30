@@ -82,9 +82,9 @@ class FIBERRouterContract {
           },
         },
       ],
-      calculateFee(41000000, gasPrice)
+      calculateFee(200000, gasPrice)
     );
-    console.log("Executed transfer_ownership", tx.transactionHash);
+    console.log("Executed transfer_ownership", tx);
   }
 
   // admin function
@@ -120,9 +120,9 @@ class FIBERRouterContract {
           },
         },
       ],
-      calculateFee(41000000, gasPrice)
+      calculateFee(200000, gasPrice)
     );
-    console.log("Executed add_signer", tx.transactionHash);
+    console.log("Executed add_signer", tx);
   }
 
   async swap(
@@ -172,10 +172,10 @@ class FIBERRouterContract {
           },
         },
       ],
-      calculateFee(41000000, gasPrice)
+      calculateFee(400000, gasPrice)
     );
-    console.log("Executed swap", tx.transactionHash);
-    return true;
+    console.log("Executed swap", tx);
+    return tx;
   }
 
   async withdrawSigned(token, user, amount, salt, signature) {
@@ -214,9 +214,10 @@ class FIBERRouterContract {
           },
         },
       ],
-      calculateFee(41000000, gasPrice)
+      calculateFee(400000, gasPrice)
     );
-    console.log("Executed withdrawSigned", tx.transactionHash);
+    console.log("Executed withdrawSigned", tx);
+    return tx;
   }
 
   async withdraw(token, user, amount) {
@@ -255,12 +256,17 @@ class FIBERRouterContract {
           },
         },
       ],
-      calculateFee(41000000, gasPrice)
+      calculateFee(500000, gasPrice)
     );
-    console.log("Executed withdraw", tx.transactionHash);
+    console.log("Executed withdraw router1", tx);
   }
 
-  async withdrawAndSwapToFoundry(foundryToken, token, amount) {
+  async withdrawAndSwapToFoundry(
+    foundryToken,
+    token,
+    amount,
+    destinationWalletAddress
+  ) {
     let gasPrice = GasPrice.fromString(this.gasPrice);
     let wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.mnemonic, {
       prefix: "cudos",
@@ -283,7 +289,7 @@ class FIBERRouterContract {
             msg: toUtf8(
               JSON.stringify({
                 withdraw_signed: {
-                  payee: await this.getConnectedWallet(),
+                  payee: destinationWalletAddress,
                   token: token,
                   amount: amount,
                   salt: "0x0",
@@ -296,14 +302,10 @@ class FIBERRouterContract {
           },
         },
       ],
-      calculateFee(41000000, gasPrice)
+      calculateFee(400000, gasPrice)
     );
-    console.log("Executed withdraw", tx.transactionHash);
-    console.log(
-      "explorer: ",
-      "https://explorer.testnet.cudos.org/transactions/F2DED41F7B473549D37D9B0AF2516D55B26BDA479A80A01258D8CD89FD2D9F0F"
-    );
-    return true;
+    console.log("Executed withdraw router2", tx.transactionHash);
+    return tx;
   }
 }
 

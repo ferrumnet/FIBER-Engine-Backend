@@ -23,10 +23,18 @@
         "name": "path:./app/lib/response/responseAppender"
       }
     },
-    "authentication": {
+    "authenticationV1": {
       "enabled": true,
       "priority": 100,
       "route": "\/api\/v1((?!$))((?!\/help\/create))((?!\/help\/test1))*",
+      "module": {
+        "name": "path:./app/lib/auth"
+      }
+    },
+    "authenticationV2": {
+      "enabled": true,
+      "priority": 100,
+      "route": "\/api\/v2((?!$))*",
       "module": {
         "name": "path:./app/lib/auth"
       }

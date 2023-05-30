@@ -11,19 +11,16 @@ module.exports = {
         if(tokenIntoJsonObject){
 
           let validateRandomKey = await this.validateRandomKey(tokenIntoJsonObject);
-          console.log('validateRandomKey::',validateRandomKey);
           if(validateRandomKey == false){
             return false;
           }
 
           let validateDates = await this.validateDates(tokenIntoJsonObject);
-          console.log('validateDates::',validateDates)
           if(validateDates == false){
             return false;
           }
 
           let validateAPIKey = await this.validateAPIKey(tokenIntoJsonObject);
-          console.log('validateAPIKey::',validateAPIKey)
           if(validateAPIKey == false){
             return false;
           }
@@ -98,7 +95,7 @@ module.exports = {
   },
 
   async createAuthToken() {
-    let timelapse = 1;
+    let timelapse = 5;
     let currentTime = new Date();
     let startDateTime = moment(currentTime).subtract('minutes', timelapse).utc().format();
     let endDateTime = moment(currentTime).add('minutes', timelapse).utc().format();
@@ -110,7 +107,6 @@ module.exports = {
     tokenBody.randomKey = randomKey;
     tokenBody.apiKey = apiKey;
 
-    console.log(tokenBody);
     let strTokenBody = JSON.stringify(tokenBody)
     let encryptedSessionToken = commonFunctions.encryptApiKey(strTokenBody);
     return encryptedSessionToken;

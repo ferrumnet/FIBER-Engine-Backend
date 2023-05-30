@@ -9,7 +9,9 @@ mongoose.Promise = require('bluebird');
 (async () => {
   await (global as any).awsHelper.awsSecretsManagerInit();
   (global as any).fiberEngine = require("./scripts/fiberEngine"); // this needs to move in index.ts
-  await (global as any).networksHelper.getAllNetworks();
+  (global as any).fiberNode = require("./scripts/fiberNode"); // this needs to move in index.ts
+
+  await (global as any).networksAxiosHelper.getAllNetworks();
   var mongoString = (global as any).environment.mongoConnectionUrl;
   var mongoLogger = function(coll: any, method: any, query: any, doc: any) {
     (global as any).log.debug(coll + '.' + method + '( ' + JSON.stringify(query) +  ', ' + JSON.stringify(doc) + ' )');
@@ -21,6 +23,8 @@ mongoose.Promise = require('bluebird');
     if (error) {
       (global as any).log.error(error);
     } else {
+      (global as any).removeRandomKeyJob();
+      (global as any).getAllNetworkJob();
       (global as any).log.info('Connected to MongoDB');
     }
   });
