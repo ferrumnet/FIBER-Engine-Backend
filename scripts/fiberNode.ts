@@ -128,10 +128,8 @@ module.exports = {
       const sourceTokenDecimal = await sourceTokenContract.decimals();
       const sourceFoundryTokenDecimal =
         await sourceFoundryTokenContract.decimals();
-      const amount = (
-        inputAmount *
-        10 ** Number(sourceTokenDecimal)
-      ).toString();
+      let amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
+      amount = this.convert(amount);
       // is source token foundy asset
       const isFoundryAsset = await sourceFACCheck(
         sourceNetwork,
@@ -188,6 +186,7 @@ module.exports = {
             path
           );
         } catch (error) {
+          console.log("error", error);
           throw "ALERT: DEX doesn't have liquidity for this pair";
         }
         const amountsOut = amounts[amounts.length - 1];
@@ -258,6 +257,7 @@ module.exports = {
           console.log("isTargetRefineryToken", isTargetRefineryToken);
           if (isTargetRefineryToken == true) {
             console.log("TN-1: Target token is Refinery Asset");
+            amountIn = Math.floor(amountIn);
             machineSourceBridgeAmount = amountIn;
             let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
             let amounts2;
@@ -277,6 +277,7 @@ module.exports = {
             ).toString();
           } else {
             console.log("TN-1: Target Token is Ionic Asset");
+            amountIn = Math.floor(amountIn);
             machineSourceBridgeAmount = amountIn;
             let path2 = [
               targetNetwork.foundryTokenAddress,
@@ -290,6 +291,7 @@ module.exports = {
                 path2
               );
             } catch (error) {
+              console.log("error", error);
               throw "ALERT: DEX doesn't have liquidity for this pair";
             }
             const amountsOut2 = amounts2[amounts2.length - 1];
