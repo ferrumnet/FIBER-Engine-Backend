@@ -1,14 +1,14 @@
 "use strict";
 
 var mongoose = require("mongoose");
-var collectionName = 'gasFees';
+var collectionName = "gasFees";
 
 var schema = mongoose.Schema(
   {
-    maxFeePerGas: { type: String, default: '' },
-    maxPriorityFeePerGas: { type: String, default: '' },
-    gasLimit: { type: String, default: '' },
-    type: { type: String, default: '' },
+    maxFeePerGas: { type: String, default: "" },
+    maxPriorityFeePerGas: { type: String, default: "" },
+    gasLimit: { type: String, default: "" },
+    chainId: { type: String, default: "" },
     isActive: { type: Boolean, default: true },
 
     createdAt: { type: Date, default: new Date() },
