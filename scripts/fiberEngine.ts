@@ -209,7 +209,7 @@ module.exports = {
       let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
       let gasLimit = GAS_LIMIT;
 
-      let item = await db.GasFees.findOne({ type: "polygon" });
+      let item = await db.GasFees.findOne({ chainId: sourceChainId });
       if (item) {
         maxFeePerGas = item.maxFeePerGas;
         maxPriorityFeePerGas = item.maxPriorityFeePerGas;
