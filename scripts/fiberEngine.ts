@@ -204,7 +204,11 @@ module.exports = {
 
   estimateGasForSwap: async function (sourceChainId: any, from: any) {
     let data: any = {};
-    if (sourceChainId == 137 || sourceChainId == 250) {
+    if (
+      sourceChainId == 137 ||
+      sourceChainId == 250 ||
+      sourceChainId == 43114
+    ) {
       let maxFeePerGas = MAX_FEE_PER_GAS;
       let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
       let gasLimit = GAS_LIMIT;
