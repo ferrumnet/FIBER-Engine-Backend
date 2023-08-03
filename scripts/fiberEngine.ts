@@ -173,22 +173,14 @@ module.exports = {
 
   estimateGasForWithdraw: async function (sourceChainId: any, from: any) {
     let data: any = {};
-    if (
-      sourceChainId == 137 ||
-      sourceChainId == 250 ||
-      sourceChainId == 43114
-    ) {
+    let item = await db.GasFees.findOne({ chainId: sourceChainId });
+    if (item) {
       let maxFeePerGas = MAX_FEE_PER_GAS;
       let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
       let gasLimit = GAS_LIMIT;
-
-      let item = await db.GasFees.findOne({ chainId: sourceChainId });
-      if (item) {
-        maxFeePerGas = item.maxFeePerGas;
-        maxPriorityFeePerGas = item.maxPriorityFeePerGas;
-        gasLimit = item.gasLimit;
-      }
-
+      maxFeePerGas = item.maxFeePerGas;
+      maxPriorityFeePerGas = item.maxPriorityFeePerGas;
+      gasLimit = item.gasLimit;
       data.maxFeePerGas = Web3.utils.toHex(
         Web3.utils.toWei(maxFeePerGas, "gwei")
       );
@@ -204,22 +196,14 @@ module.exports = {
 
   estimateGasForSwap: async function (sourceChainId: any, from: any) {
     let data: any = {};
-    if (
-      sourceChainId == 137 ||
-      sourceChainId == 250 ||
-      sourceChainId == 43114
-    ) {
+    let item = await db.GasFees.findOne({ chainId: sourceChainId });
+    if (item) {
       let maxFeePerGas = MAX_FEE_PER_GAS;
       let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
       let gasLimit = GAS_LIMIT;
-
-      let item = await db.GasFees.findOne({ chainId: sourceChainId });
-      if (item) {
-        maxFeePerGas = item.maxFeePerGas;
-        maxPriorityFeePerGas = item.maxPriorityFeePerGas;
-        gasLimit = item.gasLimit;
-      }
-
+      maxFeePerGas = item.maxFeePerGas;
+      maxPriorityFeePerGas = item.maxPriorityFeePerGas;
+      gasLimit = item.gasLimit;
       data.maxFeePerGas = Web3.utils.toHex(
         Web3.utils.toWei(maxFeePerGas, "gwei")
       );
