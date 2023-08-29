@@ -245,7 +245,6 @@ module.exports = {
     let destinationAmount;
     let sourceBridgeAmount: any;
     let swapResult;
-    let targetFoundryTokenAddress;
 
     // calculate amount
     if (!sourceNetwork.isNonEVM) {
@@ -351,17 +350,8 @@ module.exports = {
         tokenAbi.abi,
         targetNetwork.provider
       );
-      if (
-        targetChainId == (global as any).utils.arbitrumChainID &&
-        targetTokenAddress == (global as any).utils.cFRMTokenAddress
-      ) {
-        targetFoundryTokenAddress = targetTokenAddress;
-      } else {
-        targetFoundryTokenAddress = targetNetwork.foundryTokenAddress;
-      }
-      console.log("targetFoundryTokenAddress", targetFoundryTokenAddress);
       const targetFoundryTokenContract = new ethers.Contract(
-        targetFoundryTokenAddress,
+        targetNetwork.foundryTokenAddress,
         tokenAbi.abi,
         targetNetwork.provider
       );
