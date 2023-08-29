@@ -262,10 +262,8 @@ module.exports = {
       const sourceTokenDecimal = await sourceTokenContract.decimals();
       const sourceFoundryTokenDecimal =
         await sourceFoundryTokenContract.decimals();
-      const amount = (
-        inputAmount *
-        10 ** Number(sourceTokenDecimal)
-      ).toString();
+      let amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
+      amount = (global as any).utils.convertFromExponentialToDecimal(amount);
       // is source token foundy asset
       const isFoundryAsset = await this.sourceFACCheck(
         sourceNetwork,
