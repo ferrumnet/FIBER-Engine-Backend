@@ -112,6 +112,7 @@ module.exports = {
     let sourceBridgeAmount;
     let destinationAmountOut;
     let machineSourceBridgeAmount: any;
+    let targetFoundryTokenAddress;
 
     if (!sourceNetwork.isNonEVM) {
       // source token contract (required to approve function)
@@ -214,8 +215,17 @@ module.exports = {
         tokenAbi.abi,
         targetNetwork.provider
       );
+      if (
+        targetChainId == (global as any).utils.arbitrumChainID &&
+        targetTokenAddress == (global as any).utils.cFRMTokenAddress
+      ) {
+        targetFoundryTokenAddress = targetTokenAddress;
+      } else {
+        targetFoundryTokenAddress = targetNetwork.foundryTokenAddress;
+      }
+      console.log("targetFoundryTokenAddress", targetFoundryTokenAddress);
       const targetFoundryTokenContract = new ethers.Contract(
-        targetNetwork.foundryTokenAddress,
+        targetFoundryTokenAddress,
         tokenAbi.abi,
         targetNetwork.provider
       );
