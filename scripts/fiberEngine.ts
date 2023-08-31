@@ -262,10 +262,8 @@ module.exports = {
       const sourceTokenDecimal = await sourceTokenContract.decimals();
       const sourceFoundryTokenDecimal =
         await sourceFoundryTokenContract.decimals();
-      const amount = (
-        inputAmount *
-        10 ** Number(sourceTokenDecimal)
-      ).toString();
+      let amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
+      amount = (global as any).utils.convertFromExponentialToDecimal(amount);
       // is source token foundy asset
       const isFoundryAsset = await this.sourceFACCheck(
         sourceNetwork,
@@ -379,20 +377,6 @@ module.exports = {
         if (isTargetTokenFoundry === true) {
           console.log("TN-1: Target Token is Foundry Asset");
           console.log("TN-2: Withdraw Foundry Asset...");
-          // const hash = await produecSignaturewithdrawHash(
-          //   targetNetwork.chainId,
-          //   targetNetwork.fundManager,
-          //   targetTokenAddress,
-          //   destinationWalletAddress,
-          //   String(Math.floor(amountIn)),
-          //   salt
-          // );
-          // const sigP2 = ecsign(
-          //   Buffer.from(hash.replace("0x", ""), "hex"),
-          //   Buffer.from((global as any).environment.SIGNER.replace("0x", ""), "hex")
-          // );
-          // let sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
-          //if target token is foundry asset
           let localSignatureData = (
             global as any
           ).signatureHelper.createLocalSignatureDataObject(
@@ -450,19 +434,6 @@ module.exports = {
               "TN-2: Withdraw and Swap Foundry Asset to Target Token ...."
             );
             let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
-            // const hash = await produecSignaturewithdrawHash(
-            //   targetNetwork.chainId,
-            //   targetNetwork.fundManager,
-            //   path2[0],
-            //   targetNetwork.fiberRouter,
-            //   String(Math.floor(amountIn)),
-            //   salt
-            // );
-            // const sigP2 = ecsign(
-            //   Buffer.from(hash.replace("0x", ""), "hex"),
-            //   Buffer.from((global as any).environment.SIGNER.replace("0x", ""), "hex")
-            // );
-            // const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
             let localSignatureData = (
               global as any
             ).signatureHelper.createLocalSignatureDataObject(
@@ -538,19 +509,6 @@ module.exports = {
               targetNetwork.weth,
               targetTokenAddress,
             ];
-            // const hash = await produecSignaturewithdrawHash(
-            //   targetNetwork.chainId,
-            //   targetNetwork.fundManager,
-            //   path2[0],
-            //   targetNetwork.fiberRouter,
-            //   amountIn,
-            //   salt
-            // );
-            // const sigP2 = ecsign(
-            //   Buffer.from(hash.replace("0x", ""), "hex"),
-            //   Buffer.from((global as any).environment.SIGNER.replace("0x", ""), "hex")
-            // );
-            // const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
             let localSignatureData = (
               global as any
             ).signatureHelper.createLocalSignatureDataObject(
@@ -695,11 +653,13 @@ module.exports = {
       );
 
       const sourceTokenDecimal = await sourceTokenContract.decimals();
-      const amount = (
-        inputAmount *
-        10 ** Number(sourceTokenDecimal)
-      ).toString();
-      console.log("INIT: Swap Initiated for this Amount: ", inputAmount);
+      let amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
+      amount = (global as any).utils.convertFromExponentialToDecimal(amount);
+      console.log(
+        "INIT: Swap Initiated for this Amount: ",
+        amount,
+        inputAmount
+      );
       // is source token foundy asset
       const isFoundryAsset = await this.sourceFACCheck(
         sourceNetwork,

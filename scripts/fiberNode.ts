@@ -112,6 +112,7 @@ module.exports = {
     let sourceBridgeAmount;
     let destinationAmountOut;
     let machineSourceBridgeAmount: any;
+    let targetFoundryTokenAddress;
 
     if (!sourceNetwork.isNonEVM) {
       // source token contract (required to approve function)
@@ -129,7 +130,7 @@ module.exports = {
       const sourceFoundryTokenDecimal =
         await sourceFoundryTokenContract.decimals();
       let amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
-      amount = this.convert(amount);
+      amount = (global as any).utils.convertFromExponentialToDecimal(amount);
       // is source token foundy asset
       const isFoundryAsset = await sourceFACCheck(
         sourceNetwork,
@@ -214,8 +215,17 @@ module.exports = {
         tokenAbi.abi,
         targetNetwork.provider
       );
+      if (
+        targetChainId == (global as any).utils.arbitrumChainID &&
+        targetTokenAddress == (global as any).utils.cFRMTokenAddress
+      ) {
+        targetFoundryTokenAddress = targetTokenAddress;
+      } else {
+        targetFoundryTokenAddress = targetNetwork.foundryTokenAddress;
+      }
+      console.log("targetFoundryTokenAddress", targetFoundryTokenAddress);
       const targetFoundryTokenContract = new ethers.Contract(
-        targetNetwork.foundryTokenAddress,
+        targetFoundryTokenAddress,
         tokenAbi.abi,
         targetNetwork.provider
       );
@@ -309,7 +319,9 @@ module.exports = {
       destinationAmountOut =
         (await sourceBridgeAmount) / recentCudosPriceInDollars;
       machineSourceBridgeAmount = destinationAmountOut * 10 ** 18;
-      machineSourceBridgeAmount = this.convert(machineSourceBridgeAmount);
+      machineSourceBridgeAmount = (
+        global as any
+      ).utils.convertFromExponentialToDecimal(machineSourceBridgeAmount);
       targetAssetType = "Foundry";
     }
 
@@ -327,29 +339,5 @@ module.exports = {
     data.destination.amount = String(destinationAmountOut);
     data.destination.bridgeAmount = machineSourceBridgeAmount;
     return data;
-  },
-
-  convert(n: any) {
-    var sign = +n < 0 ? "-" : "",
-      toStr = n.toString();
-    if (!/e/i.test(toStr)) {
-      return n;
-    }
-    var [lead, decimal, pow] = n
-      .toString()
-      .replace(/^-/, "")
-      .replace(/^([0-9]+)(e.*)/, "$1.$2")
-      .split(/e|\./);
-    return +pow < 0
-      ? sign +
-          "0." +
-          "0".repeat(Math.max(Math.abs(pow) - 1 || 0, 0)) +
-          lead +
-          decimal
-      : sign +
-          lead +
-          (+pow >= decimal.length
-            ? decimal + "0".repeat(Math.max(+pow - decimal.length || 0, 0))
-            : decimal.slice(0, +pow) + "." + decimal.slice(+pow));
   },
 };
