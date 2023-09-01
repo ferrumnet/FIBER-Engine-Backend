@@ -337,7 +337,9 @@ module.exports = {
 
     data.destination.type = targetAssetType;
     data.destination.amount = String(destinationAmountOut);
-    data.destination.bridgeAmount = machineSourceBridgeAmount;
+    data.destination.bridgeAmount = (
+      global as any
+    ).utils.convertFromExponentialToDecimal(machineSourceBridgeAmount);
     return data;
   },
 };
