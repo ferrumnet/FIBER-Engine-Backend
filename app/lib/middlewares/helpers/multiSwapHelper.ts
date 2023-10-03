@@ -44,7 +44,8 @@ module.exports = {
       req.query.sourceNetworkChainId, // source chain id (goerli)
       req.query.destinationNetworkChainId, // target chain id (bsc)
       req.query.sourceAmount, //source token amount
-      req.query.destinationWalletAddress // destination wallet address
+      req.query.destinationWalletAddress, // destination wallet address
+      req.query
     );
     return data;
   },
