@@ -4,7 +4,7 @@ var signer = new ethers.Wallet((global as any).environment.PRI_KEY);
 import {
   getSourceAssetTypes,
   getTargetAssetTypes,
-} from "../app/lib/middlewares/helpers/fiberNodeHelper";
+} from "../app/lib/middlewares/helpers/assetTypeHelper";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -45,7 +45,7 @@ module.exports = {
         await sourceFoundryTokenContract.decimals();
       let amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
       amount = (global as any).utils.convertFromExponentialToDecimal(amount);
-      // is source token foundy asset
+
       let sourceTypeResponse = await getSourceAssetTypes(
         sourceNetwork,
         sourceTokenAddress,

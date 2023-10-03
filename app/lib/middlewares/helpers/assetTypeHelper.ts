@@ -79,6 +79,59 @@ export const getTargetAssetTypes = async (
   return response;
 };
 
+export const convertIntoAssetTypesObjectForSource = (query: any): AssetType => {
+  let isFoundryAsset = false;
+  let isRefineryAsset = false;
+  let isIonicAsset = false;
+  let type = "";
+  if (query?.sourceAssetType) {
+    type = query?.sourceAssetType;
+  }
+
+  if (type == "Foundry") {
+    isFoundryAsset = true;
+  } else if (type == "Refinery") {
+    isRefineryAsset = true;
+  } else if (type == "Ionic") {
+    isIonicAsset = true;
+  }
+
+  let response: AssetType = {
+    isFoundryAsset: isFoundryAsset,
+    isRefineryAsset: isRefineryAsset,
+    isIonicAsset: isIonicAsset,
+  };
+
+  console.log("convertIntoAssetTypesObjectForSource", response);
+  return response;
+};
+
+export const convertIntoAssetTypesObjectForTarget = (query: any): AssetType => {
+  let isFoundryAsset = false;
+  let isRefineryAsset = false;
+  let isIonicAsset = false;
+  let type = "";
+  if (query?.sourceAssetType) {
+    type = query?.sourceAssetType;
+  }
+
+  if (type == "Foundry") {
+    isFoundryAsset = true;
+  } else if (type == "Refinery") {
+    isRefineryAsset = true;
+  } else if (type == "Ionic") {
+    isIonicAsset = true;
+  }
+
+  let response: AssetType = {
+    isFoundryAsset: isFoundryAsset,
+    isRefineryAsset: isRefineryAsset,
+    isIonicAsset: isIonicAsset,
+  };
+  console.log("convertIntoAssetTypesObjectForTarget", response);
+  return response;
+};
+
 export const isTypeFoundryAsset = async (
   sourceNetwork: any,
   sourceTokenAddress: any
