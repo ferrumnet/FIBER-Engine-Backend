@@ -12,6 +12,7 @@ import {
   createCudosResponse,
   createEVMResponse,
 } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
+import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -48,96 +49,6 @@ module.exports = {
       return transactionCount;
     }
     return null;
-  },
-
-  //check the requested token exist on the Source network Fund Manager
-  sourceFACCheck: async function (sourceNetwork: any, tokenAddress: any) {
-    const isSourceTokenFoundryAsset =
-      await sourceNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
-    return isSourceTokenFoundryAsset;
-  },
-  //check the requested token exist on the Source network Fund Manager
-  targetFACCheck: async function (
-    targetNetwork: any,
-    tokenAddress: any,
-    amount: any
-  ) {
-    const targetTokenContract = new ethers.Contract(
-      tokenAddress,
-      tokenAbi.abi,
-      targetNetwork.provider
-    );
-    const isTargetTokenFoundryAsset =
-      await targetNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
-    const targetFoundryAssetLiquidity = await targetTokenContract.balanceOf(
-      targetNetwork.fundManagerContract.address
-    );
-
-    if (
-      isTargetTokenFoundryAsset === true &&
-      Number(targetFoundryAssetLiquidity) > Number(amount)
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  },
-
-  //check source toke is foundry asset
-  isSourceRefineryAsset: async function (
-    sourceNetwork: any,
-    tokenAddress: any,
-    amount: any
-  ) {
-    try {
-      const isTokenFoundryAsset = await this.sourceFACCheck(
-        sourceNetwork,
-        tokenAddress
-      );
-
-      let path = [tokenAddress, sourceNetwork.foundryTokenAddress];
-      const amounts = await sourceNetwork.dexContract.getAmountsOut(
-        String(amount),
-        path
-      );
-      const amountsOut = amounts[1];
-      if (isTokenFoundryAsset == false && Number(amountsOut) > 0) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      return false;
-    }
-  },
-
-  //check source token is foundry asset
-  isTargetRefineryAsset: async function (
-    targetNetwork: any,
-    tokenAddress: any,
-    amount: any
-  ) {
-    try {
-      const isTokenFoundryAsset = await this.targetFACCheck(
-        targetNetwork,
-        tokenAddress,
-        amount
-      );
-
-      let path = [targetNetwork.foundryTokenAddress, tokenAddress];
-      const amounts = await targetNetwork.dexContract.getAmountsOut(
-        String(amount),
-        path
-      );
-      const amountsOut = amounts[1];
-      if (isTokenFoundryAsset == false && Number(amountsOut) > 0) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      return false;
-    }
   },
 
   getDeadLine: function () {
@@ -279,16 +190,15 @@ module.exports = {
             body,
             (global as any).utils.assetType.REFINERY
           );
-          let amounts2;
-          try {
-            amounts2 = await targetNetwork.dexContract.getAmountsOut(
-              String(signatureResponse.amount),
-              path2
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
+          let response = await getAmountOut(
+            targetNetwork,
+            path2,
+            String(signatureResponse.amount)
+          );
+          if (response?.responseMessage) {
+            throw response?.responseMessage;
           }
-          const amountsOut2 = amounts2[1];
+          const amountsOut2 = response?.amounts[1];
           const swapResult2 = await targetNetwork.fiberRouterContract
             .connect(targetSigner)
             .withdrawSignedAndSwap(
@@ -326,16 +236,15 @@ module.exports = {
             body,
             (global as any).utils.assetType.IONIC
           );
-          let amounts2;
-          try {
-            amounts2 = await targetNetwork.dexContract.getAmountsOut(
-              String(signatureResponse.amount),
-              path2
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
+          let response = await getAmountOut(
+            targetNetwork,
+            path2,
+            String(signatureResponse.amount)
+          );
+          if (response?.responseMessage) {
+            throw response?.responseMessage;
           }
-          const amountsOut2 = amounts2[amounts2.length - 1];
+          const amountsOut2 = response?.amounts[response?.amounts.length - 1];
           const swapResult3 = await targetNetwork.fiberRouterContract
             .connect(targetSigner)
             .withdrawSignedAndSwap(
@@ -491,16 +400,15 @@ module.exports = {
         if (!targetNetwork.isNonEVM) {
           //swap refinery token to the foundry token
           let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-          let amounts;
-          try {
-            amounts = await sourceNetwork.dexContract.getAmountsOut(
-              String(amount),
-              path
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
+          let response = await getAmountOut(
+            sourceNetwork,
+            path,
+            String(amount)
+          );
+          if (response?.responseMessage) {
+            throw response?.responseMessage;
           }
-          const amountsOut = amounts[1];
+          const amountsOut = response?.amounts[1];
           sourceBridgeAmount = amountsOut;
           swapResult = fiberRouter.methods.swapAndCross(
             sourceNetwork.dexContract.address,
@@ -518,16 +426,15 @@ module.exports = {
           //swap refinery token to the foundry token
           // const amount = await (inputAmount * 10 ** Number(targetNetwork.decimals)).toString();
           let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-          let amounts;
-          try {
-            amounts = await sourceNetwork.dexContract.getAmountsOut(
-              String(amount),
-              path
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
+          let response = await getAmountOut(
+            sourceNetwork,
+            path,
+            String(amount)
+          );
+          if (response?.responseMessage) {
+            throw response?.responseMessage;
           }
-          const amountsOut = amounts[1];
+          const amountsOut = response?.amounts[1];
           sourceBridgeAmount = amountsOut;
           swapResult = fiberRouter.methods.nonEvmSwapAndCross(
             sourceNetwork.dexContract.address,
@@ -551,16 +458,15 @@ module.exports = {
             sourceNetwork.foundryTokenAddress,
           ];
           console.log("path", path);
-          let amounts;
-          try {
-            amounts = await sourceNetwork.dexContract.getAmountsOut(
-              String(amount),
-              path
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
+          let response = await getAmountOut(
+            sourceNetwork,
+            path,
+            String(amount)
+          );
+          if (response?.responseMessage) {
+            throw response?.responseMessage;
           }
-          const amountsOut = amounts[amounts.length - 1];
+          const amountsOut = response?.amounts[response?.amounts.length - 1];
           sourceBridgeAmount = amountsOut;
           swapResult = fiberRouter.methods.swapAndCross(
             sourceNetwork.dexContract.address,
@@ -582,16 +488,15 @@ module.exports = {
             sourceNetwork.foundryTokenAddress,
           ];
           console.log("path", path);
-          let amounts;
-          try {
-            amounts = await sourceNetwork.dexContract.getAmountsOut(
-              String(amount),
-              path
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
+          let response = await getAmountOut(
+            sourceNetwork,
+            path,
+            String(amount)
+          );
+          if (response?.responseMessage) {
+            throw response?.responseMessage;
           }
-          const amountsOut = amounts[amounts.length - 1];
+          const amountsOut = response?.amounts[response?.amounts.length - 1];
           sourceBridgeAmount = amountsOut;
           swapResult = fiberRouter.methods.nonEvmSwapAndCross(
             sourceNetwork.dexContract.address,

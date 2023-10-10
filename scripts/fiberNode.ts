@@ -5,6 +5,7 @@ import {
   getSourceAssetTypes,
   getTargetAssetTypes,
 } from "../app/lib/middlewares/helpers/assetTypeHelper";
+import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -70,16 +71,11 @@ module.exports = {
       } else if (isRefineryAsset) {
         console.log("Source Token is Refinery Asset");
         let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-        let amounts;
-        try {
-          amounts = await sourceNetwork.dexContract.getAmountsOut(
-            String(amount),
-            path
-          );
-        } catch (error) {
-          throw "ALERT: DEX doesn't have liquidity for this pair";
+        let response = await getAmountOut(sourceNetwork, path, String(amount));
+        if (response?.responseMessage) {
+          throw response?.responseMessage;
         }
-        const amountsOut = amounts[1];
+        const amountsOut = response?.amounts[1];
         sourceBridgeAmount = (
           amountsOut /
           10 ** Number(sourceFoundryTokenDecimal)
@@ -92,17 +88,11 @@ module.exports = {
           sourceNetwork.weth,
           sourceNetwork.foundryTokenAddress,
         ];
-        let amounts;
-        try {
-          amounts = await sourceNetwork.dexContract.getAmountsOut(
-            String(amount),
-            path
-          );
-        } catch (error) {
-          console.log("error", error);
-          throw "ALERT: DEX doesn't have liquidity for this pair";
+        let response = await getAmountOut(sourceNetwork, path, String(amount));
+        if (response?.responseMessage) {
+          throw response?.responseMessage;
         }
-        const amountsOut = amounts[amounts.length - 1];
+        const amountsOut = response?.amounts[response?.amounts.length - 1];
         sourceBridgeAmount = (
           amountsOut /
           10 ** Number(sourceFoundryTokenDecimal)
@@ -181,16 +171,15 @@ module.exports = {
           amountIn = Math.floor(amountIn);
           machineSourceBridgeAmount = amountIn;
           let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
-          let amounts2;
-          try {
-            amounts2 = await targetNetwork.dexContract.getAmountsOut(
-              String(Math.floor(amountIn)),
-              path2
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
+          let response = await getAmountOut(
+            targetNetwork,
+            path2,
+            String(Math.floor(amountIn))
+          );
+          if (response?.responseMessage) {
+            throw response?.responseMessage;
           }
-          const amountsOut2 = amounts2[1];
+          const amountsOut2 = response?.amounts[1];
 
           destinationAmountOut = (
             amountsOut2 /
@@ -205,17 +194,15 @@ module.exports = {
             targetNetwork.weth,
             targetTokenAddress,
           ];
-          let amounts2;
-          try {
-            amounts2 = await targetNetwork.dexContract.getAmountsOut(
-              String(amountIn),
-              path2
-            );
-          } catch (error) {
-            console.log("error", error);
-            throw "ALERT: DEX doesn't have liquidity for this pair";
+          let response = await getAmountOut(
+            targetNetwork,
+            path2,
+            String(amountIn)
+          );
+          if (response?.responseMessage) {
+            throw response?.responseMessage;
           }
-          const amountsOut2 = amounts2[amounts2.length - 1];
+          const amountsOut2 = response?.amounts[response?.amounts.length - 1];
 
           destinationAmountOut = (
             amountsOut2 /
