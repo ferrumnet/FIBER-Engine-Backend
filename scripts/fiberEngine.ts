@@ -7,41 +7,12 @@ var tokenAbi = require("../artifacts/contracts/token/Token.sol/Token.json");
 const routerAbi = require("../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const { produecSignaturewithdrawHash, fixSig } = require("./utils/BridgeUtils");
 const { BigNumber } = require("ethers");
+import { convertIntoAssetTypesObjectForSource } from "../app/lib/middlewares/helpers/assetTypeHelper";
 import {
-  convertIntoAssetTypesObjectForSource,
-  convertIntoAssetTypesObjectForTarget,
-} from "../app/lib/middlewares/helpers/assetTypeHelper";
-// const {
-//   bscChainId,
-//   goerliChainId,
-//   goerliRPC,
-//   bscRPC,
-//   goerliFundManager,
-//   bscFundManager,
-//   goerliFiberRouter,
-//   bscFiberRouter,
-//   bscRouter,
-//   goerliRouter,
-//   bscUsdt,
-//   goerliUsdt,
-//   bscCake,
-//   goerliCake,
-//   goerliUsdc,
-//   bscUsdc,
-//   bscAda,
-//   goerliAda,
-//   bscLink,
-//   goerliLink,
-//   bscUsdtOracle,
-//   goerliUsdtOracle,
-//   bscLinkOracle,
-//   goerliLinkOracle,
-//   goerliAave,
-//   bscAave,
-//   networks,
-//   goerliCudos,
-//   bscCudos,
-// } = (global as any).networkHelper;
+  createCudosResponse,
+  createEVMResponse,
+} from "../app/lib/middlewares/helpers/withdrawResponseHelper";
+
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
 var Big = require("big.js");
@@ -245,6 +216,7 @@ module.exports = {
     ).multiswapNetworkFIBERInformation;
 
     let transactionHash = "";
+    let withdrawResponse;
     let destinationAmount;
     let targetTypeResponse = await convertIntoAssetTypesObjectForSource(body);
 
@@ -292,7 +264,8 @@ module.exports = {
               signatureResponse.amount /
               10 ** Number(targetTokenDecimal)
             ).toString();
-            transactionHash = swapResult.hash;
+            withdrawResponse = createCudosResponse(swapResult);
+            transactionHash = withdrawResponse?.transactionHash;
             console.log("Transaction hash is: swapResult", swapResult.hash);
           }
         }
@@ -336,7 +309,8 @@ module.exports = {
                 amountsOut2 /
                 10 ** Number(targetTokenDecimal)
               ).toString();
-              transactionHash = swapResult2.hash;
+              withdrawResponse = createCudosResponse(swapResult2);
+              transactionHash = withdrawResponse?.transactionHash;
               console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
             }
           }
@@ -382,7 +356,8 @@ module.exports = {
                 amountsOut2 /
                 10 ** Number(targetTokenDecimal)
               ).toString();
-              transactionHash = swapResult3.hash;
+              withdrawResponse = createCudosResponse(swapResult3);
+              transactionHash = withdrawResponse?.transactionHash;
               console.log("Transaction hash is: ", swapResult3.hash);
             }
           }
@@ -408,11 +383,14 @@ module.exports = {
         String(signatureResponse.signature)
       );
       console.log("swapResult.transactionHash", swapResult.transactionHash);
-      transactionHash = await swapResult.transactionHash;
+      withdrawResponse = createCudosResponse(swapResult);
+      transactionHash = withdrawResponse?.transactionHash;
     }
     let data: any = {};
-    data.txHash = transactionHash;
+    data.txHash = withdrawResponse?.transactionHash;
     data.destinationAmount = String(destinationAmount);
+    data.responseCode = withdrawResponse?.responseCode;
+    data.responseMessage = withdrawResponse?.responseMessage;
     return data;
   },
 
