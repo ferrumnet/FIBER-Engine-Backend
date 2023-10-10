@@ -190,6 +190,7 @@ async function isSourceRefineryAsset(
       return false;
     }
   } catch (error) {
+    console.log("isSourceRefineryAsset error", error);
     return false;
   }
 }
@@ -243,6 +244,7 @@ async function isTargetRefineryAsset(
       return false;
     }
   } catch (error) {
+    console.log("isTargetRefineryAsset error", error);
     return false;
   }
 }
