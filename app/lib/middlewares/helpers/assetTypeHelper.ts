@@ -112,7 +112,7 @@ export const convertIntoAssetTypesObjectForTarget = (query: any): AssetType => {
   let isIonicAsset = false;
   let type = "";
   if (query?.sourceAssetType) {
-    type = query?.sourceAssetType;
+    type = query?.destinationAssetType;
   }
 
   if (type == "Foundry") {

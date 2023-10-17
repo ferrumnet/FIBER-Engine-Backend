@@ -1,4 +1,5 @@
 const SUCCESS = "success";
+const CODE_100 = 100;
 const CODE_200 = 200;
 const CODE_201 = 201;
 
@@ -30,8 +31,8 @@ export const createCudosResponse = (tx: any): Response => {
 export const createEVMResponse = (tx: any): Response => {
   console.log("createEVMResponse", tx);
   let responseCode = CODE_201;
-  let transactionHash = tx?.hash ? tx.hash : "";
-  let responseMessage = "";
+  let transactionHash = tx?.transactionHash ? tx.transactionHash : "";
+  let responseMessage = tx?.responseMessage ? tx.responseMessage : "";
 
   if (tx != null && tx.status != null && tx.status == true) {
     responseCode = CODE_200;

@@ -31,10 +31,13 @@ module.exports = function (router: any) {
         !req.query.sourceNetworkChainId ||
         !req.query.sourceAmount ||
         !req.query.destinationTokenContractAddress ||
-        !req.query.destinationNetworkChainId
+        !req.query.destinationNetworkChainId ||
+        !req.query.destinationAmount ||
+        !req.query.sourceAssetType ||
+        !req.query.destinationAssetType
       ) {
         return res.http401(
-          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing"
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & destinationAmount & sourceAssetType & destinationAssetType are missing"
         );
       }
 

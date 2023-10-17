@@ -16,7 +16,7 @@ var schema = mongoose.Schema(
     withdrawTransactionHash: { type: String, default: "" },
     isActive: { type: Boolean, default: true },
     responseCode: { type: Number, default: "" },
-    responseMessage: { type: String, default: "" },
+    responseMessage: {},
 
     createdAt: { type: Date, default: new Date() },
     updatedAt: { type: Date, default: new Date() },
