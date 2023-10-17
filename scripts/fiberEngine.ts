@@ -168,18 +168,15 @@ module.exports = {
             String(signatureResponse.signature),
             gas
           );
-        const receipt1 = await swapResult.wait();
-        if (receipt1.status == 1) {
-          if (swapResult && swapResult.hash) {
-            destinationAmount = (
-              signatureResponse.amount /
-              10 ** Number(targetTokenDecimal)
-            ).toString();
-            withdrawResponse = createEVMResponse(swapResult);
-            transactionHash = withdrawResponse?.transactionHash;
-            console.log("Transaction hash is: swapResult", swapResult.hash);
-          }
-        }
+        const receipt1 = await this.callEVMWithdrawAndGetReceipt(swapResult);
+        console.log("receipt1", receipt1);
+        destinationAmount = (
+          signatureResponse.amount /
+          10 ** Number(targetTokenDecimal)
+        ).toString();
+        withdrawResponse = createEVMResponse(receipt1);
+        transactionHash = withdrawResponse?.transactionHash;
+        console.log("Transaction hash is: swapResult", receipt1.hash);
       } else {
         const isTargetRefineryToken = targetTypeResponse.isRefineryAsset;
         if (isTargetRefineryToken == true) {
@@ -370,7 +367,8 @@ module.exports = {
             amount,
             targetChainId,
             targetFoundryTokenAddress,
-            destinationWalletAddress
+            destinationWalletAddress,
+            query.destinationAmount
           );
           //wait until the transaction be completed
           sourceBridgeAmount = amount;
@@ -418,7 +416,8 @@ module.exports = {
             this.getDeadLine().toString(), // deadline
             targetChainId,
             targetNetwork.foundryTokenAddress,
-            destinationWalletAddress
+            destinationWalletAddress,
+            query.destinationAmount
           );
         } else if (targetNetwork.isNonEVM) {
           console.log("SN-1: Non Evm Source Token is Refinery Asset");
@@ -476,7 +475,8 @@ module.exports = {
             this.getDeadLine().toString(), // deadline
             targetChainId,
             targetNetwork.foundryTokenAddress,
-            destinationWalletAddress
+            destinationWalletAddress,
+            query.destinationAmount
           );
         } else if (targetNetwork.isNonEVM) {
           console.log("SN-1: Non Evm Source Token is Ionic Asset");
@@ -536,5 +536,17 @@ module.exports = {
     } catch (error) {
       throw { error };
     }
+  },
+
+  callEVMWithdrawAndGetReceipt: async function (data: any) {
+    let receipt: any = { status: 0, responseMessage: "" };
+    try {
+      receipt = await data.wait();
+      console.log("swapResult receipt", receipt);
+    } catch (e) {
+      console.log("swapResult receipt error", e);
+      receipt.responseMessage = e;
+    }
+    return receipt;
   },
 };
