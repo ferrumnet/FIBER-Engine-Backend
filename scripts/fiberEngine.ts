@@ -175,7 +175,7 @@ module.exports = {
               signatureResponse.amount /
               10 ** Number(targetTokenDecimal)
             ).toString();
-            withdrawResponse = createCudosResponse(swapResult);
+            withdrawResponse = createEVMResponse(swapResult);
             transactionHash = withdrawResponse?.transactionHash;
             console.log("Transaction hash is: swapResult", swapResult.hash);
           }
@@ -219,7 +219,7 @@ module.exports = {
                 amountsOut2 /
                 10 ** Number(targetTokenDecimal)
               ).toString();
-              withdrawResponse = createCudosResponse(swapResult2);
+              withdrawResponse = createEVMResponse(swapResult2);
               transactionHash = withdrawResponse?.transactionHash;
               console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
             }
@@ -265,7 +265,7 @@ module.exports = {
                 amountsOut2 /
                 10 ** Number(targetTokenDecimal)
               ).toString();
-              withdrawResponse = createCudosResponse(swapResult3);
+              withdrawResponse = createEVMResponse(swapResult3);
               transactionHash = withdrawResponse?.transactionHash;
               console.log("Transaction hash is: ", swapResult3.hash);
             }
