@@ -44,23 +44,17 @@ module.exports = {
       req.query.sourceNetworkChainId, // source chain id (goerli)
       req.query.destinationNetworkChainId, // target chain id (bsc)
       req.query.sourceAmount, //source token amount
-      req.query.destinationWalletAddress // destination wallet address
+      req.query.destinationWalletAddress, // destination wallet address
+      req.query
     );
     return data;
   },
 
-  getWithdrawSigned: async function (req: any, version: string) {
+  getWithdrawSigned: async function (req: any) {
     let log = await this.saveTransactionLog(req);
     let query = req.query;
-    console.log(query);
-    let data: any = {};
-    if (version == "v2") {
-      this.doWithdraw(req, query, version);
-      return null;
-    } else {
-      data = await this.doWithdraw(req, query, version);
-    }
-    return data;
+    this.doWithdraw(req, query);
+    return null;
   },
 
   validatonForSameSourceAndDestination: function (req: any) {
@@ -87,14 +81,16 @@ module.exports = {
     }
   },
 
-  updateTransactionLog: async function (
-    withdrawHash: any,
-    swapTransactionHash: any
-  ) {
+  updateTransactionLog: async function (data: any, swapTransactionHash: any) {
     try {
       await db.TransactionLogs.findOneAndUpdate(
         { swapTransactionHash: swapTransactionHash },
-        { withdrawTransactionHash: withdrawHash, updatedAt: new Date() },
+        {
+          withdrawTransactionHash: data.txHash,
+          responseCode: data.responseCode,
+          responseMessage: data.responseMessage,
+          updatedAt: new Date(),
+        },
         { new: true }
       );
     } catch (e) {
@@ -102,7 +98,7 @@ module.exports = {
     }
   },
 
-  doWithdraw: async function (req: any, query: any, version: string) {
+  doWithdraw: async function (req: any, query: any) {
     let data = await fiberEngine.withdraw(
       query.sourceTokenContractAddress,
       query.destinationTokenContractAddress,
@@ -113,17 +109,17 @@ module.exports = {
       req.query.swapTransactionHash,
       req.body
     );
-    await this.updateTransactionLog(data.txHash, req.query.swapTransactionHash);
-    if (version == "v2") {
-      data = {
-        data: data.txHash,
-        withdraw: data,
-      };
-      await await transactionUpdateAxiosHelper.updateTransactionJobStatus(
-        req.query.swapTransactionHash,
-        data
-      );
-    }
+    await this.updateTransactionLog(data, req.query.swapTransactionHash);
+    data = {
+      data: data.txHash,
+      withdraw: data,
+      responseCode: data.responseCode,
+      responseMessage: data.responseMessage,
+    };
+    await await transactionUpdateAxiosHelper.updateTransactionJobStatus(
+      req.query.swapTransactionHash,
+      data
+    );
     return data;
   },
 };

@@ -61,21 +61,14 @@ async function cudosWithdraw(
   console.log("Target token is foundry asset");
   console.log("withdraw and swap to foundry asset ...");
 
-  const success = await targetFiberRouter.withdrawSigned(
+  const response = await targetFiberRouter.withdrawSigned(
     targetTokenAddress,
     desinationWalletAddress,
     amount,
     salt,
     signature
   );
-  if (success) {
-    console.log("successfully swap foundry token to target foundry token");
-    console.log("Cheers! your bridge and swap was successful !!!");
-  } else {
-    console.log("failed to withdraw and swap foundry token");
-  }
-
-  return success;
+  return response;
 }
 
 module.exports = cudosWithdraw;
