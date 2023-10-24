@@ -103,7 +103,7 @@ module.exports = {
     }
     return false;
   },
-
+  
   updateTransactionLog: async function (data: any, swapTransactionHash: any) {
     try {
       await db.TransactionLogs.findOneAndUpdate(
