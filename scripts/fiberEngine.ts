@@ -57,53 +57,6 @@ module.exports = {
     return deadLine;
   },
 
-  estimateGasForWithdraw: async function (sourceChainId: any, from: any) {
-    let data: any = {};
-    let item = await db.GasFees.findOne({ chainId: sourceChainId });
-    if (item) {
-      let maxFeePerGas = MAX_FEE_PER_GAS;
-      let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
-      let gasLimit = GAS_LIMIT;
-      maxFeePerGas = item.maxFeePerGas;
-      maxPriorityFeePerGas = item.maxPriorityFeePerGas;
-      gasLimit = item.gasLimit;
-      data.maxFeePerGas = Web3.utils.toHex(
-        Web3.utils.toWei(maxFeePerGas, "gwei")
-      );
-      data.maxPriorityFeePerGas = Web3.utils.toHex(
-        Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
-      );
-      data.gasLimit = gasLimit;
-    } else {
-      data.gasPrice = 15000000000;
-    }
-    return data;
-  },
-
-  estimateGasForSwap: async function (sourceChainId: any, from: any) {
-    let data: any = {};
-    let item = await db.GasFees.findOne({ chainId: sourceChainId });
-    if (item) {
-      let maxFeePerGas = MAX_FEE_PER_GAS;
-      let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
-      let gasLimit = GAS_LIMIT;
-      maxFeePerGas = item.maxFeePerGas;
-      maxPriorityFeePerGas = item.maxPriorityFeePerGas;
-      gasLimit = item.gasLimit;
-      data.maxFeePerGas = Web3.utils.toHex(
-        Web3.utils.toWei(maxFeePerGas, "gwei")
-      );
-      data.maxPriorityFeePerGas = Web3.utils.toHex(
-        Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
-      );
-      data.gas = { gasLimit: gasLimit };
-    } else {
-      data.gas = {};
-    }
-    return data;
-  },
-
-  //main function to bridge and swap tokens
   withdraw: async function (
     sourceTokenAddress: any,
     targetTokenAddress: any,
@@ -548,5 +501,72 @@ module.exports = {
       receipt.responseMessage = e;
     }
     return receipt;
+  },
+
+  estimateGasForWithdraw: async function (sourceChainId: any, from: any) {
+    let data: any = {};
+    let network = (global as any).commonFunctions.getNetworkByChainId(
+      sourceChainId
+    );
+    let item = await db.GasFees.findOne({ chainId: sourceChainId });
+    if (item && network) {
+      let maxFeePerGas = MAX_FEE_PER_GAS;
+      let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
+      let gasLimit = GAS_LIMIT;
+      let isAllowedDynamicGasValues = network?.isAllowedDynamicGasValues;
+
+      maxFeePerGas = isAllowedDynamicGasValues
+        ? item.dynamicValues.maxFeePerGas
+        : item.maxFeePerGas;
+      maxPriorityFeePerGas = isAllowedDynamicGasValues
+        ? item.dynamicValues.maxPriorityFeePerGas
+        : item.maxPriorityFeePerGas;
+      gasLimit = item.gasLimit;
+
+      data.maxFeePerGas = Web3.utils.toHex(
+        Web3.utils.toWei(maxFeePerGas, "gwei")
+      );
+      data.maxPriorityFeePerGas = Web3.utils.toHex(
+        Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
+      );
+      data.gasLimit = gasLimit;
+    } else {
+      data.gasPrice = 15000000000;
+    }
+    return data;
+  },
+
+  estimateGasForSwap: async function (sourceChainId: any, from: any) {
+    let data: any = {};
+    let network = (global as any).commonFunctions.getNetworkByChainId(
+      sourceChainId
+    );
+    let item = await db.GasFees.findOne({ chainId: sourceChainId });
+    if (item && network) {
+      let maxFeePerGas = MAX_FEE_PER_GAS;
+      let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
+      let gasLimit = GAS_LIMIT;
+      let isAllowedDynamicGasValues = network?.isAllowedDynamicGasValues;
+
+      maxFeePerGas = isAllowedDynamicGasValues
+        ? item.dynamicValues.maxFeePerGas
+        : item.maxFeePerGas;
+      maxPriorityFeePerGas = isAllowedDynamicGasValues
+        ? item.dynamicValues.maxPriorityFeePerGas
+        : item.maxPriorityFeePerGas;
+      gasLimit = item.gasLimit;
+
+      data.maxFeePerGas = Web3.utils.toHex(
+        Web3.utils.toWei(maxFeePerGas, "gwei")
+      );
+      data.maxPriorityFeePerGas = Web3.utils.toHex(
+        Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
+      );
+      data.gas = { gasLimit: gasLimit };
+    } else {
+      data.gas = {};
+    }
+    console.log("data", data);
+    return data;
   },
 };
