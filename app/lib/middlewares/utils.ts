@@ -13,6 +13,7 @@ declare const db: any,
   web3ConfigurationHelper: any,
   web3Helper: any,
   cudosPriceAxiosHelper: any,
+  gasEstimationAxiosHelper: any,
   transactionUpdateAxiosHelper: any;
 
 module.exports = function () {
