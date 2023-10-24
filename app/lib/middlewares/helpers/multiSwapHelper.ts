@@ -51,9 +51,13 @@ module.exports = {
   },
 
   getWithdrawSigned: async function (req: any) {
-    let log = await this.saveTransactionLog(req);
-    let query = req.query;
-    this.doWithdraw(req, query);
+    if ((await this.isAlreadyInTransactionLog(req)) == false) {
+      let log = await this.saveTransactionLog(req);
+      let query = req.query;
+      this.doWithdraw(req, query);
+    } else {
+      throw "Transaction already in processing";
+    }
     return null;
   },
 
@@ -73,12 +77,31 @@ module.exports = {
   saveTransactionLog: async function (req: any) {
     try {
       let body = req.query;
+      body.responseCode = 100;
       body.createdAt = new Date();
       body.updatedAt = new Date();
       return await db.TransactionLogs.create(body);
     } catch (e) {
       console.log("createTransactionLog", e);
     }
+  },
+
+  isAlreadyInTransactionLog: async function (req: any): Promise<boolean> {
+    try {
+      let countFilter = {
+        swapTransactionHash: req.query.swapTransactionHash,
+        $or: [{ responseCode: 100 }, { responseCode: 200 }],
+      };
+      let count = await db.TransactionLogs.countDocuments(countFilter);
+      if (count == 1) {
+        console.log("Transaction already in processing");
+        return true;
+      }
+      console.log("transaction is new");
+    } catch (e) {
+      console.log("createTransactionLog", e);
+    }
+    return false;
   },
 
   updateTransactionLog: async function (data: any, swapTransactionHash: any) {
