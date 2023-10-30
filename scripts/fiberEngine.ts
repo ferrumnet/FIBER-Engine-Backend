@@ -529,7 +529,8 @@ module.exports = {
       data.maxPriorityFeePerGas = Web3.utils.toHex(
         Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
       );
-      data.gasLimit = gasLimit;
+
+      // data.gasLimit = gasLimit;
     } else {
       data.gasPrice = 15000000000;
     }
@@ -562,11 +563,10 @@ module.exports = {
       data.maxPriorityFeePerGas = Web3.utils.toHex(
         Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
       );
-      data.gas = { gasLimit: gasLimit };
+      // data.gas = { gasLimit: gasLimit };
     } else {
       data.gas = {};
     }
-    console.log("data", data);
     return data;
   },
 };
