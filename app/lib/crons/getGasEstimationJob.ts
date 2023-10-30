@@ -35,21 +35,21 @@ async function triggerJobs() {
         network.isAllowedDynamicGasValues == true &&
         network.isNonEVM == false
       ) {
-        console.log(
-          "networkShortName",
-          network?.networkShortName?.toLowerCase()
-        );
-        let apiKey = getApiKey(network.chainId);
-        let gasEstimation = await (
-          global as any
-        ).gasEstimationAxiosHelper.getGasEstimationByNetworkName(
-          network?.networkShortName?.toLowerCase(),
-          apiKey
-        );
-        await updateGas(network, gasEstimation);
+        getGasEstimation(network);
       }
     }
   }
+}
+
+async function getGasEstimation(network: any) {
+  let apiKey = getApiKey(network.chainId);
+  let gasEstimation = await (
+    global as any
+  ).gasEstimationAxiosHelper.getGasEstimationByNetworkName(
+    network?.networkShortName?.toLowerCase(),
+    apiKey
+  );
+  await updateGas(network, gasEstimation);
 }
 
 async function updateGas(network: any, gasEstimation: any) {
@@ -57,8 +57,10 @@ async function updateGas(network: any, gasEstimation: any) {
   if (network && speed) {
     let body = {
       dynamicValues: {
-        maxFeePerGas: speed?.maxFeePerGas,
-        maxPriorityFeePerGas: speed?.maxPriorityFeePerGas,
+        maxFeePerGas: speed?.maxFeePerGas ? speed?.maxFeePerGas : null,
+        maxPriorityFeePerGas: speed?.maxPriorityFeePerGas
+          ? speed?.maxPriorityFeePerGas
+          : null,
       },
     };
     await db.GasFees.findOneAndUpdate({ chainId: network.chainId }, body, {
