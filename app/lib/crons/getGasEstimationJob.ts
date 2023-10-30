@@ -54,15 +54,26 @@ async function getGasEstimation(network: any) {
 
 async function updateGas(network: any, gasEstimation: any) {
   let speed = getSpeed(gasEstimation);
+  let body: any = {};
   if (network && speed) {
-    let body = {
-      dynamicValues: {
-        maxFeePerGas: speed?.maxFeePerGas ? speed?.maxFeePerGas : null,
-        maxPriorityFeePerGas: speed?.maxPriorityFeePerGas
-          ? speed?.maxPriorityFeePerGas
-          : null,
-      },
-    };
+    if (network.chainId == 56) {
+      body = {
+        dynamicValues: {
+          maxFeePerGas: speed?.gasPrice ? speed?.gasPrice : null,
+          maxPriorityFeePerGas: speed?.gasPrice ? speed?.gasPrice : null,
+        },
+      };
+    } else {
+      body = {
+        dynamicValues: {
+          maxFeePerGas: speed?.maxFeePerGas ? speed?.maxFeePerGas : null,
+          maxPriorityFeePerGas: speed?.maxPriorityFeePerGas
+            ? speed?.maxPriorityFeePerGas
+            : null,
+        },
+      };
+    }
+
     await db.GasFees.findOneAndUpdate({ chainId: network.chainId }, body, {
       new: true,
     });
