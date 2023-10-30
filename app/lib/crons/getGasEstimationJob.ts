@@ -86,9 +86,22 @@ function getSpeed(gasEstimation: any) {
     gasEstimation.speeds &&
     gasEstimation.speeds.length > 0
   ) {
-    return gasEstimation.speeds[3] ? gasEstimation.speeds[3] : null;
+    let speed = getHighAcceptanceValue(gasEstimation.speeds);
+    return speed ? speed : null;
   }
   return null;
+}
+
+function getHighAcceptanceValue(speeds: any) {
+  let value = null;
+  const max = Math.max(...speeds.map((item: any) => item.acceptance), 0);
+  for (let i = 0; i < speeds.length; i++) {
+    let item = speeds[i];
+    if ((item.acceptance = max)) {
+      value = item;
+    }
+  }
+  return value;
 }
 
 function getApiKey(chainId: String) {
