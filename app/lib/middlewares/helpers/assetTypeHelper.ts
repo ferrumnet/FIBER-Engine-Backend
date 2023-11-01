@@ -5,6 +5,7 @@ interface AssetType {
   isFoundryAsset: boolean;
   isRefineryAsset: boolean;
   isIonicAsset: boolean;
+  isOneInch: boolean;
 }
 
 export const getSourceAssetTypes = async (
@@ -15,26 +16,19 @@ export const getSourceAssetTypes = async (
   let isFoundryAsset = false;
   let isRefineryAsset = false;
   let isIonicAsset = false;
+  let isOneInch = false;
 
   isFoundryAsset = await sourceFACCheck(sourceNetwork, sourceTokenAddress);
   console.log("isFoundryAsset", isFoundryAsset);
   if (!isFoundryAsset) {
-    isRefineryAsset = await isSourceRefineryAsset(
-      sourceNetwork,
-      sourceTokenAddress,
-      amount
-    );
-    console.log("isRefineryAsset", isRefineryAsset);
-    if (!isRefineryAsset) {
-      isIonicAsset = true;
-      console.log("isIonicAsset", isIonicAsset);
-    }
+    isOneInch = true;
   }
 
   let response: AssetType = {
     isFoundryAsset: isFoundryAsset,
     isRefineryAsset: isRefineryAsset,
     isIonicAsset: isIonicAsset,
+    isOneInch: isOneInch,
   };
 
   return response;
@@ -48,6 +42,7 @@ export const getTargetAssetTypes = async (
   let isFoundryAsset = false;
   let isRefineryAsset = false;
   let isIonicAsset = false;
+  let isOneInch = false;
 
   isFoundryAsset = await targetFACCheck(
     targetNetwork,
@@ -57,23 +52,14 @@ export const getTargetAssetTypes = async (
   console.log("isFoundryAsset", isFoundryAsset);
 
   if (!isFoundryAsset) {
-    isRefineryAsset = await isTargetRefineryAsset(
-      targetNetwork,
-      targetTokenAddress,
-      amount
-    );
-    console.log("isRefineryAsset", isRefineryAsset);
-
-    if (!isRefineryAsset) {
-      isIonicAsset = true;
-      console.log("isIonicAsset", isIonicAsset);
-    }
+    isOneInch = true;
   }
 
   let response: AssetType = {
     isFoundryAsset: isFoundryAsset,
     isRefineryAsset: isRefineryAsset,
     isIonicAsset: isIonicAsset,
+    isOneInch: isOneInch,
   };
 
   return response;
@@ -83,23 +69,28 @@ export const convertIntoAssetTypesObjectForSource = (query: any): AssetType => {
   let isFoundryAsset = false;
   let isRefineryAsset = false;
   let isIonicAsset = false;
+  let isOneInch = false;
+
   let type = "";
   if (query?.sourceAssetType) {
     type = query?.sourceAssetType;
   }
 
-  if (type == "Foundry") {
+  if (type == (global as any).utils.assetType.FOUNDARY) {
     isFoundryAsset = true;
-  } else if (type == "Refinery") {
+  } else if (type == (global as any).utils.assetType.REFINERY) {
     isRefineryAsset = true;
-  } else if (type == "Ionic") {
+  } else if (type == (global as any).utils.assetType.IONIC) {
     isIonicAsset = true;
+  } else if (type == (global as any).utils.assetType.ONE_INCH) {
+    isOneInch = true;
   }
 
   let response: AssetType = {
     isFoundryAsset: isFoundryAsset,
     isRefineryAsset: isRefineryAsset,
     isIonicAsset: isIonicAsset,
+    isOneInch: isOneInch,
   };
 
   console.log("convertIntoAssetTypesObjectForSource", response);
@@ -110,23 +101,28 @@ export const convertIntoAssetTypesObjectForTarget = (query: any): AssetType => {
   let isFoundryAsset = false;
   let isRefineryAsset = false;
   let isIonicAsset = false;
+  let isOneInch = false;
+
   let type = "";
   if (query?.sourceAssetType) {
     type = query?.destinationAssetType;
   }
 
-  if (type == "Foundry") {
+  if (type == (global as any).utils.assetType.FOUNDARY) {
     isFoundryAsset = true;
-  } else if (type == "Refinery") {
+  } else if (type == (global as any).utils.assetType.REFINERY) {
     isRefineryAsset = true;
-  } else if (type == "Ionic") {
+  } else if (type == (global as any).utils.assetType.IONIC) {
     isIonicAsset = true;
+  } else if (type == (global as any).utils.assetType.ONE_INCH) {
+    isOneInch = true;
   }
 
   let response: AssetType = {
     isFoundryAsset: isFoundryAsset,
     isRefineryAsset: isRefineryAsset,
     isIonicAsset: isIonicAsset,
+    isOneInch: isOneInch,
   };
   console.log("convertIntoAssetTypesObjectForTarget", response);
   return response;
