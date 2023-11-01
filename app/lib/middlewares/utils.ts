@@ -22,6 +22,7 @@ module.exports = function () {
     FOUNDARY: "Foundry",
     REFINERY: "Refinery",
     IONIC: "Ionic",
+    ONE_INCH: "1Inch",
   };
   (utils.convertFromExponentialToDecimal = function (n: any) {
     var sign = +n < 0 ? "-" : "",
