@@ -289,17 +289,9 @@ module.exports = {
       targetAssetType = "Foundry";
     }
 
-    console.log(
-      "machineSourceBridgeAmount",
-      machineSourceBridgeAmountIntoTargetDecimal
-    );
     if (!targetNetwork.isNonEVM) {
       machineSourceBridgeAmountIntoTargetDecimal = String(
         Math.floor(machineSourceBridgeAmountIntoTargetDecimal)
-      );
-      console.log(
-        "machineSourceBridgeAmount",
-        machineSourceBridgeAmountIntoTargetDecimal
       );
     }
 
