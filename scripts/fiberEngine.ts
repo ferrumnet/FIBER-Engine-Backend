@@ -13,6 +13,7 @@ import {
   createEVMResponse,
 } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
+import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -104,6 +105,10 @@ module.exports = {
         await targetFoundryTokenContract.decimals();
 
       const isTargetTokenFoundry = targetTypeResponse.isFoundryAsset;
+      const isTargetRefineryToken = targetTypeResponse.isRefineryAsset;
+      const isTargetIonicFoundry = targetTypeResponse.isIonicAsset;
+      const isTargetOneInchAsset = targetTypeResponse.isOneInch;
+
       if (isTargetTokenFoundry === true) {
         let signatureResponse = await (
           global as any
@@ -131,7 +136,6 @@ module.exports = {
         transactionHash = withdrawResponse?.transactionHash;
         console.log("Transaction hash is: swapResult", receipt1.hash);
       } else {
-        const isTargetRefineryToken = targetTypeResponse.isRefineryAsset;
         if (isTargetRefineryToken == true) {
           let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
           let signatureResponse = await (
@@ -174,7 +178,7 @@ module.exports = {
               console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
             }
           }
-        } else {
+        } else if (isTargetIonicFoundry == true) {
           let path2 = [
             targetNetwork.foundryTokenAddress,
             targetNetwork.weth,
@@ -218,6 +222,54 @@ module.exports = {
               withdrawResponse = createEVMResponse(swapResult3);
               transactionHash = withdrawResponse?.transactionHash;
               console.log("Transaction hash is: ", swapResult3.hash);
+            }
+          }
+        } else {
+          // 1Inch implementation
+          let signatureResponse = await (
+            global as any
+          ).signatureHelper.getSignature(
+            body,
+            (global as any).utils.assetType.OneInch
+          );
+
+          let responseOneInch = await OneInchSwap(
+            targetChainId,
+            targetNetwork?.foundryTokenAddress,
+            targetTokenAddress,
+            signatureResponse.amount,
+            targetNetwork?.fiberRouter
+          );
+
+          if (responseOneInch?.responseMessage) {
+            throw responseOneInch?.responseMessage;
+          }
+
+          const swapResult = await targetNetwork.fiberRouterContract
+            .connect(targetSigner)
+            .withdrawSignedAndSwapOneInch(
+              destinationWalletAddress,
+              targetNetwork.router,
+              String(signatureResponse.amount),
+              String(responseOneInch?.amounts),
+              targetNetwork?.foundryTokenAddress,
+              targetTokenAddress,
+              responseOneInch?.data,
+              signatureResponse.salt,
+              String(signatureResponse.signature),
+              gas
+            );
+
+          const receipt = await swapResult.wait();
+          if (receipt.status == 1) {
+            if (swapResult && swapResult.hash) {
+              destinationAmount = (
+                responseOneInch?.amounts /
+                10 ** Number(targetTokenDecimal)
+              ).toString();
+              withdrawResponse = createEVMResponse(swapResult);
+              transactionHash = withdrawResponse?.transactionHash;
+              console.log("1Inch Transaction hash is: ", swapResult.hash);
             }
           }
         }
@@ -301,6 +353,7 @@ module.exports = {
       const isFoundryAsset = sourceTypeResponse.isFoundryAsset;
       const isRefineryAsset = sourceTypeResponse.isRefineryAsset;
       const isIonicAsset = sourceTypeResponse.isIonicAsset;
+      const isOneIncheAsset = sourceTypeResponse.isOneInch;
 
       let sourceBridgeAmount;
       let swapResult;
@@ -321,7 +374,7 @@ module.exports = {
             targetChainId,
             targetFoundryTokenAddress,
             destinationWalletAddress,
-            query.destinationAmount
+            query.destinationBridgeAmount
           );
           //wait until the transaction be completed
           sourceBridgeAmount = amount;
@@ -370,7 +423,7 @@ module.exports = {
             targetChainId,
             targetNetwork.foundryTokenAddress,
             destinationWalletAddress,
-            query.destinationAmount
+            query.destinationBridgeAmount
           );
         } else if (targetNetwork.isNonEVM) {
           console.log("SN-1: Non Evm Source Token is Refinery Asset");
@@ -399,7 +452,7 @@ module.exports = {
             destinationWalletAddress
           );
         }
-      } else {
+      } else if (isIonicAsset) {
         if (!targetNetwork.isNonEVM) {
           console.log("SN-1: Source Token is Ionic Asset");
           console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
@@ -429,7 +482,7 @@ module.exports = {
             targetChainId,
             targetNetwork.foundryTokenAddress,
             destinationWalletAddress,
-            query.destinationAmount
+            query.destinationBridgeAmount
           );
         } else if (targetNetwork.isNonEVM) {
           console.log("SN-1: Non Evm Source Token is Ionic Asset");
@@ -460,6 +513,37 @@ module.exports = {
             targetChainId,
             targetNetwork.foundryTokenAddress,
             destinationWalletAddress
+          );
+        }
+      } else {
+        // 1Inch implementation
+        if (!targetNetwork.isNonEVM) {
+          console.log("1Inch Asset EVM");
+          swapResult = fiberRouter.methods.swapAndCrossOneInch(
+            sourceNetwork?.router,
+            amount,
+            query?.sourceBridgeAmount,
+            targetChainId,
+            targetNetwork.foundryTokenAddress,
+            destinationWalletAddress,
+            query?.destinationBridgeAmount,
+            query?.sourceOneInchData,
+            sourceTokenAddress,
+            sourceNetwork.foundryTokenAddress
+          );
+        } else {
+          console.log("1Inch Asset EVM");
+          swapResult = fiberRouter.methods.nonEvmSwapAndCrossOneInch(
+            sourceNetwork?.router,
+            amount,
+            query?.sourceBridgeAmount,
+            targetChainId,
+            targetNetwork.foundryTokenAddress,
+            destinationWalletAddress,
+            query?.destinationBridgeAmount,
+            query?.sourceOneInchData,
+            sourceTokenAddress,
+            sourceNetwork.foundryTokenAddress
           );
         }
       }
