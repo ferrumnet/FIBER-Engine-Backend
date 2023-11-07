@@ -18,15 +18,25 @@ module.exports = {
       let destinationAmount = 0;
       destinationAmount = categorizedInfo?.destination?.amount;
       console.log("destinationAmount", destinationAmount);
+      let sourceOneInchData = "";
+      let sourceBridgeAmount = "";
+      if (categorizedInfo?.source?.oneInchData) {
+        sourceOneInchData = categorizedInfo?.source?.oneInchData;
+      }
+      if (categorizedInfo?.source?.bridgeAmount) {
+        sourceBridgeAmount = categorizedInfo?.source?.bridgeAmount;
+      }
 
       let sourceTokenCategorizedInfo: any = {};
       sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
       sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
+      sourceTokenCategorizedInfo.sourceBridgeAmount = sourceBridgeAmount;
+      sourceTokenCategorizedInfo.sourceOneInchData = sourceOneInchData;
 
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
-      destinationTokenCategorizedInfo.bridgeAmount =
+      destinationTokenCategorizedInfo.destinationBridgeAmount =
         categorizedInfo?.destination?.bridgeAmount;
 
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
@@ -103,7 +113,7 @@ module.exports = {
     }
     return false;
   },
-  
+
   updateTransactionLog: async function (data: any, swapTransactionHash: any) {
     try {
       await db.TransactionLogs.findOneAndUpdate(
