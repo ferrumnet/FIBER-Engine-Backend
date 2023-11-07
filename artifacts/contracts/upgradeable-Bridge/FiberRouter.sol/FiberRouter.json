@@ -284,6 +284,64 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "swapRouter",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountCrossMin",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "crossTargetNetwork",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "crossTargetToken",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "crossTargetAddress",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "swapBridgeAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_calldata",
+          "type": "bytes"
+        },
+        {
+          "internalType": "address",
+          "name": "fromToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "foundryToken",
+          "type": "address"
+        }
+      ],
+      "name": "nonEvmSwapAndCrossOneInch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "owner",
       "outputs": [
@@ -466,17 +524,12 @@
         },
         {
           "internalType": "uint256",
-          "name": "amountCrossMin",
+          "name": "amountIn",
           "type": "uint256"
         },
         {
-          "internalType": "address[]",
-          "name": "path",
-          "type": "address[]"
-        },
-        {
           "internalType": "uint256",
-          "name": "deadline",
+          "name": "amountCrossMin",
           "type": "uint256"
         },
         {
@@ -498,11 +551,26 @@
           "internalType": "uint256",
           "name": "swapBridgeAmount",
           "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_calldata",
+          "type": "bytes"
+        },
+        {
+          "internalType": "address",
+          "name": "fromToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "foundryToken",
+          "type": "address"
         }
       ],
-      "name": "swapAndCrossETH",
+      "name": "swapAndCrossOneInch",
       "outputs": [],
-      "stateMutability": "payable",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -622,14 +690,19 @@
           "type": "uint256"
         },
         {
-          "internalType": "address[]",
-          "name": "path",
-          "type": "address[]"
+          "internalType": "address",
+          "name": "foundryToken",
+          "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "deadline",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "targetToken",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_calldata",
+          "type": "bytes"
         },
         {
           "internalType": "bytes32",
@@ -642,45 +715,7 @@
           "type": "bytes"
         }
       ],
-      "name": "withdrawSignedAndSwapETH",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "bridgeFoundry",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "targetFoundry",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "payee",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "salt",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "multiSignature",
-          "type": "bytes"
-        }
-      ],
-      "name": "withdrawSignedAndSwapToFoundry",
+      "name": "withdrawSignedAndSwapOneInch",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
