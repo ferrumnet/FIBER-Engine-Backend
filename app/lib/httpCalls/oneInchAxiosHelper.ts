@@ -1,6 +1,22 @@
 var axios = require("axios").default;
 
-export const OneInchSwap = async (): Promise<any> => {
+interface Response {
+  responseMessage: string;
+  amounts: any;
+  data: any;
+}
+
+export const OneInchSwap = async (
+  chainId: string,
+  src: string,
+  dst: string,
+  amount: string,
+  from: string
+): Promise<Response> => {
+  let amounts = null;
+  let data = null;
+  let responseMessage = "";
+
   try {
     let config = {
       headers: {
@@ -9,12 +25,25 @@ export const OneInchSwap = async (): Promise<any> => {
         }`,
       },
     };
-    let url = `https://api.1inch.dev/swap/v5.2/56/swap?src=0xA719b8aB7EA7AF0DDb4358719a34631bb79d15Dc&dst=0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d&amount=1000000&from=0xb907da3947a589B56FD05a1740c09Ea06B3C9bbc&slippage=1&disableEstimate=true&includeProtocols=true&allowPartialFill=true`;
+    let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=1&disableEstimate=true&includeProtocols=true&allowPartialFill=true`;
+    console.log("url", url);
     let res = await axios.get(url, config);
     console.log("OneInch Swap", res.data);
-    return res.data;
-  } catch (error) {
-    console.log(error);
-    return null;
+    if (res?.data?.toAmount) {
+      amounts = res?.data?.toAmount;
+    }
+    if (res?.data?.tx?.data) {
+      data = res?.data?.tx?.data;
+    }
+  } catch (error: any) {
+    console.log("1Inch error", error?.response?.data);
+    responseMessage = error?.response?.data?.description;
   }
+
+  let response: Response = {
+    responseMessage: responseMessage,
+    amounts: amounts,
+    data: data,
+  };
+  return response;
 };

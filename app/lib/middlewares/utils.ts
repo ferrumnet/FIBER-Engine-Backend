@@ -19,7 +19,7 @@ declare const db: any,
 module.exports = function () {
   const utils: any = {};
   utils.assetType = {
-    FOUNDARY: "Foundry",
+    FOUNDARY: "Foundary",
     REFINERY: "Refinery",
     IONIC: "Ionic",
     ONE_INCH: "1Inch",
