@@ -7,7 +7,10 @@ var tokenAbi = require("../artifacts/contracts/token/Token.sol/Token.json");
 const routerAbi = require("../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const { produecSignaturewithdrawHash, fixSig } = require("./utils/BridgeUtils");
 const { BigNumber } = require("ethers");
-import { convertIntoAssetTypesObjectForSource } from "../app/lib/middlewares/helpers/assetTypeHelper";
+import {
+  convertIntoAssetTypesObjectForSource,
+  convertIntoAssetTypesObjectForTarget,
+} from "../app/lib/middlewares/helpers/assetTypeHelper";
 import {
   createCudosResponse,
   createEVMResponse,
@@ -83,7 +86,7 @@ module.exports = {
     let transactionHash = "";
     let withdrawResponse;
     let destinationAmount;
-    let targetTypeResponse = await convertIntoAssetTypesObjectForSource(body);
+    let targetTypeResponse = await convertIntoAssetTypesObjectForTarget(body);
 
     if (!targetNetwork.isNonEVM) {
       // ==========================================
@@ -173,7 +176,7 @@ module.exports = {
                 amountsOut2 /
                 10 ** Number(targetTokenDecimal)
               ).toString();
-              withdrawResponse = createEVMResponse(swapResult2);
+              withdrawResponse = createEVMResponse(receipt2);
               transactionHash = withdrawResponse?.transactionHash;
               console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
             }
@@ -219,7 +222,7 @@ module.exports = {
                 amountsOut2 /
                 10 ** Number(targetTokenDecimal)
               ).toString();
-              withdrawResponse = createEVMResponse(swapResult3);
+              withdrawResponse = createEVMResponse(receipt3);
               transactionHash = withdrawResponse?.transactionHash;
               console.log("Transaction hash is: ", swapResult3.hash);
             }
@@ -230,7 +233,7 @@ module.exports = {
             global as any
           ).signatureHelper.getSignature(
             body,
-            (global as any).utils.assetType.OneInch
+            (global as any).utils.assetType.ONE_INCH
           );
 
           let responseOneInch = await OneInchSwap(
@@ -267,9 +270,8 @@ module.exports = {
                 responseOneInch?.amounts /
                 10 ** Number(targetTokenDecimal)
               ).toString();
-              withdrawResponse = createEVMResponse(swapResult);
+              withdrawResponse = createEVMResponse(receipt);
               transactionHash = withdrawResponse?.transactionHash;
-              console.log("1Inch Transaction hash is: ", swapResult.hash);
             }
           }
         }
@@ -302,6 +304,7 @@ module.exports = {
     data.destinationAmount = String(destinationAmount);
     data.responseCode = withdrawResponse?.responseCode;
     data.responseMessage = withdrawResponse?.responseMessage;
+    console.log("data", data);
     return data;
   },
 
@@ -614,7 +617,7 @@ module.exports = {
         Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
       );
 
-      // data.gasLimit = gasLimit;
+      data.gasLimit = gasLimit;
     } else {
       data.gasPrice = 15000000000;
     }
