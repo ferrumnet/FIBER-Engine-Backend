@@ -7,6 +7,7 @@ import {
 } from "../app/lib/middlewares/helpers/assetTypeHelper";
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
+import { isLiquidityAvailable } from "../app/lib/middlewares/helpers/liquidityHelper";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -138,8 +139,6 @@ module.exports = {
 
     // destination
     if (!targetNetwork.isNonEVM) {
-      const targetSigner = signer.connect(targetNetwork.provider);
-      // source token contract
       const targetTokenContract = new ethers.Contract(
         targetTokenAddress,
         tokenAbi.abi,
@@ -290,9 +289,26 @@ module.exports = {
     }
 
     if (!targetNetwork.isNonEVM) {
+      machineSourceBridgeAmountIntoSourceDecimal = String(
+        Math.floor(machineSourceBridgeAmountIntoSourceDecimal)
+      );
+
       machineSourceBridgeAmountIntoTargetDecimal = String(
         Math.floor(machineSourceBridgeAmountIntoTargetDecimal)
       );
+
+      let isValidLiquidityAvailable = await isLiquidityAvailable(
+        targetNetwork.foundryTokenAddress,
+        targetNetwork.fundManager,
+        targetNetwork.provider,
+        (global as any).utils.convertFromExponentialToDecimal(
+          machineSourceBridgeAmountIntoTargetDecimal
+        )
+      );
+      if (!isValidLiquidityAvailable) {
+        console.log("Insufficient liquidity");
+        throw "Insufficient liquidity";
+      }
     }
 
     let data: any = { source: {}, destination: {} };

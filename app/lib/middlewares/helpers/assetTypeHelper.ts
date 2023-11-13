@@ -206,10 +206,15 @@ async function targetFACCheck(
   const targetFoundryAssetLiquidity = await targetTokenContract.balanceOf(
     targetNetwork.fundManagerContract.address
   );
-  if (
-    isTargetTokenFoundryAsset === true &&
-    Number(targetFoundryAssetLiquidity) > Number(amount)
-  ) {
+  // if (
+  //   isTargetTokenFoundryAsset === true &&
+  //   Number(targetFoundryAssetLiquidity) > Number(amount)
+  // ) {
+  //   return true;
+  // } else {
+  //   return false;
+  // }
+  if (isTargetTokenFoundryAsset === true) {
     return true;
   } else {
     return false;
