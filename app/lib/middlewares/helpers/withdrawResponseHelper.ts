@@ -29,7 +29,6 @@ export const createCudosResponse = (tx: any): Response => {
 };
 
 export const createEVMResponse = (tx: any): Response => {
-  console.log("createEVMResponse", tx);
   let responseCode = CODE_201;
   let transactionHash = tx?.transactionHash ? tx.transactionHash : "";
   let responseMessage = tx?.responseMessage ? tx.responseMessage : "";

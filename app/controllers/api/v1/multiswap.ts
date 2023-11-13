@@ -32,14 +32,11 @@ module.exports = function (router: any) {
         !req.query.sourceAmount ||
         !req.query.destinationTokenContractAddress ||
         !req.query.destinationNetworkChainId ||
-        !req.query.sourceBridgeAmount ||
-        !req.query.destinationBridgeAmount ||
         !req.query.sourceAssetType ||
-        !req.query.destinationAssetType ||
-        !req.query.sourceOneInchData
+        !req.query.destinationAssetType
       ) {
         return res.http401(
-          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceBridgeAmount & destinationBridgeAmount & sourceAssetType & destinationAssetType & sourceOneInchData are missing"
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType are missing"
         );
       }
 
@@ -72,16 +69,14 @@ module.exports = function (router: any) {
         !req.body.destinationTokenContractAddress ||
         !req.body.destinationNetworkChainId ||
         !req.body.salt ||
-        !req.body.salt ||
         !req.body.hash ||
         !req.body.signatures ||
-        !req.body.bridgeAmount ||
         !req.params.txHash
       ) {
         return res.http401(
           "sourceWalletAddress & sourceTokenContractAddress &" +
             " sourceNetworkChainId & sourceAmount & destinationTokenContractAddress &" +
-            " destinationNetworkChainId & salt & hash & signatures & bridgeAmount &" +
+            " destinationNetworkChainId & salt & hash & signatures &" +
             " swapTransactionHash are missing"
         );
       }

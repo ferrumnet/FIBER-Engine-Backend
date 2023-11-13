@@ -31,7 +31,7 @@ module.exports = {
     ) {
       signatureResponse.hash = paramsBody.hash;
       signatureResponse.salt = paramsBody.salt;
-      signatureResponse.amount = paramsBody.bridgeAmount;
+      signatureResponse.amount = paramsBody.destinationBridgeAmount;
       if (assetType == (global as any).utils.assetType.FOUNDARY) {
         signatureResponse.signature =
           paramsBody.signatures.length > 0 ? paramsBody.signatures[0] : "";
@@ -39,10 +39,6 @@ module.exports = {
         signatureResponse.signature =
           paramsBody.signatures.length > 0 ? paramsBody.signatures[1] : "";
       }
-      console.log(
-        "fetch signature data from api req body for v2",
-        signatureResponse
-      );
     }
     return signatureResponse;
   },
