@@ -9,6 +9,10 @@ var schema = mongoose.Schema(
     maxPriorityFeePerGas: { type: String, default: "" },
     gasLimit: { type: String, default: "" },
     chainId: { type: String, default: "" },
+    dynamicValues: {
+      maxFeePerGas: { type: String, default: "" },
+      maxPriorityFeePerGas: { type: String, default: "" },
+    },
     isActive: { type: Boolean, default: true },
 
     createdAt: { type: Date, default: new Date() },
