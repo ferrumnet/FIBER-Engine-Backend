@@ -535,7 +535,7 @@ module.exports = {
             sourceNetwork.foundryTokenAddress
           );
         } else {
-          console.log("1Inch Asset EVM");
+          console.log("1Inch Asset non EVM");
           swapResult = fiberRouter.methods.nonEvmSwapAndCrossOneInch(
             sourceNetwork?.router,
             amount,
@@ -621,6 +621,7 @@ module.exports = {
     } else {
       data.gasPrice = 15000000000;
     }
+    console.log("data", data);
     return data;
   },
 
