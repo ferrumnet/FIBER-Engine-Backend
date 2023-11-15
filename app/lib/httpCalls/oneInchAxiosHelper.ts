@@ -28,7 +28,6 @@ export const OneInchSwap = async (
     let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=1&disableEstimate=true&includeProtocols=true&allowPartialFill=true`;
     console.log("url", url);
     let res = await axios.get(url, config);
-    console.log("OneInch Swap", res.data);
     if (res?.data?.toAmount) {
       amounts = res?.data?.toAmount;
     }
@@ -36,6 +35,7 @@ export const OneInchSwap = async (
       data = res?.data?.tx?.data;
     }
   } catch (error: any) {
+    console.log("1Inch error", error);
     console.log("1Inch error", error?.response?.data);
     responseMessage = error?.response?.data?.description
       ? error?.response?.data?.description
