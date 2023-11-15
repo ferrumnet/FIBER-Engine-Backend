@@ -252,7 +252,7 @@ module.exports = {
           machineAmount = (global as any).utils.convertFromExponentialToDecimal(
             machineAmount
           );
-
+          await this.delay(1000);
           let response = await OneInchSwap(
             targetChainId,
             targetNetwork?.foundryTokenAddress,
@@ -331,5 +331,11 @@ module.exports = {
       machineSourceBridgeAmountIntoTargetDecimal
     );
     return data;
+  },
+
+  delay: function (ms: any) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
   },
 };
