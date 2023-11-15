@@ -132,7 +132,7 @@ module.exports = {
       }
     } else if (sourceNetwork.isNonEVM) {
       const recentCudosPriceInDollars =
-        await machineSourceBridgeAmountIntoTargetDecimal.getCudosPrice();
+        await cudosPriceAxiosHelper.getCudosPrice();
       sourceBridgeAmount = (await inputAmount) * recentCudosPriceInDollars;
       sourceAssetType = "Foundry";
     }

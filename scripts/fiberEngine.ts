@@ -296,6 +296,10 @@ module.exports = {
         String(signatureResponse.signature)
       );
       console.log("swapResult.transactionHash", swapResult.transactionHash);
+      destinationAmount = (
+        signatureResponse.amount /
+        10 ** Number(18)
+      ).toString();
       withdrawResponse = createCudosResponse(swapResult);
       transactionHash = withdrawResponse?.transactionHash;
     }
@@ -398,7 +402,8 @@ module.exports = {
             amount,
             targetChainId,
             targetFoundryTokenAddress,
-            destinationWalletAddress
+            destinationWalletAddress,
+            query.destinationBridgeAmount
           );
           //wait until the transaction be completed
           sourceBridgeAmount = amount;
@@ -452,7 +457,8 @@ module.exports = {
             this.getDeadLine().toString(), // deadline
             targetChainId,
             targetNetwork.foundryTokenAddress,
-            destinationWalletAddress
+            destinationWalletAddress,
+            query.destinationBridgeAmount
           );
         }
       } else if (isIonicAsset) {
@@ -515,7 +521,8 @@ module.exports = {
             this.getDeadLine().toString(), // deadline
             targetChainId,
             targetNetwork.foundryTokenAddress,
-            destinationWalletAddress
+            destinationWalletAddress,
+            query.destinationBridgeAmount
           );
         }
       } else {
@@ -543,10 +550,10 @@ module.exports = {
             targetChainId,
             targetNetwork.foundryTokenAddress,
             destinationWalletAddress,
-            query?.destinationBridgeAmount,
             query?.sourceOneInchData,
             sourceTokenAddress,
-            sourceNetwork.foundryTokenAddress
+            sourceNetwork.foundryTokenAddress,
+            query?.destinationBridgeAmount
           );
         }
       }
