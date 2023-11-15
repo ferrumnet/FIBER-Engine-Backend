@@ -37,7 +37,9 @@ export const OneInchSwap = async (
     }
   } catch (error: any) {
     console.log("1Inch error", error?.response?.data);
-    responseMessage = error?.response?.data?.description;
+    responseMessage = error?.response?.data?.description
+      ? error?.response?.data?.description
+      : "1Inch is not responding please try again";
   }
 
   let response: Response = {

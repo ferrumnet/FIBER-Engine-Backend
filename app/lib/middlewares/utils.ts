@@ -18,6 +18,7 @@ declare const db: any,
 
 module.exports = function () {
   const utils: any = {};
+  utils.IS_LOCAL_ENV = true;
   utils.assetType = {
     FOUNDARY: "Foundary",
     REFINERY: "Refinery",
