@@ -7,7 +7,11 @@ import {
 } from "../app/lib/middlewares/helpers/assetTypeHelper";
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
-import { isLiquidityAvailable } from "../app/lib/middlewares/helpers/liquidityHelper";
+import {
+  isLiquidityAvailableForEVM,
+  isLiquidityAvailableForCudos,
+} from "../app/lib/middlewares/helpers/liquidityHelper";
+let InsufficientLiquidityError = "Insufficient liquidity";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -297,7 +301,7 @@ module.exports = {
         Math.floor(machineSourceBridgeAmountIntoTargetDecimal)
       );
 
-      let isValidLiquidityAvailable = await isLiquidityAvailable(
+      let isValidLiquidityAvailable = await isLiquidityAvailableForEVM(
         targetNetwork.foundryTokenAddress,
         targetNetwork.fundManager,
         targetNetwork.provider,
@@ -306,8 +310,22 @@ module.exports = {
         )
       );
       if (!isValidLiquidityAvailable) {
-        console.log("Insufficient liquidity");
-        throw "Insufficient liquidity";
+        console.log(InsufficientLiquidityError);
+        throw InsufficientLiquidityError;
+      }
+    } else {
+      let isValidLiquidityAvailable = await isLiquidityAvailableForCudos(
+        targetNetwork.foundryTokenAddress,
+        targetNetwork.fundManager,
+        targetNetwork.rpcUrl,
+        (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
+        (global as any).utils.convertFromExponentialToDecimal(
+          machineSourceBridgeAmountIntoTargetDecimal
+        )
+      );
+      if (!isValidLiquidityAvailable) {
+        console.log(InsufficientLiquidityError);
+        throw InsufficientLiquidityError;
       }
     }
 

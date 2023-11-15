@@ -34,6 +34,7 @@ export const OneInchSwap = async (
     if (res?.data?.tx?.data) {
       data = res?.data?.tx?.data;
     }
+    console.log("data", res?.data);
   } catch (error: any) {
     console.log("1Inch error", error);
     console.log("1Inch error", error?.response?.data);
