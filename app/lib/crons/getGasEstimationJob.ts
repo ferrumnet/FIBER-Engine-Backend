@@ -53,23 +53,27 @@ async function getGasEstimation(network: any) {
 }
 
 async function updateGas(network: any, gasEstimation: any) {
-  let speed = getSpeed(gasEstimation);
+  let speed: any = getSpeed(gasEstimation);
   let body: any = {};
   if (network && speed) {
     if (network.chainId == 56) {
       body = {
         dynamicValues: {
-          maxFeePerGas: speed?.gasPrice ? speed?.gasPrice : null,
-          maxPriorityFeePerGas: speed?.gasPrice ? speed?.gasPrice : null,
+          maxFeePerGas: speed?.gasPrice ? valueFixed(speed?.gasPrice, 2) : 0,
+          maxPriorityFeePerGas: speed?.gasPrice
+            ? valueFixed(speed?.gasPrice, 2)
+            : 0,
         },
       };
     } else {
       body = {
         dynamicValues: {
-          maxFeePerGas: speed?.maxFeePerGas ? speed?.maxFeePerGas : null,
+          maxFeePerGas: speed?.maxFeePerGas
+            ? valueFixed(speed?.maxFeePerGas, 2)
+            : 0,
           maxPriorityFeePerGas: speed?.maxPriorityFeePerGas
-            ? speed?.maxPriorityFeePerGas
-            : null,
+            ? valueFixed(speed?.maxPriorityFeePerGas, 2)
+            : 0,
         },
       };
     }
@@ -121,4 +125,9 @@ function getApiKey(chainId: String) {
     }
   }
   return apiKey;
+}
+
+function valueFixed(x: any, d: any) {
+  if (!d) return x.toFixed(d); // don't go wrong if no decimal
+  return x.toFixed(d).replace(/\.?0+$/, "");
 }
