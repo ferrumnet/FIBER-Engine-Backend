@@ -1,8 +1,8 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 var CryptoJS = require("crypto-js");
-import * as jwt from 'jsonwebtoken';
+import * as jwt from "jsonwebtoken";
 var fs = require("fs");
-var { Big } =  require("big.js");
+var { Big } = require("big.js");
 const { ethers } = require("ethers");
 const routerAbiMainnet = require("../../../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const fundManagerAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FundManager.sol/FundManager.json");
@@ -22,50 +22,60 @@ module.exports = {
   },
 
   decodeAPiToken: function (token: any) {
-    return jwt.verify(token, ((global as any) as any).environment.jwtSecret);
+    return jwt.verify(token, (global as any as any).environment.jwtSecret);
   },
 
   async getValueFromStringsPhrase(queryKey: any) {
     return new Promise((resolve, reject) => {
-      fs.readFile("./app/lib/stringsPhrase.json", "utf8", function (err: any, data: any) {
-        if (err) {
-          console.log(err);
-          resolve("");
-        }
-        if (data) {
-          const phraseObj = JSON.parse(data);
-          if (phraseObj) {
-            for (const [key, value] of Object.entries(phraseObj)) {
-              if (key == queryKey) {
-                resolve(value);
-                return;
+      fs.readFile(
+        "./app/lib/stringsPhrase.json",
+        "utf8",
+        function (err: any, data: any) {
+          if (err) {
+            console.log(err);
+            resolve("");
+          }
+          if (data) {
+            const phraseObj = JSON.parse(data);
+            if (phraseObj) {
+              for (const [key, value] of Object.entries(phraseObj)) {
+                if (key == queryKey) {
+                  resolve(value);
+                  return;
+                }
               }
             }
           }
+          resolve("");
         }
-        resolve("");
-      });
+      );
     });
   },
-  
+
   encryptApiKey: function (data: any) {
     try {
-      var ciphertext = CryptoJS.AES.encrypt(data, (global as any).environment.jwtSecret).toString();
+      var ciphertext = CryptoJS.AES.encrypt(
+        data,
+        (global as any).environment.jwtSecret
+      ).toString();
       return ciphertext;
     } catch (e) {
       console.log(e);
-      return '';
+      return "";
     }
   },
 
   decryptApiKey: function (data: any) {
     try {
-      var bytes = CryptoJS.AES.decrypt(data, (global as any).environment.jwtSecret);
+      var bytes = CryptoJS.AES.decrypt(
+        data,
+        (global as any).environment.jwtSecret
+      );
       var originalText = bytes.toString(CryptoJS.enc.Utf8);
       return originalText;
     } catch (e) {
       console.log(e);
-      return '';
+      return "";
     }
   },
 
@@ -123,24 +133,34 @@ module.exports = {
   convertIntoFIBERNetworks: async function (networks: any) {
     try {
       if (networks && networks.length) {
-        for (let index = 0;  index < networks.length; index++) {
+        for (let index = 0; index < networks.length; index++) {
           let network = networks[index];
-          if(network){
-            let multiswapNetworkFIBERInformation: any = {...network.multiswapNetworkFIBERInformation};
-            multiswapNetworkFIBERInformation.name =  network.name;
-            multiswapNetworkFIBERInformation.shortName =  network.networkShortName;
-            multiswapNetworkFIBERInformation.rpc =  multiswapNetworkFIBERInformation.rpcUrl;
+          if (network) {
+            let multiswapNetworkFIBERInformation: any = {
+              ...network.multiswapNetworkFIBERInformation,
+            };
+            multiswapNetworkFIBERInformation.name = network.name;
+            multiswapNetworkFIBERInformation.shortName =
+              network.networkShortName;
+            multiswapNetworkFIBERInformation.rpc =
+              multiswapNetworkFIBERInformation.rpcUrl;
             multiswapNetworkFIBERInformation.chainId = network.chainId;
             multiswapNetworkFIBERInformation.isNonEVM = network.isNonEVM;
             if (network.isNonEVM != null && network.isNonEVM == false) {
-              multiswapNetworkFIBERInformation.provider = this.getProvider(multiswapNetworkFIBERInformation.rpc); 
-              multiswapNetworkFIBERInformation.dexContract = this.getDexContract(multiswapNetworkFIBERInformation);
-              multiswapNetworkFIBERInformation.fundManagerContract = this.getFundManagerContract(multiswapNetworkFIBERInformation);
-              multiswapNetworkFIBERInformation.fiberRouterContract = this.getFiberRouterContract(multiswapNetworkFIBERInformation);
+              multiswapNetworkFIBERInformation.provider = this.getProvider(
+                multiswapNetworkFIBERInformation.rpc
+              );
+              multiswapNetworkFIBERInformation.dexContract =
+                this.getDexContract(multiswapNetworkFIBERInformation);
+              multiswapNetworkFIBERInformation.fundManagerContract =
+                this.getFundManagerContract(multiswapNetworkFIBERInformation);
+              multiswapNetworkFIBERInformation.fiberRouterContract =
+                this.getFiberRouterContract(multiswapNetworkFIBERInformation);
             } else {
               multiswapNetworkFIBERInformation.decimals = 18;
             }
-            network.multiswapNetworkFIBERInformation = multiswapNetworkFIBERInformation;
+            network.multiswapNetworkFIBERInformation =
+              multiswapNetworkFIBERInformation;
           }
         }
       }
@@ -153,7 +173,9 @@ module.exports = {
   getNetworkByChainId: function (chainId: any) {
     try {
       if ((global as any).networks && (global as any).networks.length) {
-        return (global as any).networks.find((item: any) => item.chainId === chainId);
+        return (global as any).networks.find(
+          (item: any) => item.chainId === chainId
+        );
       }
     } catch (e) {
       console.log(e);
@@ -161,37 +183,43 @@ module.exports = {
     return null;
   },
 
-  amountConversion: function(amount: any){
-    try{
-      
-    }catch(e){
+  amountConversion: function (amount: any) {
+    try {
+    } catch (e) {
       console.log(e);
     }
     return amount;
   },
 
   async amountToHuman(rpcUrl: any, tokenContractAddress: any, amount: number) {
-		let decimal = await this.decimals(rpcUrl, tokenContractAddress);
-		if (decimal) {
-			let decimalFactor = 10 ** decimal;
-			return new Big(amount).div(decimalFactor).toFixed();
-		}
+    let decimal = await this.decimals(rpcUrl, tokenContractAddress);
+    if (decimal) {
+      let decimalFactor = 10 ** decimal;
+      return new Big(amount).div(decimalFactor).toFixed();
+    }
 
-		return null;
-	},
+    return null;
+  },
 
-	async decimals(rpcUrl: any, tokenContractAddress: any) {
+  async decimals(rpcUrl: any, tokenContractAddress: any) {
+    if (rpcUrl && tokenContractAddress) {
+      let con = web3ConfigurationHelper.erc20(rpcUrl, tokenContractAddress);
+      if (con) {
+        return await con.methods.decimals().call();
+      }
+    }
 
-		if (rpcUrl && tokenContractAddress) {
-
-			let con = web3ConfigurationHelper.erc20(rpcUrl, tokenContractAddress)
-			if (con) {
-				return await con.methods.decimals().call();
-			}
-
-		}
-
-		return null;
-	},
-  
+    return null;
+  },
+  numberIntoDecimals(inputAmount: any, sourceTokenDecimal: any) {
+    let amountFormatted = ethers.utils.parseUnits(
+      inputAmount,
+      sourceTokenDecimal
+    );
+    amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
+      amountFormatted.toString()
+    );
+    console.log("amountFormatted", amountFormatted);
+    return amountFormatted;
+  },
 };

@@ -355,16 +355,15 @@ class MultiswapContract {
     console.log("Executed remove_liquidity", tx.transactionHash);
   }
 
-  async tokenBalance(token, address) {
-    client = await SigningCosmWasmClient.connectWithSigner(
-      this.rpcEndpoint,
+  async tokenBalance(token, address, mnemonic, rpcEndpoint) {
+    let wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+      prefix: "cudos",
+    });
+    let client = await SigningCosmWasmClient.connectWithSigner(
+      rpcEndpoint,
       wallet
     );
-    const balance = await client.queryContractSmart(token, {
-      balance_of: {
-        address: address,
-      },
-    });
+    const balance = await client.getBalance(address, token);
     return balance;
   }
 
@@ -465,8 +464,8 @@ class MultiswapContract {
     let client = await SigningCosmWasmClient.connectWithSigner(
       this.rpcEndpoint
     );
-    const txResp = await client.getTx(txId)
-    console.log("txResp", txResp)
+    const txResp = await client.getTx(txId);
+    console.log("txResp", txResp);
   }
 }
 

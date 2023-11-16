@@ -18,15 +18,25 @@ module.exports = {
       let destinationAmount = 0;
       destinationAmount = categorizedInfo?.destination?.amount;
       console.log("destinationAmount", destinationAmount);
+      let sourceOneInchData = "";
+      let sourceBridgeAmount = "";
+      if (categorizedInfo?.source?.oneInchData) {
+        sourceOneInchData = categorizedInfo?.source?.oneInchData;
+      }
+      if (categorizedInfo?.source?.bridgeAmount) {
+        sourceBridgeAmount = categorizedInfo?.source?.bridgeAmount;
+      }
 
       let sourceTokenCategorizedInfo: any = {};
       sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
       sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
+      sourceTokenCategorizedInfo.sourceBridgeAmount = sourceBridgeAmount;
+      sourceTokenCategorizedInfo.sourceOneInchData = sourceOneInchData;
 
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
-      destinationTokenCategorizedInfo.bridgeAmount =
+      destinationTokenCategorizedInfo.destinationBridgeAmount =
         categorizedInfo?.destination?.bridgeAmount;
 
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
@@ -44,23 +54,21 @@ module.exports = {
       req.query.sourceNetworkChainId, // source chain id (goerli)
       req.query.destinationNetworkChainId, // target chain id (bsc)
       req.query.sourceAmount, //source token amount
-      req.query.destinationWalletAddress // destination wallet address
+      req.query.destinationWalletAddress, // destination wallet address
+      req.query
     );
     return data;
   },
 
-  getWithdrawSigned: async function (req: any, version: string) {
-    let log = await this.saveTransactionLog(req);
-    let query = req.query;
-    console.log(query);
-    let data: any = {};
-    if (version == "v2") {
-      this.doWithdraw(req, query, version);
-      return null;
+  getWithdrawSigned: async function (req: any) {
+    if ((await this.isAlreadyInTransactionLog(req)) == false) {
+      let log = await this.saveTransactionLog(req);
+      let query = req.query;
+      this.doWithdraw(req, query);
     } else {
-      data = await this.doWithdraw(req, query, version);
+      throw "Transaction already in processing";
     }
-    return data;
+    return null;
   },
 
   validatonForSameSourceAndDestination: function (req: any) {
@@ -79,6 +87,7 @@ module.exports = {
   saveTransactionLog: async function (req: any) {
     try {
       let body = req.query;
+      body.responseCode = 100;
       body.createdAt = new Date();
       body.updatedAt = new Date();
       return await db.TransactionLogs.create(body);
@@ -87,14 +96,34 @@ module.exports = {
     }
   },
 
-  updateTransactionLog: async function (
-    withdrawHash: any,
-    swapTransactionHash: any
-  ) {
+  isAlreadyInTransactionLog: async function (req: any): Promise<boolean> {
+    try {
+      let countFilter = {
+        swapTransactionHash: req.query.swapTransactionHash,
+        $or: [{ responseCode: 100 }, { responseCode: 200 }],
+      };
+      let count = await db.TransactionLogs.countDocuments(countFilter);
+      if (count == 1) {
+        console.log("Transaction already in processing");
+        return true;
+      }
+      console.log("transaction is new");
+    } catch (e) {
+      console.log("createTransactionLog", e);
+    }
+    return false;
+  },
+
+  updateTransactionLog: async function (data: any, swapTransactionHash: any) {
     try {
       await db.TransactionLogs.findOneAndUpdate(
         { swapTransactionHash: swapTransactionHash },
-        { withdrawTransactionHash: withdrawHash, updatedAt: new Date() },
+        {
+          withdrawTransactionHash: data.txHash,
+          responseCode: data.responseCode,
+          responseMessage: data.responseMessage,
+          updatedAt: new Date(),
+        },
         { new: true }
       );
     } catch (e) {
@@ -102,7 +131,7 @@ module.exports = {
     }
   },
 
-  doWithdraw: async function (req: any, query: any, version: string) {
+  doWithdraw: async function (req: any, query: any) {
     let data = await fiberEngine.withdraw(
       query.sourceTokenContractAddress,
       query.destinationTokenContractAddress,
@@ -113,17 +142,17 @@ module.exports = {
       req.query.swapTransactionHash,
       req.body
     );
-    await this.updateTransactionLog(data.txHash, req.query.swapTransactionHash);
-    if (version == "v2") {
-      data = {
-        data: data.txHash,
-        withdraw: data,
-      };
-      await await transactionUpdateAxiosHelper.updateTransactionJobStatus(
-        req.query.swapTransactionHash,
-        data
-      );
-    }
+    await this.updateTransactionLog(data, req.query.swapTransactionHash);
+    data = {
+      data: data.txHash,
+      withdraw: data,
+      responseCode: data.responseCode,
+      responseMessage: data.responseMessage,
+    };
+    await await transactionUpdateAxiosHelper.updateTransactionJobStatus(
+      req.query.swapTransactionHash,
+      data
+    );
     return data;
   },
 };

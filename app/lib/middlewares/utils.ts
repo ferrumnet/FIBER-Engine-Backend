@@ -13,14 +13,17 @@ declare const db: any,
   web3ConfigurationHelper: any,
   web3Helper: any,
   cudosPriceAxiosHelper: any,
+  gasEstimationAxiosHelper: any,
   transactionUpdateAxiosHelper: any;
 
 module.exports = function () {
   const utils: any = {};
+  utils.IS_LOCAL_ENV = true;
   utils.assetType = {
-    FOUNDARY: "Foundry",
+    FOUNDARY: "Foundary",
     REFINERY: "Refinery",
     IONIC: "Ionic",
+    ONE_INCH: "1Inch",
   };
   (utils.convertFromExponentialToDecimal = function (n: any) {
     var sign = +n < 0 ? "-" : "",

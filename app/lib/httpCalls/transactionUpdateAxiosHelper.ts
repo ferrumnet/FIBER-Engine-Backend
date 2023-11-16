@@ -12,6 +12,9 @@ module.exports = {
         },
       };
       let baseUrl = (global as any as any).environment.baseUrlGatewayBackend;
+      if ((global as any as any).utils.IS_LOCAL_ENV) {
+        baseUrl = "http://localhost:8080/api/v1";
+      }
       let url = `${baseUrl}/transactions/update/swap/and/withdraw/job/${txHash}?isFrom=fiber`;
       let res = await axios.put(url, body, config);
       console.log("updateTransactionJobStatus response", res.data);
