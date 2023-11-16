@@ -51,9 +51,10 @@ module.exports = {
       const sourceTokenDecimal = await sourceTokenContract.decimals();
       const sourceFoundryTokenDecimal =
         await sourceFoundryTokenContract.decimals();
-      let amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
-      amount = (global as any).utils.convertFromExponentialToDecimal(amount);
-
+      let amount = (global as any).commonFunctions.numberIntoDecimals(
+        inputAmount,
+        sourceTokenDecimal
+      );
       let sourceTypeResponse = await getSourceAssetTypes(
         sourceNetwork,
         sourceTokenAddress,
@@ -172,7 +173,7 @@ module.exports = {
         sourceBridgeAmount *
         10 ** Number(targetFoundryTokenDecimal)
       ).toString();
-
+      console.log("amountIn", amountIn);
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
         targetTokenAddress,
