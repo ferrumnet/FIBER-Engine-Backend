@@ -346,8 +346,10 @@ module.exports = {
       );
 
       const sourceTokenDecimal = await sourceTokenContract.decimals();
-      let amount = (inputAmount * 10 ** Number(sourceTokenDecimal)).toString();
-      amount = (global as any).utils.convertFromExponentialToDecimal(amount);
+      let amount = (global as any).commonFunctions.numberIntoDecimals(
+        inputAmount,
+        sourceTokenDecimal
+      );
       console.log(
         "INIT: Swap Initiated for this Amount: ",
         amount,
