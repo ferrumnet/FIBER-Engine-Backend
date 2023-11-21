@@ -11,7 +11,7 @@ import {
   isLiquidityAvailableForEVM,
   isLiquidityAvailableForCudos,
 } from "../app/lib/middlewares/helpers/liquidityHelper";
-let InsufficientLiquidityError = "Insufficient liquidity";
+import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -311,8 +311,8 @@ module.exports = {
         )
       );
       if (!isValidLiquidityAvailable) {
-        console.log(InsufficientLiquidityError);
-        throw InsufficientLiquidityError;
+        console.log(IN_SUFFICIENT_LIQUIDITY_ERROR);
+        throw IN_SUFFICIENT_LIQUIDITY_ERROR;
       }
     } else {
       let isValidLiquidityAvailable = await isLiquidityAvailableForCudos(
@@ -325,8 +325,8 @@ module.exports = {
         )
       );
       if (!isValidLiquidityAvailable) {
-        console.log(InsufficientLiquidityError);
-        throw InsufficientLiquidityError;
+        console.log(IN_SUFFICIENT_LIQUIDITY_ERROR);
+        throw IN_SUFFICIENT_LIQUIDITY_ERROR;
       }
     }
 
