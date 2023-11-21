@@ -1,7 +1,10 @@
 const SUCCESS = "success";
-const CODE_100 = 100;
-const CODE_200 = 200;
-const CODE_201 = 201;
+export const IN_SUFFICIENT_LIQUIDITY_ERROR = "Insufficient liquidity";
+
+export const CODE_100 = 100;
+export const CODE_200 = 200;
+export const CODE_201 = 201;
+export const CODE_701 = 701;
 
 interface Response {
   responseCode: number;
@@ -36,6 +39,9 @@ export const createEVMResponse = (tx: any): Response => {
   if (tx != null && tx.status != null && tx.status == true) {
     responseCode = CODE_200;
     responseMessage = SUCCESS;
+  } else if (tx.code == CODE_701) {
+    responseCode = CODE_701;
+    responseMessage = IN_SUFFICIENT_LIQUIDITY_ERROR;
   }
 
   let response: Response = {

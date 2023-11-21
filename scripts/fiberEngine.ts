@@ -14,9 +14,15 @@ import {
 import {
   createCudosResponse,
   createEVMResponse,
+  IN_SUFFICIENT_LIQUIDITY_ERROR,
+  CODE_701,
 } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
+import {
+  isLiquidityAvailableForEVM,
+  isLiquidityAvailableForCudos,
+} from "../app/lib/middlewares/helpers/liquidityHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -71,6 +77,10 @@ module.exports = {
     salt: any,
     body: any
   ) {
+    let isValidLiquidityAvailable = true;
+    let transactionHash = "";
+    let withdrawResponse;
+    let destinationAmount;
     console.log(1);
     const gas = await this.estimateGasForWithdraw(
       targetChainId,
@@ -83,9 +93,34 @@ module.exports = {
       targetChainId
     ).multiswapNetworkFIBERInformation;
 
-    let transactionHash = "";
-    let withdrawResponse;
-    let destinationAmount;
+    if (!targetNetwork.isNonEVM) {
+      isValidLiquidityAvailable = await isLiquidityAvailableForEVM(
+        targetNetwork.foundryTokenAddress,
+        targetNetwork.fundManager,
+        targetNetwork.provider,
+        body.destinationBridgeAmount
+      );
+    } else {
+      isValidLiquidityAvailable = await isLiquidityAvailableForCudos(
+        targetNetwork.foundryTokenAddress,
+        targetNetwork.fundManager,
+        targetNetwork.rpcUrl,
+        (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
+        body.destinationBridgeAmount
+      );
+    }
+
+    if (!isValidLiquidityAvailable) {
+      console.log(IN_SUFFICIENT_LIQUIDITY_ERROR);
+      let receipt = { code: CODE_701 };
+      withdrawResponse = createEVMResponse(receipt);
+      let data: any = {};
+      data.responseCode = withdrawResponse?.responseCode;
+      data.responseMessage = withdrawResponse?.responseMessage;
+      console.log("data", data);
+      return data;
+    }
+
     let targetTypeResponse = await convertIntoAssetTypesObjectForTarget(body);
 
     if (!targetNetwork.isNonEVM) {
@@ -303,6 +338,7 @@ module.exports = {
       withdrawResponse = createCudosResponse(swapResult);
       transactionHash = withdrawResponse?.transactionHash;
     }
+
     let data: any = {};
     data.txHash = withdrawResponse?.transactionHash;
     data.destinationAmount = String(destinationAmount);

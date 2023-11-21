@@ -116,7 +116,7 @@ module.exports = {
 
   updateTransactionLog: async function (data: any, swapTransactionHash: any) {
     try {
-      await db.TransactionLogs.findOneAndUpdate(
+      await db.TransactionLogs.updateMany(
         { swapTransactionHash: swapTransactionHash },
         {
           withdrawTransactionHash: data.txHash,
