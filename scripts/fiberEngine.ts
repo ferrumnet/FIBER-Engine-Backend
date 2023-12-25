@@ -150,10 +150,7 @@ module.exports = {
       if (isTargetTokenFoundry === true) {
         let signatureResponse = await (
           global as any
-        ).signatureHelper.getSignature(
-          body,
-          (global as any).utils.assetType.FOUNDARY
-        );
+        ).signatureHelper.getSignature(body);
         const swapResult = await targetNetwork.fiberRouterContract
           .connect(targetSigner)
           .withdrawSigned(
@@ -178,10 +175,7 @@ module.exports = {
           let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
           let signatureResponse = await (
             global as any
-          ).signatureHelper.getSignature(
-            body,
-            (global as any).utils.assetType.REFINERY
-          );
+          ).signatureHelper.getSignature(body);
           let response = await getAmountOut(
             targetNetwork,
             path2,
@@ -224,10 +218,7 @@ module.exports = {
           ];
           let signatureResponse = await (
             global as any
-          ).signatureHelper.getSignature(
-            body,
-            (global as any).utils.assetType.IONIC
-          );
+          ).signatureHelper.getSignature(body);
           let response = await getAmountOut(
             targetNetwork,
             path2,
@@ -266,10 +257,7 @@ module.exports = {
           // 1Inch implementation
           let signatureResponse = await (
             global as any
-          ).signatureHelper.getSignature(
-            body,
-            (global as any).utils.assetType.ONE_INCH
-          );
+          ).signatureHelper.getSignature(body);
 
           let responseOneInch = await OneInchSwap(
             targetChainId,
@@ -314,10 +302,7 @@ module.exports = {
     } else if (targetNetwork.isNonEVM) {
       let signatureResponse = await (
         global as any
-      ).signatureHelper.getSignature(
-        body,
-        (global as any).utils.assetType.IONIC
-      );
+      ).signatureHelper.getSignature(body);
       const swapResult = await cudosWithdraw(
         targetTokenAddress,
         String(signatureResponse.amount),
