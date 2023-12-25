@@ -13,10 +13,7 @@ interface SignatureResponse {
 }
 
 module.exports = {
-  getSignature: async function (
-    paramsBody: any,
-    assetType: String
-  ): Promise<SignatureResponse> {
+  getSignature: async function (paramsBody: any): Promise<SignatureResponse> {
     let signatureResponse: SignatureResponse = {
       hash: "",
       salt: "",
@@ -32,13 +29,8 @@ module.exports = {
       signatureResponse.hash = paramsBody.hash;
       signatureResponse.salt = paramsBody.salt;
       signatureResponse.amount = paramsBody.destinationBridgeAmount;
-      if (assetType == (global as any).utils.assetType.FOUNDARY) {
-        signatureResponse.signature =
-          paramsBody.signatures.length > 0 ? paramsBody.signatures[0] : "";
-      } else {
-        signatureResponse.signature =
-          paramsBody.signatures.length > 0 ? paramsBody.signatures[1] : "";
-      }
+      signatureResponse.signature =
+        paramsBody.signatures.length > 0 ? paramsBody.signatures[0] : "";
     }
     return signatureResponse;
   },
