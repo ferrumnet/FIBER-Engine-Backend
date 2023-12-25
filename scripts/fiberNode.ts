@@ -19,7 +19,8 @@ module.exports = {
     sourceTokenAddress: any,
     targetChainId: any,
     targetTokenAddress: any,
-    inputAmount: any
+    inputAmount: any,
+    destinationWalletAddress: string
   ) {
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
@@ -31,6 +32,7 @@ module.exports = {
     let sourceAssetType;
     let sourceBridgeAmount;
     let sourceOneInchData;
+    let destinationOneInchData;
     let destinationAmountOut;
     let machineSourceBridgeAmountIntoSourceDecimal: any;
     let machineSourceBridgeAmountIntoTargetDecimal: any;
@@ -117,7 +119,8 @@ module.exports = {
           sourceTokenAddress,
           sourceNetwork?.foundryTokenAddress,
           amount,
-          sourceNetwork?.fiberRouter
+          sourceNetwork?.fiberRouter,
+          sourceNetwork?.fundManager
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -263,11 +266,16 @@ module.exports = {
             targetNetwork?.foundryTokenAddress,
             targetTokenAddress,
             machineAmount,
-            targetNetwork?.fiberRouter
+            targetNetwork?.fiberRouter,
+            destinationWalletAddress
           );
 
           if (response?.responseMessage) {
             throw response?.responseMessage;
+          }
+
+          if (response && response.data) {
+            destinationOneInchData = response.data;
           }
 
           if (response && response.amounts) {
@@ -349,6 +357,7 @@ module.exports = {
     ).utils.convertFromExponentialToDecimal(
       machineSourceBridgeAmountIntoTargetDecimal
     );
+    data.destination.oneInchData = destinationOneInchData;
     return data;
   },
 

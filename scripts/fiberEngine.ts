@@ -23,6 +23,10 @@ import {
   isLiquidityAvailableForEVM,
   isLiquidityAvailableForCudos,
 } from "../app/lib/middlewares/helpers/liquidityHelper";
+import {
+  getSignature,
+  getWithdrawlDataHashForSwap,
+} from "../app/lib/middlewares/helpers/signatureHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -148,9 +152,7 @@ module.exports = {
       const isTargetOneInchAsset = targetTypeResponse.isOneInch;
 
       if (isTargetTokenFoundry === true) {
-        let signatureResponse = await (
-          global as any
-        ).signatureHelper.getSignature(body);
+        let signatureResponse: any = getSignature(body);
         const swapResult = await targetNetwork.fiberRouterContract
           .connect(targetSigner)
           .withdrawSigned(
@@ -173,9 +175,7 @@ module.exports = {
       } else {
         if (isTargetRefineryToken == true) {
           let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
-          let signatureResponse = await (
-            global as any
-          ).signatureHelper.getSignature(body);
+          let signatureResponse: any = getSignature(body);
           let response = await getAmountOut(
             targetNetwork,
             path2,
@@ -216,9 +216,7 @@ module.exports = {
             targetNetwork.weth,
             targetTokenAddress,
           ];
-          let signatureResponse = await (
-            global as any
-          ).signatureHelper.getSignature(body);
+          let signatureResponse = getSignature(body);
           let response = await getAmountOut(
             targetNetwork,
             path2,
@@ -255,16 +253,15 @@ module.exports = {
           }
         } else {
           // 1Inch implementation
-          let signatureResponse = await (
-            global as any
-          ).signatureHelper.getSignature(body);
+          let signatureResponse: any = getSignature(body);
 
           let responseOneInch = await OneInchSwap(
             targetChainId,
             targetNetwork?.foundryTokenAddress,
             targetTokenAddress,
             signatureResponse.amount,
-            targetNetwork?.fiberRouter
+            targetNetwork?.fiberRouter,
+            ""
           );
 
           if (responseOneInch?.responseMessage) {
@@ -300,9 +297,7 @@ module.exports = {
         }
       }
     } else if (targetNetwork.isNonEVM) {
-      let signatureResponse = await (
-        global as any
-      ).signatureHelper.getSignature(body);
+      let signatureResponse: any = getSignature(body);
       const swapResult = await cudosWithdraw(
         targetTokenAddress,
         String(signatureResponse.amount),
@@ -553,16 +548,23 @@ module.exports = {
         if (!targetNetwork.isNonEVM) {
           console.log("1Inch Asset EVM");
           swapResult = fiberRouter.methods.swapAndCrossOneInch(
-            sourceNetwork?.router,
             amount,
             query?.sourceBridgeAmount,
             targetChainId,
             targetNetwork.foundryTokenAddress,
             destinationWalletAddress,
-            query?.destinationBridgeAmount,
+            query?.destinationAmountIn,
             query?.sourceOneInchData,
             sourceTokenAddress,
-            sourceNetwork.foundryTokenAddress
+            sourceNetwork.foundryTokenAddress,
+            getWithdrawlDataHashForSwap(
+              query?.sourceOneInchData,
+              query?.destinationOneInchData,
+              query?.destinationAmountIn,
+              query?.destinationAmountOut,
+              query?.sourceAssetType,
+              query?.destinationAssetType
+            )
           );
         } else {
           console.log("1Inch Asset non EVM");

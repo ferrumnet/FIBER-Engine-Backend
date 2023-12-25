@@ -19,13 +19,16 @@ declare const db: any,
 module.exports = function () {
   const utils: any = {};
   utils.IS_LOCAL_ENV = true;
+  utils.cFRMTokenAddress = "0xe685d3cc0be48bd59082ede30c3b64cbfc0326e2";
+  utils.arbitrumChainID = 42161;
+  utils.oneInchSlippage = 2;
   utils.assetType = {
     FOUNDARY: "Foundary",
     REFINERY: "Refinery",
     IONIC: "Ionic",
     ONE_INCH: "1Inch",
   };
-  (utils.convertFromExponentialToDecimal = function (n: any) {
+  utils.convertFromExponentialToDecimal = function (n: any) {
     var sign = +n < 0 ? "-" : "",
       toStr = n.toString();
     if (!/e/i.test(toStr)) {
@@ -47,8 +50,6 @@ module.exports = function () {
           (+pow >= decimal.length
             ? decimal + "0".repeat(Math.max(+pow - decimal.length || 0, 0))
             : decimal.slice(0, +pow) + "." + decimal.slice(+pow));
-  }),
-    (utils.cFRMTokenAddress = "0xe685d3cc0be48bd59082ede30c3b64cbfc0326e2");
-  utils.arbitrumChainID = 42161;
+  };
   return utils;
 };

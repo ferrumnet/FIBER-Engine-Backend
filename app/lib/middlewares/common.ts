@@ -222,4 +222,22 @@ module.exports = {
     console.log("amountFormatted", amountFormatted);
     return amountFormatted;
   },
+  calculateValueWithSlippage(originalValue: any) {
+    let slippageProportion = 100 - 2;
+    console.log(
+      "slippageProportion",
+      slippageProportion,
+      "originalValue",
+      originalValue
+    );
+    let v1 = BigInt(originalValue * slippageProportion);
+    let valueWithSlippage = v1 / BigInt(100);
+    console.log("valueWithSlippage", valueWithSlippage);
+    if (valueWithSlippage) {
+      return (global as any).utils.convertFromExponentialToDecimal(
+        valueWithSlippage
+      );
+    }
+    return "";
+  },
 };
