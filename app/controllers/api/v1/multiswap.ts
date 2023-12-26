@@ -3,6 +3,7 @@ module.exports = function (router: any) {
     "/token/categorized/quote/info",
     asyncMiddleware(async (req: any, res: any) => {
       if (
+        !req.query.sourceWalletAddress ||
         !req.query.sourceTokenContractAddress ||
         !req.query.sourceNetworkChainId ||
         !req.query.sourceAmount ||
@@ -10,8 +11,15 @@ module.exports = function (router: any) {
         !req.query.destinationNetworkChainId
       ) {
         return res.http401(
-          "sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing"
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing"
         );
+      }
+
+      if (req.query.destinationWalletAddress) {
+        req.query.destinationWalletAddress =
+          req.query.destinationWalletAddress.toLowerCase();
+      } else {
+        req.query.destinationWalletAddress = req.query.sourceWalletAddress;
       }
 
       multiSwapHelper.validatonForSameSourceAndDestination(req);

@@ -222,4 +222,10 @@ module.exports = {
     console.log("amountFormatted", amountFormatted);
     return amountFormatted;
   },
+  calculateValueWithSlippage(originalValue: any) {
+    let slippageProportion = BigInt(100 - 2);
+    originalValue = BigInt(originalValue);
+    let valueWithSlippage = (originalValue * slippageProportion) / BigInt(100);
+    return valueWithSlippage ? valueWithSlippage.toString() : "";
+  },
 };

@@ -1,3 +1,5 @@
+import { util } from "chai";
+
 var Web3 = require("web3");
 
 module.exports = {
@@ -7,7 +9,8 @@ module.exports = {
       req.query.sourceTokenContractAddress,
       req.query.destinationNetworkChainId,
       req.query.destinationTokenContractAddress,
-      req.query.sourceAmount
+      req.query.sourceAmount,
+      req.query.destinationWalletAddress
     );
 
     console.log(categorizedInfo);
@@ -19,9 +22,13 @@ module.exports = {
       destinationAmount = categorizedInfo?.destination?.amount;
       console.log("destinationAmount", destinationAmount);
       let sourceOneInchData = "";
+      let destinationOneInchData = "";
       let sourceBridgeAmount = "";
       if (categorizedInfo?.source?.oneInchData) {
         sourceOneInchData = categorizedInfo?.source?.oneInchData;
+      }
+      if (categorizedInfo?.destination?.oneInchData) {
+        destinationOneInchData = categorizedInfo?.destination?.oneInchData;
       }
       if (categorizedInfo?.source?.bridgeAmount) {
         sourceBridgeAmount = categorizedInfo?.source?.bridgeAmount;
@@ -30,14 +37,26 @@ module.exports = {
       let sourceTokenCategorizedInfo: any = {};
       sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
       sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
-      sourceTokenCategorizedInfo.sourceBridgeAmount = sourceBridgeAmount;
+      sourceTokenCategorizedInfo.sourceBridgeAmount = (
+        global as any
+      ).commonFunctions.calculateValueWithSlippage(sourceBridgeAmount);
       sourceTokenCategorizedInfo.sourceOneInchData = sourceOneInchData;
 
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
-      destinationTokenCategorizedInfo.destinationBridgeAmount =
-        categorizedInfo?.destination?.bridgeAmount;
+      destinationTokenCategorizedInfo.destinationAmountIn = (
+        global as any
+      ).commonFunctions.calculateValueWithSlippage(
+        categorizedInfo?.destination?.bridgeAmountIn
+      );
+      destinationTokenCategorizedInfo.destinationAmountOut = (
+        global as any
+      ).commonFunctions.calculateValueWithSlippage(
+        categorizedInfo?.destination?.bridgeAmountOut
+      );
+      destinationTokenCategorizedInfo.destinationOneInchData =
+        destinationOneInchData;
 
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;

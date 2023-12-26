@@ -69,9 +69,6 @@ if (
 (global as any).awsHelper = require("./app/lib/middlewares/helpers/awsHelper");
 (
   global as any
-).signatureHelper = require("./app/lib/middlewares/helpers/signatureHelper");
-(
-  global as any
 ).multiSwapHelper = require("./app/lib/middlewares/helpers/multiSwapHelper");
 (
   global as any

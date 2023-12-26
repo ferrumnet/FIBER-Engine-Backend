@@ -11,7 +11,8 @@ export const OneInchSwap = async (
   src: string,
   dst: string,
   amount: string,
-  from: string
+  from: string,
+  receiver: string
 ): Promise<Response> => {
   let amounts = null;
   let data = null;
@@ -25,8 +26,9 @@ export const OneInchSwap = async (
         }`,
       },
     };
-    let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=1&disableEstimate=true&includeProtocols=true&allowPartialFill=true`;
-    console.log("url", url);
+    let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${
+      (global as any).utils.oneInchSlippage
+    }&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}`;
     let res = await axios.get(url, config);
     if (res?.data?.toAmount) {
       amounts = res?.data?.toAmount;
