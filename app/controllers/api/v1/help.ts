@@ -1,10 +1,10 @@
 // var Fiber = require("../../../../scripts/fiberRouter.js");
 module.exports = function (router: any) {
-  router.get("/create", async (req: any, res: any) => {
-    return res.http200({
-      token: await authHelper.createAuthToken(),
-    });
-  });
+  // router.get("/create", async (req: any, res: any) => {
+  //   return res.http200({
+  //     token: await authHelper.createAuthToken(),
+  //   });
+  // });
 
   router.get("/validate", async (req: any, res: any) => {
     return res.http200({
