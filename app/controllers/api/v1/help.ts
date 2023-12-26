@@ -1,23 +1,18 @@
 // var Fiber = require("../../../../scripts/fiberRouter.js");
 module.exports = function (router: any) {
-
-  // router.get('/create', async (req: any, res: any) => {
-
-  //   return res.http200({
-  //     token: await authHelper.createAuthToken()
-  //   });
-
-  // });
-
-  router.get('/validate', async (req: any, res: any) => {
-
+  router.get("/create", async (req: any, res: any) => {
     return res.http200({
-      message: 'success'
+      token: await authHelper.createAuthToken(),
     });
-
   });
 
-  router.get('/multiswap', async (req: any, res: any) => {
+  router.get("/validate", async (req: any, res: any) => {
+    return res.http200({
+      message: "success",
+    });
+  });
+
+  router.get("/multiswap", async (req: any, res: any) => {
     // const fiber = new Fiber();
     // var result = await fiber.MultiSwap(
     //   "0x636b346942ee09Ee6383C22290e89742b55797c5", // goerli ada
@@ -28,9 +23,7 @@ module.exports = function (router: any) {
     // console.log("multiswap result", result)
 
     return res.http200({
-      message: 'success'
+      message: "success",
     });
-
   });
-
 };

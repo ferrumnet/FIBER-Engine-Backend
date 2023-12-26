@@ -25,7 +25,7 @@ import {
 } from "../app/lib/middlewares/helpers/liquidityHelper";
 import {
   getSignature,
-  getWithdrawlDataHashForSwap,
+  getWithdrawalDataHashForSwap,
 } from "../app/lib/middlewares/helpers/signatureHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
@@ -557,7 +557,7 @@ module.exports = {
             query?.sourceOneInchData,
             sourceTokenAddress,
             sourceNetwork.foundryTokenAddress,
-            getWithdrawlDataHashForSwap(
+            getWithdrawalDataHashForSwap(
               query?.sourceOneInchData,
               query?.destinationOneInchData,
               query?.destinationAmountIn,

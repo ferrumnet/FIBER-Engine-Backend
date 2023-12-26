@@ -29,7 +29,7 @@ export const getSignature = (paramsBody: any): SignatureResponse => {
   return signatureResponse;
 };
 
-export const getWithdrawlDataHashForSwap = (
+export const getWithdrawalDataHashForSwap = (
   sourceOneInchData: string,
   destinationOneInchData: string,
   amountIn: string,
@@ -37,15 +37,7 @@ export const getWithdrawlDataHashForSwap = (
   sourceAssetType: string,
   destinationAssetType: string
 ): string => {
-  console.log(
-    sourceOneInchData,
-    destinationOneInchData,
-    amountIn,
-    amountOut,
-    sourceAssetType,
-    destinationAssetType
-  );
-  return Web3.utils.keccak256(
+  let hash = Web3.utils.keccak256(
     sourceOneInchData +
       destinationOneInchData +
       amountIn +
@@ -53,4 +45,14 @@ export const getWithdrawlDataHashForSwap = (
       sourceAssetType +
       destinationAssetType
   );
+  console.log(
+    sourceOneInchData,
+    destinationOneInchData,
+    amountIn,
+    amountOut,
+    sourceAssetType,
+    destinationAssetType,
+    hash
+  );
+  return hash;
 };

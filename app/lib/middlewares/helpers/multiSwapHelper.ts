@@ -48,11 +48,13 @@ module.exports = {
       destinationTokenCategorizedInfo.destinationAmountIn = (
         global as any
       ).commonFunctions.calculateValueWithSlippage(
-        categorizedInfo?.destination?.bridgeAmount
+        categorizedInfo?.destination?.bridgeAmountIn
       );
       destinationTokenCategorizedInfo.destinationAmountOut = (
         global as any
-      ).commonFunctions.calculateValueWithSlippage(destinationAmount);
+      ).commonFunctions.calculateValueWithSlippage(
+        categorizedInfo?.destination?.bridgeAmountOut
+      );
       destinationTokenCategorizedInfo.destinationOneInchData =
         destinationOneInchData;
 

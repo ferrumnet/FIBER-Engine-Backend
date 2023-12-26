@@ -35,7 +35,8 @@ module.exports = {
     let destinationOneInchData;
     let destinationAmountOut;
     let machineSourceBridgeAmountIntoSourceDecimal: any;
-    let machineSourceBridgeAmountIntoTargetDecimal: any;
+    let machineSourceBridgeAmountInIntoTargetDecimal: any;
+    let machineSourceBridgeAmountOutIntoTargetDecimal: any;
     let targetFoundryTokenAddress;
 
     // source
@@ -201,7 +202,7 @@ module.exports = {
       if (isTargetTokenFoundry === true) {
         console.log("TN-1: Target Token is Foundry Asset");
         destinationAmountOut = sourceBridgeAmount;
-        machineSourceBridgeAmountIntoTargetDecimal = (
+        machineSourceBridgeAmountInIntoTargetDecimal = (
           sourceBridgeAmount *
           10 ** Number(targetFoundryTokenDecimal)
         ).toString();
@@ -210,7 +211,7 @@ module.exports = {
         if (isTargetRefineryToken == true) {
           console.log("TN-1: Target token is Refinery Asset");
           amountIn = Math.floor(amountIn);
-          machineSourceBridgeAmountIntoTargetDecimal = amountIn;
+          machineSourceBridgeAmountInIntoTargetDecimal = amountIn;
           let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
           let response = await getAmountOut(
             targetNetwork,
@@ -229,7 +230,7 @@ module.exports = {
         } else if (isTargetIonicToken) {
           console.log("TN-1: Target Token is Ionic Asset");
           amountIn = Math.floor(amountIn);
-          machineSourceBridgeAmountIntoTargetDecimal = amountIn;
+          machineSourceBridgeAmountInIntoTargetDecimal = amountIn;
           let path2 = [
             targetNetwork.foundryTokenAddress,
             targetNetwork.weth,
@@ -256,7 +257,7 @@ module.exports = {
             10 ** Number(targetFoundryTokenDecimal)
           ).toString();
           machineAmount = Math.floor(machineAmount);
-          machineSourceBridgeAmountIntoTargetDecimal = machineAmount;
+          machineSourceBridgeAmountInIntoTargetDecimal = machineAmount;
           machineAmount = (global as any).utils.convertFromExponentialToDecimal(
             machineAmount
           );
@@ -279,6 +280,7 @@ module.exports = {
           }
 
           if (response && response.amounts) {
+            machineSourceBridgeAmountOutIntoTargetDecimal = response.amounts;
             destinationAmountOut = (
               response.amounts /
               10 ** Number(targetTokenDecimal)
@@ -291,31 +293,31 @@ module.exports = {
         await cudosPriceAxiosHelper.getCudosPrice();
       destinationAmountOut =
         (await sourceBridgeAmount) / recentCudosPriceInDollars;
-      machineSourceBridgeAmountIntoTargetDecimal =
+      machineSourceBridgeAmountInIntoTargetDecimal =
         destinationAmountOut * 10 ** 18;
-      machineSourceBridgeAmountIntoTargetDecimal = (
+      machineSourceBridgeAmountInIntoTargetDecimal = (
         global as any
       ).utils.convertFromExponentialToDecimal(
-        machineSourceBridgeAmountIntoTargetDecimal
+        machineSourceBridgeAmountInIntoTargetDecimal
       );
       targetAssetType = "Foundry";
     }
 
     if (!targetNetwork.isNonEVM) {
-      machineSourceBridgeAmountIntoSourceDecimal = String(
-        Math.floor(machineSourceBridgeAmountIntoSourceDecimal)
-      );
+      // machineSourceBridgeAmountIntoSourceDecimal = String(
+      //   Math.floor(machineSourceBridgeAmountIntoSourceDecimal)
+      // );
 
-      machineSourceBridgeAmountIntoTargetDecimal = String(
-        Math.floor(machineSourceBridgeAmountIntoTargetDecimal)
-      );
+      // machineSourceBridgeAmountIntoTargetDecimal = String(
+      //   Math.floor(machineSourceBridgeAmountIntoTargetDecimal)
+      // );
 
       let isValidLiquidityAvailable = await isLiquidityAvailableForEVM(
         targetNetwork.foundryTokenAddress,
         targetNetwork.fundManager,
         targetNetwork.provider,
         (global as any).utils.convertFromExponentialToDecimal(
-          machineSourceBridgeAmountIntoTargetDecimal
+          machineSourceBridgeAmountInIntoTargetDecimal
         )
       );
       if (!isValidLiquidityAvailable) {
@@ -329,7 +331,7 @@ module.exports = {
         targetNetwork.rpcUrl,
         (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
         (global as any).utils.convertFromExponentialToDecimal(
-          machineSourceBridgeAmountIntoTargetDecimal
+          machineSourceBridgeAmountInIntoTargetDecimal
         )
       );
       if (!isValidLiquidityAvailable) {
@@ -342,21 +344,16 @@ module.exports = {
     data.source.type = sourceAssetType;
     data.source.amount = inputAmount;
     if (machineSourceBridgeAmountIntoSourceDecimal) {
-      data.source.bridgeAmount = (
-        global as any
-      ).utils.convertFromExponentialToDecimal(
-        machineSourceBridgeAmountIntoSourceDecimal
-      );
+      data.source.bridgeAmount = machineSourceBridgeAmountIntoSourceDecimal;
     }
     data.source.oneInchData = sourceOneInchData;
 
     data.destination.type = targetAssetType;
     data.destination.amount = String(destinationAmountOut);
-    data.destination.bridgeAmount = (
-      global as any
-    ).utils.convertFromExponentialToDecimal(
-      machineSourceBridgeAmountIntoTargetDecimal
-    );
+    data.destination.bridgeAmountIn =
+      machineSourceBridgeAmountInIntoTargetDecimal;
+    data.destination.bridgeAmountOut =
+      machineSourceBridgeAmountOutIntoTargetDecimal;
     data.destination.oneInchData = destinationOneInchData;
     return data;
   },
