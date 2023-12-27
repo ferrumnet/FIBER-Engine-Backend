@@ -7,6 +7,7 @@ const { ethers } = require("ethers");
 const routerAbiMainnet = require("../../../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const fundManagerAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FundManager.sol/FundManager.json");
 const fiberRouterAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
+import { getSlippage } from "../../lib/middlewares/helpers/configurationHelper";
 
 module.exports = {
   getHashedPassword: function (password: any) {
@@ -222,8 +223,8 @@ module.exports = {
     console.log("amountFormatted", amountFormatted);
     return amountFormatted;
   },
-  calculateValueWithSlippage(originalValue: any) {
-    let slippageProportion = BigInt(100 - 2);
+  async calculateValueWithSlippage(originalValue: any) {
+    let slippageProportion = BigInt(100 - (await getSlippage()));
     originalValue = BigInt(originalValue);
     let valueWithSlippage = (originalValue * slippageProportion) / BigInt(100);
     return valueWithSlippage ? valueWithSlippage.toString() : "";

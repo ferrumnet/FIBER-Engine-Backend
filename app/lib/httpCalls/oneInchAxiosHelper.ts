@@ -1,4 +1,5 @@
 var axios = require("axios").default;
+import { getSlippage } from "../../lib/middlewares/helpers/configurationHelper";
 
 interface Response {
   responseMessage: string;
@@ -26,9 +27,7 @@ export const OneInchSwap = async (
         }`,
       },
     };
-    let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${
-      (global as any).utils.oneInchSlippage
-    }&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}`;
+    let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${await getSlippage()}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}`;
     let res = await axios.get(url, config);
     if (res?.data?.toAmount) {
       amounts = res?.data?.toAmount;

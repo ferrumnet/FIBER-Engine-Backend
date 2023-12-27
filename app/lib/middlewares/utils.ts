@@ -21,7 +21,6 @@ module.exports = function () {
   utils.IS_LOCAL_ENV = true;
   utils.cFRMTokenAddress = "0xe685d3cc0be48bd59082ede30c3b64cbfc0326e2";
   utils.arbitrumChainID = 42161;
-  utils.oneInchSlippage = 2;
   utils.assetType = {
     FOUNDARY: "Foundary",
     REFINERY: "Refinery",
