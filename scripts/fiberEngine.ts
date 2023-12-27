@@ -386,7 +386,15 @@ module.exports = {
             targetChainId,
             targetFoundryTokenAddress,
             destinationWalletAddress,
-            query.destinationAmountIn
+            query.destinationAmountIn,
+            getWithdrawalDataHashForSwap(
+              query?.sourceOneInchData,
+              query?.destinationOneInchData,
+              query?.destinationAmountIn,
+              query?.destinationAmountOut,
+              query?.sourceAssetType,
+              query?.destinationAssetType
+            )
           );
           //wait until the transaction be completed
           sourceBridgeAmount = amount;
@@ -415,29 +423,29 @@ module.exports = {
         }
       } else if (isRefineryAsset) {
         if (!targetNetwork.isNonEVM) {
-          //swap refinery token to the foundry token
-          let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-          let response = await getAmountOut(
-            sourceNetwork,
-            path,
-            String(amount)
-          );
-          if (response?.responseMessage) {
-            throw response?.responseMessage;
-          }
-          const amountsOut = response?.amounts[1];
-          sourceBridgeAmount = amountsOut;
-          swapResult = fiberRouter.methods.swapAndCross(
-            sourceNetwork.dexContract.address,
-            amount,
-            amountsOut,
-            path,
-            this.getDeadLine().toString(), // deadline
-            targetChainId,
-            targetNetwork.foundryTokenAddress,
-            destinationWalletAddress,
-            query.destinationAmountIn
-          );
+          // //swap refinery token to the foundry token
+          // let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
+          // let response = await getAmountOut(
+          //   sourceNetwork,
+          //   path,
+          //   String(amount)
+          // );
+          // if (response?.responseMessage) {
+          //   throw response?.responseMessage;
+          // }
+          // const amountsOut = response?.amounts[1];
+          // sourceBridgeAmount = amountsOut;
+          // swapResult = fiberRouter.methods.swapAndCross(
+          //   sourceNetwork.dexContract.address,
+          //   amount,
+          //   amountsOut,
+          //   path,
+          //   this.getDeadLine().toString(), // deadline
+          //   targetChainId,
+          //   targetNetwork.foundryTokenAddress,
+          //   destinationWalletAddress,
+          //   query.destinationAmountIn
+          // );
         } else if (targetNetwork.isNonEVM) {
           // console.log("SN-1: Non Evm Source Token is Refinery Asset");
           // console.log("SN-2: Non Evm Swap Refinery Asset to Foundry Asset ...");
@@ -468,36 +476,36 @@ module.exports = {
         }
       } else if (isIonicAsset) {
         if (!targetNetwork.isNonEVM) {
-          console.log("SN-1: Source Token is Ionic Asset");
-          console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
-          //swap refinery token to the foundry token
-          let path = [
-            sourceTokenAddress,
-            sourceNetwork.weth,
-            sourceNetwork.foundryTokenAddress,
-          ];
-          console.log("path", path);
-          let response = await getAmountOut(
-            sourceNetwork,
-            path,
-            String(amount)
-          );
-          if (response?.responseMessage) {
-            throw response?.responseMessage;
-          }
-          const amountsOut = response?.amounts[response?.amounts.length - 1];
-          sourceBridgeAmount = amountsOut;
-          swapResult = fiberRouter.methods.swapAndCross(
-            sourceNetwork.dexContract.address,
-            amount,
-            amountsOut,
-            path,
-            this.getDeadLine().toString(), // deadline
-            targetChainId,
-            targetNetwork.foundryTokenAddress,
-            destinationWalletAddress,
-            query.destinationAmountIn
-          );
+          // console.log("SN-1: Source Token is Ionic Asset");
+          // console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
+          // //swap refinery token to the foundry token
+          // let path = [
+          //   sourceTokenAddress,
+          //   sourceNetwork.weth,
+          //   sourceNetwork.foundryTokenAddress,
+          // ];
+          // console.log("path", path);
+          // let response = await getAmountOut(
+          //   sourceNetwork,
+          //   path,
+          //   String(amount)
+          // );
+          // if (response?.responseMessage) {
+          //   throw response?.responseMessage;
+          // }
+          // const amountsOut = response?.amounts[response?.amounts.length - 1];
+          // sourceBridgeAmount = amountsOut;
+          // swapResult = fiberRouter.methods.swapAndCross(
+          //   sourceNetwork.dexContract.address,
+          //   amount,
+          //   amountsOut,
+          //   path,
+          //   this.getDeadLine().toString(), // deadline
+          //   targetChainId,
+          //   targetNetwork.foundryTokenAddress,
+          //   destinationWalletAddress,
+          //   query.destinationAmountIn
+          // );
         } else if (targetNetwork.isNonEVM) {
           // console.log("SN-1: Non Evm Source Token is Ionic Asset");
           // console.log("SN-2: Non Evm Swap Ionic Asset to Foundry Asset ...");

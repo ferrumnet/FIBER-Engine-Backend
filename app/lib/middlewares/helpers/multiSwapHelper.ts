@@ -39,21 +39,22 @@ module.exports = {
       sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
       sourceTokenCategorizedInfo.sourceBridgeAmount = await (
         global as any
-      ).commonFunctions.calculateValueWithSlippage(sourceBridgeAmount);
+      ).commonFunctions.calculateValueWithSlippage(
+        sourceBridgeAmount ? sourceBridgeAmount : 0
+      );
       sourceTokenCategorizedInfo.sourceOneInchData = sourceOneInchData;
 
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
-      destinationTokenCategorizedInfo.destinationAmountIn = await (
-        global as any
-      ).commonFunctions.calculateValueWithSlippage(
-        categorizedInfo?.destination?.bridgeAmountIn
-      );
+      destinationTokenCategorizedInfo.destinationAmountIn =
+        categorizedInfo?.destination?.bridgeAmountIn;
       destinationTokenCategorizedInfo.destinationAmountOut = await (
         global as any
       ).commonFunctions.calculateValueWithSlippage(
         categorizedInfo?.destination?.bridgeAmountOut
+          ? categorizedInfo?.destination?.bridgeAmountOut
+          : 0
       );
       destinationTokenCategorizedInfo.destinationOneInchData =
         destinationOneInchData;

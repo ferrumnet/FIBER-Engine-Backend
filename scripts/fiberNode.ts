@@ -34,9 +34,9 @@ module.exports = {
     let sourceOneInchData;
     let destinationOneInchData;
     let destinationAmountOut;
-    let machineSourceBridgeAmountIntoSourceDecimal: any;
-    let machineSourceBridgeAmountInIntoTargetDecimal: any;
-    let machineSourceBridgeAmountOutIntoTargetDecimal: any;
+    let machineSourceAmountOut: any;
+    let machineDestinationAmountIn: any;
+    let machineDestinationAmountOut: any;
     let targetFoundryTokenAddress;
 
     // source
@@ -83,35 +83,35 @@ module.exports = {
         console.log("Source Token is Foundry Asset");
         // approve to fiber router to transfer tokens to the fund manager contract
         sourceBridgeAmount = inputAmount;
-      } else if (isRefineryAsset) {
-        console.log("Source Token is Refinery Asset");
-        let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-        let response = await getAmountOut(sourceNetwork, path, String(amount));
-        if (response?.responseMessage) {
-          throw response?.responseMessage;
-        }
-        const amountsOut = response?.amounts[1];
-        sourceBridgeAmount = (
-          amountsOut /
-          10 ** Number(sourceFoundryTokenDecimal)
-        ).toString();
-      } else if (isIonicAsset) {
-        console.log("SN-1: Source Token is Ionic Asset");
-        //swap refinery token to the foundry token
-        let path = [
-          sourceTokenAddress,
-          sourceNetwork.weth,
-          sourceNetwork.foundryTokenAddress,
-        ];
-        let response = await getAmountOut(sourceNetwork, path, String(amount));
-        if (response?.responseMessage) {
-          throw response?.responseMessage;
-        }
-        const amountsOut = response?.amounts[response?.amounts.length - 1];
-        sourceBridgeAmount = (
-          amountsOut /
-          10 ** Number(sourceFoundryTokenDecimal)
-        ).toString();
+        // } else if (isRefineryAsset) {
+        //   console.log("Source Token is Refinery Asset");
+        //   let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
+        //   let response = await getAmountOut(sourceNetwork, path, String(amount));
+        //   if (response?.responseMessage) {
+        //     throw response?.responseMessage;
+        //   }
+        //   const amountsOut = response?.amounts[1];
+        //   sourceBridgeAmount = (
+        //     amountsOut /
+        //     10 ** Number(sourceFoundryTokenDecimal)
+        //   ).toString();
+        // } else if (isIonicAsset) {
+        //   console.log("SN-1: Source Token is Ionic Asset");
+        //   //swap refinery token to the foundry token
+        //   let path = [
+        //     sourceTokenAddress,
+        //     sourceNetwork.weth,
+        //     sourceNetwork.foundryTokenAddress,
+        //   ];
+        //   let response = await getAmountOut(sourceNetwork, path, String(amount));
+        //   if (response?.responseMessage) {
+        //     throw response?.responseMessage;
+        //   }
+        //   const amountsOut = response?.amounts[response?.amounts.length - 1];
+        //   sourceBridgeAmount = (
+        //     amountsOut /
+        //     10 ** Number(sourceFoundryTokenDecimal)
+        //   ).toString();
         //wait until the transaction be completed
       } else {
         // 1Inch implementation
@@ -128,7 +128,7 @@ module.exports = {
         }
 
         if (response && response.amounts) {
-          machineSourceBridgeAmountIntoSourceDecimal = response.amounts;
+          machineSourceAmountOut = response.amounts;
           sourceBridgeAmount = (
             response.amounts /
             10 ** Number(sourceFoundryTokenDecimal)
@@ -139,12 +139,13 @@ module.exports = {
           sourceOneInchData = response.data;
         }
       }
-    } else if (sourceNetwork.isNonEVM) {
-      const recentCudosPriceInDollars =
-        await cudosPriceAxiosHelper.getCudosPrice();
-      sourceBridgeAmount = (await inputAmount) * recentCudosPriceInDollars;
-      sourceAssetType = "Foundry";
     }
+    // else if (sourceNetwork.isNonEVM) {
+    // const recentCudosPriceInDollars =
+    //   await cudosPriceAxiosHelper.getCudosPrice();
+    // sourceBridgeAmount = (await inputAmount) * recentCudosPriceInDollars;
+    // sourceAssetType = "Foundry";
+    // }
 
     // destination
     if (!targetNetwork.isNonEVM) {
@@ -202,122 +203,113 @@ module.exports = {
       if (isTargetTokenFoundry === true) {
         console.log("TN-1: Target Token is Foundry Asset");
         destinationAmountOut = sourceBridgeAmount;
-        machineSourceBridgeAmountInIntoTargetDecimal = (
+        machineDestinationAmountIn = (
           sourceBridgeAmount *
           10 ** Number(targetFoundryTokenDecimal)
         ).toString();
+        machineDestinationAmountIn = Math.floor(machineDestinationAmountIn);
       } else {
-        console.log("isTargetRefineryToken", isTargetRefineryToken);
-        if (isTargetRefineryToken == true) {
-          console.log("TN-1: Target token is Refinery Asset");
-          amountIn = Math.floor(amountIn);
-          machineSourceBridgeAmountInIntoTargetDecimal = amountIn;
-          let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
-          let response = await getAmountOut(
-            targetNetwork,
-            path2,
-            String(Math.floor(amountIn))
-          );
-          if (response?.responseMessage) {
-            throw response?.responseMessage;
-          }
-          const amountsOut2 = response?.amounts[1];
+        // console.log("isTargetRefineryToken", isTargetRefineryToken);
+        // if (isTargetRefineryToken == true) {
+        //   console.log("TN-1: Target token is Refinery Asset");
+        //   amountIn = Math.floor(amountIn);
+        //   machineDestinationAmountIn = amountIn;
+        //   let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
+        //   let response = await getAmountOut(
+        //     targetNetwork,
+        //     path2,
+        //     String(Math.floor(amountIn))
+        //   );
+        //   if (response?.responseMessage) {
+        //     throw response?.responseMessage;
+        //   }
+        //   const amountsOut2 = response?.amounts[1];
 
-          destinationAmountOut = (
-            amountsOut2 /
-            10 ** Number(targetTokenDecimal)
-          ).toString();
-        } else if (isTargetIonicToken) {
-          console.log("TN-1: Target Token is Ionic Asset");
-          amountIn = Math.floor(amountIn);
-          machineSourceBridgeAmountInIntoTargetDecimal = amountIn;
-          let path2 = [
-            targetNetwork.foundryTokenAddress,
-            targetNetwork.weth,
-            targetTokenAddress,
-          ];
-          let response = await getAmountOut(
-            targetNetwork,
-            path2,
-            String(amountIn)
-          );
-          if (response?.responseMessage) {
-            throw response?.responseMessage;
-          }
-          const amountsOut2 = response?.amounts[response?.amounts.length - 1];
+        //   destinationAmountOut = (
+        //     amountsOut2 /
+        //     10 ** Number(targetTokenDecimal)
+        //   ).toString();
+        // } else if (isTargetIonicToken) {
+        //   console.log("TN-1: Target Token is Ionic Asset");
+        //   amountIn = Math.floor(amountIn);
+        //   machineDestinationAmountIn = amountIn;
+        //   let path2 = [
+        //     targetNetwork.foundryTokenAddress,
+        //     targetNetwork.weth,
+        //     targetTokenAddress,
+        //   ];
+        //   let response = await getAmountOut(
+        //     targetNetwork,
+        //     path2,
+        //     String(amountIn)
+        //   );
+        //   if (response?.responseMessage) {
+        //     throw response?.responseMessage;
+        //   }
+        //   const amountsOut2 = response?.amounts[response?.amounts.length - 1];
 
-          destinationAmountOut = (
-            amountsOut2 /
-            10 ** Number(targetTokenDecimal)
-          ).toString();
-        } else {
-          // 1Inch implementation
-          let machineAmount: any = (
-            sourceBridgeAmount *
-            10 ** Number(targetFoundryTokenDecimal)
-          ).toString();
-          machineAmount = Math.floor(machineAmount);
-          machineSourceBridgeAmountInIntoTargetDecimal = machineAmount;
-          machineAmount = (global as any).utils.convertFromExponentialToDecimal(
-            machineAmount
-          );
-          await this.delay(1000);
-          let response = await OneInchSwap(
-            targetChainId,
-            targetNetwork?.foundryTokenAddress,
-            targetTokenAddress,
-            machineAmount,
-            targetNetwork?.fiberRouter,
-            destinationWalletAddress
-          );
+        //   destinationAmountOut = (
+        //     amountsOut2 /
+        //     10 ** Number(targetTokenDecimal)
+        //   ).toString();
+        // } else {
+        // 1Inch implementation
+        let machineAmount: any = (
+          sourceBridgeAmount *
+          10 ** Number(targetFoundryTokenDecimal)
+        ).toString();
+        machineAmount = Math.floor(machineAmount);
+        machineDestinationAmountIn = machineAmount;
+        machineAmount = (global as any).utils.convertFromExponentialToDecimal(
+          machineAmount
+        );
+        await this.delay(1000);
+        let response = await OneInchSwap(
+          targetChainId,
+          targetNetwork?.foundryTokenAddress,
+          targetTokenAddress,
+          machineAmount,
+          targetNetwork?.fiberRouter,
+          destinationWalletAddress
+        );
 
-          if (response?.responseMessage) {
-            throw response?.responseMessage;
-          }
-
-          if (response && response.data) {
-            destinationOneInchData = response.data;
-          }
-
-          if (response && response.amounts) {
-            machineSourceBridgeAmountOutIntoTargetDecimal = response.amounts;
-            destinationAmountOut = (
-              response.amounts /
-              10 ** Number(targetTokenDecimal)
-            ).toString();
-          }
+        if (response?.responseMessage) {
+          throw response?.responseMessage;
         }
+
+        if (response && response.data) {
+          destinationOneInchData = response.data;
+        }
+
+        if (response && response.amounts) {
+          machineDestinationAmountOut = response.amounts;
+          destinationAmountOut = (
+            response.amounts /
+            10 ** Number(targetTokenDecimal)
+          ).toString();
+        }
+        // }
       }
-    } else if (targetNetwork.isNonEVM) {
-      const recentCudosPriceInDollars =
-        await cudosPriceAxiosHelper.getCudosPrice();
-      destinationAmountOut =
-        (await sourceBridgeAmount) / recentCudosPriceInDollars;
-      machineSourceBridgeAmountInIntoTargetDecimal =
-        destinationAmountOut * 10 ** 18;
-      machineSourceBridgeAmountInIntoTargetDecimal = (
-        global as any
-      ).utils.convertFromExponentialToDecimal(
-        machineSourceBridgeAmountInIntoTargetDecimal
-      );
-      targetAssetType = "Foundry";
     }
+    // else if (targetNetwork.isNonEVM) {
+    //   const recentCudosPriceInDollars =
+    //     await cudosPriceAxiosHelper.getCudosPrice();
+    //   destinationAmountOut =
+    //     (await sourceBridgeAmount) / recentCudosPriceInDollars;
+    //   machineDestinationAmountIn = destinationAmountOut * 10 ** 18;
+    //   machineDestinationAmountIn = (
+    //     global as any
+    //   ).utils.convertFromExponentialToDecimal(machineDestinationAmountIn);
+    //   targetAssetType = "Foundry";
+    // }
 
     if (!targetNetwork.isNonEVM) {
-      // machineSourceBridgeAmountIntoSourceDecimal = String(
-      //   Math.floor(machineSourceBridgeAmountIntoSourceDecimal)
-      // );
-
-      // machineSourceBridgeAmountIntoTargetDecimal = String(
-      //   Math.floor(machineSourceBridgeAmountIntoTargetDecimal)
-      // );
-
       let isValidLiquidityAvailable = await isLiquidityAvailableForEVM(
         targetNetwork.foundryTokenAddress,
         targetNetwork.fundManager,
         targetNetwork.provider,
         (global as any).utils.convertFromExponentialToDecimal(
-          machineSourceBridgeAmountInIntoTargetDecimal
+          machineDestinationAmountIn
         )
       );
       if (!isValidLiquidityAvailable) {
@@ -331,7 +323,7 @@ module.exports = {
         targetNetwork.rpcUrl,
         (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
         (global as any).utils.convertFromExponentialToDecimal(
-          machineSourceBridgeAmountInIntoTargetDecimal
+          machineDestinationAmountIn
         )
       );
       if (!isValidLiquidityAvailable) {
@@ -343,17 +335,15 @@ module.exports = {
     let data: any = { source: {}, destination: {} };
     data.source.type = sourceAssetType;
     data.source.amount = inputAmount;
-    if (machineSourceBridgeAmountIntoSourceDecimal) {
-      data.source.bridgeAmount = machineSourceBridgeAmountIntoSourceDecimal;
+    if (machineSourceAmountOut) {
+      data.source.bridgeAmount = machineSourceAmountOut;
     }
     data.source.oneInchData = sourceOneInchData;
 
     data.destination.type = targetAssetType;
     data.destination.amount = String(destinationAmountOut);
-    data.destination.bridgeAmountIn =
-      machineSourceBridgeAmountInIntoTargetDecimal;
-    data.destination.bridgeAmountOut =
-      machineSourceBridgeAmountOutIntoTargetDecimal;
+    data.destination.bridgeAmountIn = machineDestinationAmountIn;
+    data.destination.bridgeAmountOut = machineDestinationAmountOut;
     data.destination.oneInchData = destinationOneInchData;
     return data;
   },
