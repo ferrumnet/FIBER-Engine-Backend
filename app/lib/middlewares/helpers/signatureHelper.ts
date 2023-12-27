@@ -22,9 +22,11 @@ export const getSignature = (paramsBody: any): SignatureResponse => {
   ) {
     signatureResponse.hash = paramsBody.hash;
     signatureResponse.salt = paramsBody.salt;
-    signatureResponse.amount = paramsBody.destinationBridgeAmount;
+    signatureResponse.amount = paramsBody.destinationAmountIn;
     signatureResponse.signature =
-      paramsBody.signatures.length > 0 ? paramsBody.signatures[0] : "";
+      paramsBody.signatures.length > 0
+        ? paramsBody.signatures[0].signature
+        : "";
   }
   return signatureResponse;
 };
