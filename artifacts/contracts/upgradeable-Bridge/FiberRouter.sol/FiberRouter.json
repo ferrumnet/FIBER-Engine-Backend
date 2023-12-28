@@ -51,13 +51,13 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "swapBridgeAmount",
+          "name": "settledAmount",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "bytes32",
-          "name": "withdrawlData",
+          "name": "withdrawalData",
           "type": "bytes32"
         }
       ],
@@ -131,13 +131,13 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "swapBridgeAmount",
+          "name": "settledAmount",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "bytes32",
-          "name": "withdrawlData",
+          "name": "withdrawalData",
           "type": "bytes32"
         }
       ],
@@ -388,13 +388,8 @@
           "type": "string"
         },
         {
-          "internalType": "uint256",
-          "name": "swapBridgeAmount",
-          "type": "uint256"
-        },
-        {
           "internalType": "bytes32",
-          "name": "withdrawlData",
+          "name": "withdrawalData",
           "type": "bytes32"
         }
       ],
@@ -446,13 +441,8 @@
           "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "swapBridgeAmount",
-          "type": "uint256"
-        },
-        {
           "internalType": "bytes32",
-          "name": "withdrawlData",
+          "name": "withdrawalData",
           "type": "bytes32"
         }
       ],
@@ -561,13 +551,8 @@
           "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "swapBridgeAmount",
-          "type": "uint256"
-        },
-        {
           "internalType": "bytes32",
-          "name": "withdrawlData",
+          "name": "withdrawalData",
           "type": "bytes32"
         }
       ],
@@ -604,11 +589,6 @@
           "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "swapBridgeAmount",
-          "type": "uint256"
-        },
-        {
           "internalType": "bytes",
           "name": "oneInchData",
           "type": "bytes"
@@ -625,7 +605,7 @@
         },
         {
           "internalType": "bytes32",
-          "name": "withdrawlData",
+          "name": "withdrawalData",
           "type": "bytes32"
         }
       ],
