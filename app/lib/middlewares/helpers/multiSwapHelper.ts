@@ -1,6 +1,4 @@
-import { util } from "chai";
-
-var Web3 = require("web3");
+import { getSlippage } from "../../../lib/middlewares/helpers/configurationHelper";
 
 module.exports = {
   getTokenCategorizedInformation: async function (req: any) {
@@ -58,7 +56,7 @@ module.exports = {
       );
       destinationTokenCategorizedInfo.destinationOneInchData =
         destinationOneInchData;
-
+      data.slippage = await getSlippage();
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     }
