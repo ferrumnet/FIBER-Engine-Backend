@@ -222,6 +222,14 @@ module.exports = {
     );
     return amountFormatted;
   },
+  decimalsIntoNumber(amount: any, decimal: any) {
+    const bigNumberValue = ethers.BigNumber.from(amount.toString());
+    let formattedValue = ethers.utils.formatUnits(bigNumberValue, decimal);
+    formattedValue = (global as any).utils.convertFromExponentialToDecimal(
+      formattedValue.toString()
+    );
+    return formattedValue;
+  },
   async calculateValueWithSlippage(originalValue: any) {
     let slippageProportion = BigInt(100 - (await getSlippage()));
     originalValue = BigInt(originalValue);

@@ -126,10 +126,15 @@ module.exports = {
 
         if (response && response.amounts) {
           machineSourceAmountOut = response.amounts;
+          machineSourceAmountOut = await (
+            global as any
+          ).commonFunctions.calculateValueWithSlippage(machineSourceAmountOut);
           sourceBridgeAmount = (
-            response.amounts /
-            10 ** Number(sourceFoundryTokenDecimal)
-          ).toString();
+            global as any
+          ).commonFunctions.decimalsIntoNumber(
+            machineSourceAmountOut,
+            sourceFoundryTokenDecimal
+          );
         }
 
         if (response && response.data) {
@@ -168,11 +173,10 @@ module.exports = {
       const targetTokenDecimal = await targetTokenContract.decimals();
       const targetFoundryTokenDecimal =
         await targetFoundryTokenContract.decimals();
-
-      let amountIn: any = (
-        sourceBridgeAmount *
-        10 ** Number(targetFoundryTokenDecimal)
-      ).toString();
+      let amountIn: any = (global as any).commonFunctions.numberIntoDecimals(
+        sourceBridgeAmount,
+        targetFoundryTokenDecimal
+      );
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
         targetTokenAddress,
