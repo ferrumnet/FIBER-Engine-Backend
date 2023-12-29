@@ -80,11 +80,9 @@ module.exports = {
       }
 
       if (isFoundryAsset) {
-        console.log("Source Token is Foundry Asset");
         // approve to fiber router to transfer tokens to the fund manager contract
         sourceBridgeAmount = inputAmount;
         // } else if (isRefineryAsset) {
-        //   console.log("Source Token is Refinery Asset");
         //   let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
         //   let response = await getAmountOut(sourceNetwork, path, String(amount));
         //   if (response?.responseMessage) {
@@ -96,7 +94,6 @@ module.exports = {
         //     10 ** Number(sourceFoundryTokenDecimal)
         //   ).toString();
         // } else if (isIonicAsset) {
-        //   console.log("SN-1: Source Token is Ionic Asset");
         //   //swap refinery token to the foundry token
         //   let path = [
         //     sourceTokenAddress,
@@ -162,8 +159,6 @@ module.exports = {
       } else {
         targetFoundryTokenAddress = targetNetwork.foundryTokenAddress;
       }
-      console.log("targetFoundryTokenAddress", targetFoundryTokenAddress);
-
       const targetFoundryTokenContract = new ethers.Contract(
         targetFoundryTokenAddress,
         tokenAbi.abi,
@@ -178,7 +173,6 @@ module.exports = {
         sourceBridgeAmount *
         10 ** Number(targetFoundryTokenDecimal)
       ).toString();
-      console.log("amountIn", amountIn);
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
         targetTokenAddress,
@@ -201,7 +195,6 @@ module.exports = {
       }
 
       if (isTargetTokenFoundry === true) {
-        console.log("TN-1: Target Token is Foundry Asset");
         destinationAmountOut = sourceBridgeAmount;
         machineDestinationAmountIn = (
           sourceBridgeAmount *
@@ -209,9 +202,7 @@ module.exports = {
         ).toString();
         machineDestinationAmountIn = Math.floor(machineDestinationAmountIn);
       } else {
-        // console.log("isTargetRefineryToken", isTargetRefineryToken);
         // if (isTargetRefineryToken == true) {
-        //   console.log("TN-1: Target token is Refinery Asset");
         //   amountIn = Math.floor(amountIn);
         //   machineDestinationAmountIn = amountIn;
         //   let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
@@ -230,7 +221,6 @@ module.exports = {
         //     10 ** Number(targetTokenDecimal)
         //   ).toString();
         // } else if (isTargetIonicToken) {
-        //   console.log("TN-1: Target Token is Ionic Asset");
         //   amountIn = Math.floor(amountIn);
         //   machineDestinationAmountIn = amountIn;
         //   let path2 = [
@@ -313,7 +303,6 @@ module.exports = {
         )
       );
       if (!isValidLiquidityAvailable) {
-        console.log(IN_SUFFICIENT_LIQUIDITY_ERROR);
         throw IN_SUFFICIENT_LIQUIDITY_ERROR;
       }
     } else {
@@ -327,7 +316,6 @@ module.exports = {
         )
       );
       if (!isValidLiquidityAvailable) {
-        console.log(IN_SUFFICIENT_LIQUIDITY_ERROR);
         throw IN_SUFFICIENT_LIQUIDITY_ERROR;
       }
     }

@@ -47,14 +47,5 @@ export const getWithdrawalDataHashForSwap = (
       sourceAssetType +
       destinationAssetType
   );
-  console.log(
-    sourceOneInchData,
-    destinationOneInchData,
-    amountIn,
-    amountOut,
-    sourceAssetType,
-    destinationAssetType,
-    hash
-  );
   return hash;
 };

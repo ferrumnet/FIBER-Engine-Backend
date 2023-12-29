@@ -19,7 +19,6 @@ export const getSourceAssetTypes = async (
   let isOneInch = false;
 
   isFoundryAsset = await sourceFACCheck(sourceNetwork, sourceTokenAddress);
-  console.log("isFoundryAsset", isFoundryAsset);
   if (!isFoundryAsset) {
     isOneInch = true;
   }
@@ -49,7 +48,6 @@ export const getTargetAssetTypes = async (
     targetTokenAddress,
     amount
   );
-  console.log("isFoundryAsset", isFoundryAsset);
 
   if (!isFoundryAsset) {
     isOneInch = true;
@@ -93,7 +91,6 @@ export const convertIntoAssetTypesObjectForSource = (query: any): AssetType => {
     isOneInch: isOneInch,
   };
 
-  console.log("convertIntoAssetTypesObjectForSource", response);
   return response;
 };
 
@@ -124,7 +121,6 @@ export const convertIntoAssetTypesObjectForTarget = (query: any): AssetType => {
     isIonicAsset: isIonicAsset,
     isOneInch: isOneInch,
   };
-  console.log("convertIntoAssetTypesObjectForTarget", response);
   return response;
 };
 
@@ -136,7 +132,6 @@ export const isTypeFoundryAsset = async (
     sourceNetwork,
     sourceTokenAddress
   );
-  console.log("isFoundryAsset", isFoundryAsset);
   return isFoundryAsset;
 };
 
@@ -150,7 +145,6 @@ export const isTypeRefineryAsset = async (
     sourceTokenAddress,
     amount
   );
-  console.log("isRefineryAsset", isRefineryAsset);
   return isRefineryAsset;
 };
 
@@ -186,7 +180,6 @@ async function isSourceRefineryAsset(
       return false;
     }
   } catch (error) {
-    console.log("isSourceRefineryAsset error", error);
     return false;
   }
 }
@@ -245,7 +238,6 @@ async function isTargetRefineryAsset(
       return false;
     }
   } catch (error) {
-    console.log("isTargetRefineryAsset error", error);
     return false;
   }
 }

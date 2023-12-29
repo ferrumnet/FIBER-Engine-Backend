@@ -13,7 +13,6 @@ interface Response {
 }
 
 export const createCudosResponse = (tx: any): Response => {
-  console.log("createCudosResponse", tx);
   let responseCode = tx?.code ? tx.code : CODE_201;
   let transactionHash = tx?.transactionHash ? tx.transactionHash : "";
   let responseMessage = "";
@@ -53,7 +52,6 @@ export const createEVMResponse = (tx: any): Response => {
 };
 
 const filterEVMResponseMessage = (tx: any): Response => {
-  console.log("createEVMResponse", tx);
   let response: Response = {
     responseCode: 0,
     responseMessage: "",

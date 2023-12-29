@@ -220,7 +220,6 @@ module.exports = {
     amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
       amountFormatted.toString()
     );
-    console.log("amountFormatted", amountFormatted);
     return amountFormatted;
   },
   async calculateValueWithSlippage(originalValue: any) {

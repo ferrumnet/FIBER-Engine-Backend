@@ -85,7 +85,6 @@ module.exports = {
     let transactionHash = "";
     let withdrawResponse;
     let destinationAmount;
-    console.log(1);
     const gas = await this.estimateGasForWithdraw(
       targetChainId,
       destinationWalletAddress
@@ -115,13 +114,11 @@ module.exports = {
     }
 
     if (!isValidLiquidityAvailable) {
-      console.log(IN_SUFFICIENT_LIQUIDITY_ERROR);
       let receipt = { code: CODE_701 };
       withdrawResponse = createEVMResponse(receipt);
       let data: any = {};
       data.responseCode = withdrawResponse?.responseCode;
       data.responseMessage = withdrawResponse?.responseMessage;
-      console.log("data", data);
       return data;
     }
 
@@ -165,14 +162,12 @@ module.exports = {
             gas
           );
         const receipt1 = await this.callEVMWithdrawAndGetReceipt(swapResult);
-        console.log("receipt1", receipt1);
         destinationAmount = (
           signatureResponse.amount /
           10 ** Number(targetTokenDecimal)
         ).toString();
         withdrawResponse = createEVMResponse(receipt1);
         transactionHash = withdrawResponse?.transactionHash;
-        console.log("Transaction hash is: swapResult", receipt1.hash);
       } else {
         if (isTargetRefineryToken == true) {
           // let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
@@ -208,7 +203,6 @@ module.exports = {
           //     ).toString();
           //     withdrawResponse = createEVMResponse(receipt2);
           //     transactionHash = withdrawResponse?.transactionHash;
-          //     console.log("Transaction hash is:swapResult2 ", swapResult2.hash);
           //   }
           // }
         } else if (isTargetIonicFoundry == true) {
@@ -249,7 +243,6 @@ module.exports = {
           //     ).toString();
           //     withdrawResponse = createEVMResponse(receipt3);
           //     transactionHash = withdrawResponse?.transactionHash;
-          //     console.log("Transaction hash is: ", swapResult3.hash);
           //   }
           // }
         } else {
@@ -297,7 +290,6 @@ module.exports = {
       //   signatureResponse.salt,
       //   String(signatureResponse.signature)
       // );
-      // console.log("swapResult.transactionHash", swapResult.transactionHash);
       // destinationAmount = (
       //   signatureResponse.amount /
       //   10 ** Number(18)
@@ -311,7 +303,6 @@ module.exports = {
     data.destinationAmount = String(destinationAmount);
     data.responseCode = withdrawResponse?.responseCode;
     data.responseMessage = withdrawResponse?.responseMessage;
-    console.log("data", data);
     return data;
   },
 
@@ -353,12 +344,6 @@ module.exports = {
         inputAmount,
         sourceTokenDecimal
       );
-      console.log(
-        "INIT: Swap Initiated for this Amount: ",
-        amount,
-        inputAmount
-      );
-
       let sourceTypeResponse = await convertIntoAssetTypesObjectForSource(
         query
       );
@@ -371,8 +356,6 @@ module.exports = {
       let swapResult;
       if (isFoundryAsset) {
         if (!targetNetwork.isNonEVM) {
-          console.log("SN-1: Source Token is Foundry Asset");
-          console.log("SN-2: Add Foundry Asset in Source Network FundManager");
           // approve to fiber router to transfer tokens to the fund manager contract
           const targetFoundryTokenAddress =
             await sourceNetwork.fundManagerContract.allowedTargets(
@@ -398,10 +381,6 @@ module.exports = {
           //wait until the transaction be completed
           sourceBridgeAmount = amount;
         } else if (targetNetwork.isNonEVM) {
-          // console.log("SN-1: Non Evm Source Token is Foundry Asset");
-          // console.log(
-          //   "SN-2: Non Evm Add Foundry Asset in Source Network FundManager"
-          // );
           // // approve to fiber router to transfer tokens to the fund manager contract
           // const targetFoundryTokenAddress =
           //   await sourceNetwork.fundManagerContract.nonEvmAllowedTargets(
@@ -446,8 +425,6 @@ module.exports = {
           //   query.destinationAmountIn
           // );
         } else if (targetNetwork.isNonEVM) {
-          // console.log("SN-1: Non Evm Source Token is Refinery Asset");
-          // console.log("SN-2: Non Evm Swap Refinery Asset to Foundry Asset ...");
           // //swap refinery token to the foundry token
           // // const amount = await (inputAmount * 10 ** Number(targetNetwork.decimals)).toString();
           // let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
@@ -475,15 +452,12 @@ module.exports = {
         }
       } else if (isIonicAsset) {
         if (!targetNetwork.isNonEVM) {
-          // console.log("SN-1: Source Token is Ionic Asset");
-          // console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
           // //swap refinery token to the foundry token
           // let path = [
           //   sourceTokenAddress,
           //   sourceNetwork.weth,
           //   sourceNetwork.foundryTokenAddress,
           // ];
-          // console.log("path", path);
           // let response = await getAmountOut(
           //   sourceNetwork,
           //   path,
@@ -506,15 +480,12 @@ module.exports = {
           //   query.destinationAmountIn
           // );
         } else if (targetNetwork.isNonEVM) {
-          // console.log("SN-1: Non Evm Source Token is Ionic Asset");
-          // console.log("SN-2: Non Evm Swap Ionic Asset to Foundry Asset ...");
           // //swap refinery token to the foundry token
           // let path = [
           //   sourceTokenAddress,
           //   sourceNetwork.weth,
           //   sourceNetwork.foundryTokenAddress,
           // ];
-          // console.log("path", path);
           // let response = await getAmountOut(
           //   sourceNetwork,
           //   path,
@@ -540,7 +511,6 @@ module.exports = {
       } else {
         // 1Inch implementation
         if (!targetNetwork.isNonEVM) {
-          console.log("1Inch Asset EVM");
           swapResult = fiberRouter.methods.swapAndCrossOneInch(
             amount,
             query?.sourceBridgeAmount,
@@ -560,7 +530,6 @@ module.exports = {
             )
           );
         } else {
-          // console.log("1Inch Asset non EVM");
           // swapResult = fiberRouter.methods.nonEvmSwapAndCrossOneInch(
           //   sourceNetwork?.router,
           //   amount,
@@ -607,9 +576,7 @@ module.exports = {
     let receipt: any = { status: 0, responseMessage: "" };
     try {
       receipt = await data.wait();
-      console.log("swapResult receipt", receipt);
     } catch (e) {
-      console.log("swapResult receipt error", e);
       receipt.responseMessage = e;
     }
     return receipt;
@@ -646,7 +613,6 @@ module.exports = {
     } else {
       data.gasPrice = 15000000000;
     }
-    console.log("data", data);
     return data;
   },
 

@@ -4,7 +4,6 @@ module.exports = {
   async getGasEstimationByNetworkName(name: any, apiKey: string) {
     try {
       let url = `https://api.owlracle.info/v4/${name}/gas?apikey=${apiKey}`;
-      console.log("gasEstimation url", url);
       let res = await axios.get(url);
       return res.data;
     } catch (error) {
