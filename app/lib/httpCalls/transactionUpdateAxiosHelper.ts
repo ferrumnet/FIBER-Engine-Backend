@@ -19,7 +19,6 @@ module.exports = {
       }
       let url = `${baseUrl}/transactions/update/from/fiber/${txHash}`;
       let res = await axios.put(url, body, config);
-      console.log("updateTransactionJobStatus response", res.data);
       return res;
     } catch (error) {
       console.log(error);

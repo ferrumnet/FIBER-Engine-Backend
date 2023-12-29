@@ -17,9 +17,6 @@ export const isLiquidityAvailableForEVM = async (
     provider
   );
   let balance = await contract.balanceOf(fundManagerAddress);
-  if (balance) {
-    console.log("result", Number(balance), amount);
-  }
   if (balance && Number(balance) >= amount) {
     isValid = true;
   }
@@ -41,11 +38,9 @@ export const isLiquidityAvailableForCudos = async (
     privateKey
   );
   if (balance && balance.amount) {
-    console.log("result", balance);
     balance.amount = (global as any).utils.convertFromExponentialToDecimal(
       balance?.amount
     );
-    console.log("result", balance?.amount, amount);
   }
   if (balance && balance.amount && balance.amount >= amount) {
     isValid = true;

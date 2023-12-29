@@ -46,7 +46,6 @@ app.use(cors());
 (global as any).starterEnvironment = (
   global as any
 ).startHelper.startHelperInit(process);
-console.log((global as any).starterEnvironment);
 
 if (
   (global as any).starterEnvironment.environmentTag == "dev" ||

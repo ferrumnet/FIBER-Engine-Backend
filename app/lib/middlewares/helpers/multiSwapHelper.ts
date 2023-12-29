@@ -10,15 +10,10 @@ module.exports = {
       req.query.sourceAmount,
       req.query.destinationWalletAddress
     );
-
-    console.log(categorizedInfo);
-
     let data: any = {};
-
     if (categorizedInfo) {
       let destinationAmount = 0;
       destinationAmount = categorizedInfo?.destination?.amount;
-      console.log("destinationAmount", destinationAmount);
       let sourceOneInchData = "";
       let destinationOneInchData = "";
       let sourceBridgeAmount = "";
@@ -109,9 +104,7 @@ module.exports = {
       body.createdAt = new Date();
       body.updatedAt = new Date();
       return await db.TransactionLogs.create(body);
-    } catch (e) {
-      console.log("createTransactionLog", e);
-    }
+    } catch (e) {}
   },
 
   isAlreadyInTransactionLog: async function (req: any): Promise<boolean> {
@@ -122,12 +115,10 @@ module.exports = {
       };
       let count = await db.TransactionLogs.countDocuments(countFilter);
       if (count == 1) {
-        console.log("Transaction already in processing");
         return true;
       }
-      console.log("transaction is new");
     } catch (e) {
-      console.log("createTransactionLog", e);
+      console.log(e);
     }
     return false;
   },
@@ -145,7 +136,7 @@ module.exports = {
         { new: true }
       );
     } catch (e) {
-      console.log("updateTransactionLog", e);
+      console.log(e);
     }
   },
 

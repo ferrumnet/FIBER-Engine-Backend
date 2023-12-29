@@ -13,7 +13,6 @@ export const getAmountOut = async (
   try {
     amounts = await network.dexContract.getAmountsOut(String(amount), path);
   } catch (error: any) {
-    console.log("DEX error", error?.abc);
     console.log("DEX error", error?.reason);
     responseMessage = error?.reason;
     // responseMessage = "ALERT: DEX doesn't have liquidity for this pair";
