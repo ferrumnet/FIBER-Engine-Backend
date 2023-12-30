@@ -31,6 +31,19 @@ import {
   getGasForSwap,
   getGasForWithdraw,
 } from "../app/lib/middlewares/helpers/gasEstimationHelper";
+import {
+  doFoundaryWithdraw,
+  doOneInchWithdraw,
+} from "../app/lib/middlewares/helpers/fiberEngineHelper";
+import {
+  WithdrawSigned,
+  WithdrawSignedAndSwapOneInch,
+} from "../app/interfaces/fiberEngineInterface";
+
+import {
+  getWithdrawSignedObject,
+  getWithdrawSignedAndSwapOneInchObject,
+} from "../app/lib/middlewares/helpers/fiberEngineHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -89,10 +102,6 @@ module.exports = {
     let transactionHash = "";
     let withdrawResponse;
     let destinationAmount;
-    const gas = await getGasForWithdraw(
-      targetChainId,
-      destinationWalletAddress
-    );
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
     ).multiswapNetworkFIBERInformation;
@@ -154,17 +163,20 @@ module.exports = {
 
       if (isTargetTokenFoundry === true) {
         let signatureResponse: any = getSignature(body);
-        const swapResult = await targetNetwork.fiberRouterContract
-          .connect(targetSigner)
-          .withdrawSigned(
-            targetTokenAddress,
-            destinationWalletAddress,
-            String(signatureResponse.amount),
-            signatureResponse.salt,
-            body.signatureExpiry,
-            String(signatureResponse.signature),
-            gas
-          );
+        let obj: WithdrawSigned = getWithdrawSignedObject(
+          targetTokenAddress,
+          destinationWalletAddress,
+          String(signatureResponse.amount),
+          signatureResponse.salt,
+          body.signatureExpiry,
+          String(signatureResponse.signature)
+        );
+        const swapResult = await doFoundaryWithdraw(
+          obj,
+          targetNetwork,
+          targetSigner,
+          targetChainId
+        );
         const receipt1 = await this.callEVMWithdrawAndGetReceipt(swapResult);
         destinationAmount = (
           signatureResponse.amount /
@@ -252,9 +264,8 @@ module.exports = {
         // } else {
         // 1Inch implementation
         let signatureResponse: any = getSignature(body);
-        const swapResult = await targetNetwork.fiberRouterContract
-          .connect(targetSigner)
-          .withdrawSignedAndSwapOneInch(
+        let obj: WithdrawSignedAndSwapOneInch =
+          getWithdrawSignedAndSwapOneInchObject(
             destinationWalletAddress,
             body?.destinationAmountIn,
             body?.destinationAmountOut,
@@ -263,10 +274,14 @@ module.exports = {
             body.destinationOneInchData,
             signatureResponse.salt,
             body.signatureExpiry,
-            String(signatureResponse.signature),
-            gas
+            String(signatureResponse.signature)
           );
-
+        const swapResult = await doOneInchWithdraw(
+          obj,
+          targetNetwork,
+          targetSigner,
+          targetChainId
+        );
         const receipt = await swapResult.wait();
         if (receipt.status == 1) {
           if (swapResult && swapResult.hash) {

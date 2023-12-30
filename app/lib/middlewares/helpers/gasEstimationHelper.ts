@@ -1,8 +1,8 @@
 var Web3 = require("web3");
 
 export const getGasForWithdraw = async (
-  chainId: any,
-  from: any
+  chainId: string,
+  dynamicGasLimit: string
 ): Promise<any> => {
   let data: any = {};
   let network = (global as any).commonFunctions.getNetworkByChainId(chainId);
@@ -15,7 +15,7 @@ export const getGasForWithdraw = async (
     let maxPriorityFeePerGas = isAllowedDynamicGasValues
       ? item.dynamicValues.maxPriorityFeePerGas
       : item.maxPriorityFeePerGas;
-    let gasLimit = item.gasLimit;
+    let staticGasLimit = item.gasLimit;
 
     data.maxFeePerGas = Web3.utils.toHex(
       Web3.utils.toWei(maxFeePerGas, "gwei")
@@ -24,7 +24,9 @@ export const getGasForWithdraw = async (
       Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
     );
 
-    data.gasLimit = gasLimit;
+    data.gasLimit = item?.isAllowedDynamicGasLimit
+      ? dynamicGasLimit
+      : staticGasLimit;
   } else {
     data.gasPrice = 15000000000;
   }
@@ -56,8 +58,4 @@ export const getGasForSwap = async (chainId: any, from: any): Promise<any> => {
     data.gas = {};
   }
   return data;
-};
-
-export const getGasLimit = async (): Promise<string> => {
-  return "";
 };
