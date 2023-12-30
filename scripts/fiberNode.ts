@@ -63,7 +63,6 @@ module.exports = {
         sourceTokenAddress,
         amount
       );
-
       const isFoundryAsset = sourceTypeResponse.isFoundryAsset;
       const isRefineryAsset = sourceTypeResponse.isRefineryAsset;
       const isIonicAsset = sourceTypeResponse.isIonicAsset;
@@ -136,7 +135,6 @@ module.exports = {
             sourceFoundryTokenDecimal
           );
         }
-
         if (response && response.data) {
           sourceOneInchData = response.data;
         }
@@ -173,10 +171,11 @@ module.exports = {
       const targetTokenDecimal = await targetTokenContract.decimals();
       const targetFoundryTokenDecimal =
         await targetFoundryTokenContract.decimals();
-      let amountIn: any = (global as any).commonFunctions.numberIntoDecimals(
-        sourceBridgeAmount,
-        targetFoundryTokenDecimal
-      );
+      let amountIn: any = (
+        sourceBridgeAmount *
+        10 ** Number(targetFoundryTokenDecimal)
+      ).toString();
+      amountIn = parseInt(amountIn);
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
         targetTokenAddress,
