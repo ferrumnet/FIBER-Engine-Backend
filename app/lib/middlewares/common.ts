@@ -212,11 +212,8 @@ module.exports = {
 
     return null;
   },
-  numberIntoDecimals(inputAmount: any, sourceTokenDecimal: any) {
-    let amountFormatted = ethers.utils.parseUnits(
-      inputAmount,
-      sourceTokenDecimal
-    );
+  numberIntoDecimals(amount: any, decimal: any) {
+    let amountFormatted = ethers.utils.parseUnits(amount, decimal);
     amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
       amountFormatted.toString()
     );

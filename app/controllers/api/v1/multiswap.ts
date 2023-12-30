@@ -19,7 +19,8 @@ module.exports = function (router: any) {
         req.query.destinationWalletAddress =
           req.query.destinationWalletAddress.toLowerCase();
       } else {
-        req.query.destinationWalletAddress = req.query.sourceWalletAddress;
+        req.query.destinationWalletAddress =
+          req.query.sourceWalletAddress.toLowerCase();
       }
 
       multiSwapHelper.validatonForSameSourceAndDestination(req);
