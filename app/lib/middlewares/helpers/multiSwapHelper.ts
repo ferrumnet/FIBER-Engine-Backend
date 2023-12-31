@@ -38,8 +38,10 @@ module.exports = {
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
       destinationTokenCategorizedInfo.destinationAmountIn =
         categorizedInfo?.destination?.bridgeAmountIn;
-      destinationTokenCategorizedInfo.destinationAmountOut =
-        categorizedInfo?.destination?.bridgeAmountOut;
+      destinationTokenCategorizedInfo.destinationAmountOut = categorizedInfo
+        ?.destination?.bridgeAmountOut
+        ? categorizedInfo?.destination?.bridgeAmountOut
+        : "";
       destinationTokenCategorizedInfo.destinationOneInchData =
         destinationOneInchData;
       data.slippage = await getSlippage();
