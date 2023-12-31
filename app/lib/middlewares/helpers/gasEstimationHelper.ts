@@ -1,8 +1,8 @@
 var Web3 = require("web3");
 
 export const getGasForWithdraw = async (
-  chainId: any,
-  from: any
+  chainId: string,
+  dynamicGasLimit: string
 ): Promise<any> => {
   let data: any = {};
   let network = (global as any).commonFunctions.getNetworkByChainId(chainId);
@@ -15,7 +15,7 @@ export const getGasForWithdraw = async (
     let maxPriorityFeePerGas = isAllowedDynamicGasValues
       ? item.dynamicValues.maxPriorityFeePerGas
       : item.maxPriorityFeePerGas;
-    let gasLimit = item.gasLimit;
+    let staticGasLimit = item.gasLimit;
 
     data.maxFeePerGas = Web3.utils.toHex(
       Web3.utils.toWei(maxFeePerGas, "gwei")
@@ -24,9 +24,9 @@ export const getGasForWithdraw = async (
       Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
     );
 
-    data.gasLimit = gasLimit;
-  } else {
-    data.gasPrice = 15000000000;
+    data.gasLimit = item?.isAllowedDynamicGasLimit
+      ? dynamicGasLimit?.toString()
+      : staticGasLimit;
   }
   return data;
 };
@@ -58,6 +58,15 @@ export const getGasForSwap = async (chainId: any, from: any): Promise<any> => {
   return data;
 };
 
-export const getGasLimit = async (): Promise<string> => {
-  return "";
+export const isAllowedDynamicGasValues = async (
+  chainId: string
+): Promise<any> => {
+  let data: any = {};
+  let item = await db.GasFees.findOne({ chainId: chainId });
+  return item?.isAllowedDynamicGasLimit ? true : false;
+};
+
+export const addBuffer = (amount: any): any => {
+  console.log("beForBufferGasLimit", amount);
+  return amount.mul(110).div(100);
 };
