@@ -126,7 +126,7 @@ module.exports = {
           machineSourceAmountOut = response.amounts;
           machineSourceAmountOut = await (
             global as any
-          ).commonFunctions.calculateValueWithSlippage(machineSourceAmountOut);
+          ).commonFunctions.addSlippageInDecimal(machineSourceAmountOut);
           sourceBridgeAmount = (
             global as any
           ).commonFunctions.decimalsIntoNumber(
@@ -275,10 +275,15 @@ module.exports = {
 
         if (response && response.amounts) {
           machineDestinationAmountOut = response.amounts;
+          machineDestinationAmountOut = await (
+            global as any
+          ).commonFunctions.addSlippageInDecimal(machineDestinationAmountOut);
           destinationAmountOut = (
-            response.amounts /
-            10 ** Number(targetTokenDecimal)
-          ).toString();
+            global as any
+          ).commonFunctions.decimalsIntoNumber(
+            machineDestinationAmountOut,
+            targetTokenDecimal
+          );
         }
         // }
       }
