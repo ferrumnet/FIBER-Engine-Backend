@@ -25,10 +25,8 @@ export const getGasForWithdraw = async (
     );
 
     data.gasLimit = item?.isAllowedDynamicGasLimit
-      ? dynamicGasLimit
+      ? dynamicGasLimit?.toString()
       : staticGasLimit;
-  } else {
-    data.gasPrice = 15000000000;
   }
   return data;
 };
@@ -58,4 +56,12 @@ export const getGasForSwap = async (chainId: any, from: any): Promise<any> => {
     data.gas = {};
   }
   return data;
+};
+
+export const isAllowedDynamicGasValues = async (
+  chainId: string
+): Promise<any> => {
+  let data: any = {};
+  let item = await db.GasFees.findOne({ chainId: chainId });
+  return item?.isAllowedDynamicGasLimit ? true : false;
 };

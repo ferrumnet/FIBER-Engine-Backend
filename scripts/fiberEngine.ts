@@ -177,12 +177,12 @@ module.exports = {
           targetSigner,
           targetChainId
         );
-        const receipt1 = await this.callEVMWithdrawAndGetReceipt(swapResult);
+        const receipt = await this.callEVMWithdrawAndGetReceipt(swapResult);
         destinationAmount = (
           signatureResponse.amount /
           10 ** Number(targetTokenDecimal)
         ).toString();
-        withdrawResponse = createEVMResponse(receipt1);
+        withdrawResponse = createEVMResponse(receipt);
         transactionHash = withdrawResponse?.transactionHash;
       } else {
         // if (isTargetRefineryToken == true) {
@@ -283,16 +283,12 @@ module.exports = {
           targetChainId
         );
         const receipt = await swapResult.wait();
-        if (receipt.status == 1) {
-          if (swapResult && swapResult.hash) {
-            destinationAmount = (
-              body?.destinationAmountOut /
-              10 ** Number(targetTokenDecimal)
-            ).toString();
-            withdrawResponse = createEVMResponse(receipt);
-            transactionHash = withdrawResponse?.transactionHash;
-          }
-        }
+        destinationAmount = (
+          body?.destinationAmountOut /
+          10 ** Number(targetTokenDecimal)
+        ).toString();
+        withdrawResponse = createEVMResponse(receipt);
+        transactionHash = withdrawResponse?.transactionHash;
       }
     }
     // else if (targetNetwork.isNonEVM) {

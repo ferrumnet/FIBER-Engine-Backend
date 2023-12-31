@@ -3,15 +3,18 @@ import {
   WithdrawSignedAndSwapOneInch,
 } from "../../../interfaces/fiberEngineInterface";
 
-import { getGasForWithdraw } from "../../middlewares/helpers/gasEstimationHelper";
+import {
+  getGasForWithdraw,
+  isAllowedDynamicGasValues,
+} from "../../middlewares/helpers/gasEstimationHelper";
 
 export const getWithdrawSignedObject = (
-  targetTokenAddress,
-  destinationWalletAddress,
-  destinationAmountIn,
-  salt,
-  signatureExpiry,
-  signature
+  targetTokenAddress: string,
+  destinationWalletAddress: string,
+  destinationAmountIn: string,
+  salt: string,
+  signatureExpiry: number,
+  signature: string
 ): WithdrawSigned => {
   let object: WithdrawSigned = {
     targetTokenAddress: targetTokenAddress,
@@ -25,15 +28,15 @@ export const getWithdrawSignedObject = (
 };
 
 export const getWithdrawSignedAndSwapOneInchObject = (
-  destinationWalletAddress,
-  destinationAmountIn,
-  destinationAmountOut,
-  targetFoundryTokenAddress,
-  targetTokenAddress,
-  destinationOneInchData,
-  salt,
-  signatureExpiry,
-  signature
+  destinationWalletAddress: string,
+  destinationAmountIn: string,
+  destinationAmountOut: string,
+  targetFoundryTokenAddress: string,
+  targetTokenAddress: string,
+  destinationOneInchData: string,
+  salt: string,
+  signatureExpiry: number,
+  signature: string
 ): WithdrawSignedAndSwapOneInch => {
   let object: WithdrawSignedAndSwapOneInch = {
     destinationWalletAddress: destinationWalletAddress,
@@ -51,23 +54,25 @@ export const getWithdrawSignedAndSwapOneInchObject = (
 
 export const doFoundaryWithdraw = async (
   obj: WithdrawSigned,
-  targetNetwork,
-  targetSigner,
-  targetChainId
+  targetNetwork: any,
+  targetSigner: any,
+  targetChainId: any
 ): Promise<any> => {
   let result;
   try {
-    const gasLimit = await targetNetwork.fiberRouterContract
-      .connect(targetSigner)
-      .estimateGas.withdrawSigned(
-        obj.targetTokenAddress,
-        obj.destinationWalletAddress,
-        obj.destinationAmountIn,
-        obj.salt,
-        obj.signatureExpiry,
-        obj.signature
-      );
-
+    let gasLimit;
+    if (await isAllowedDynamicGasValues(targetChainId)) {
+      gasLimit = await targetNetwork.fiberRouterContract
+        .connect(targetSigner)
+        .estimateGas.withdrawSigned(
+          obj.targetTokenAddress,
+          obj.destinationWalletAddress,
+          obj.destinationAmountIn,
+          obj.salt,
+          obj.signatureExpiry,
+          obj.signature
+        );
+    }
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
       .withdrawSigned(
@@ -87,26 +92,28 @@ export const doFoundaryWithdraw = async (
 
 export const doOneInchWithdraw = async (
   obj: WithdrawSignedAndSwapOneInch,
-  targetNetwork,
-  targetSigner,
-  targetChainId
+  targetNetwork: any,
+  targetSigner: any,
+  targetChainId: any
 ): Promise<any> => {
   let result;
   try {
-    const gasLimit = await targetNetwork.fiberRouterContract
-      .connect(targetSigner)
-      .estimateGas.withdrawSignedAndSwapOneInch(
-        obj.destinationWalletAddress,
-        obj.destinationAmountIn,
-        obj.destinationAmountOut,
-        obj.targetFoundryTokenAddress,
-        obj.targetTokenAddress,
-        obj.destinationOneInchData,
-        obj.salt,
-        obj.signatureExpiry,
-        obj.signature
-      );
-
+    let gasLimit;
+    if (await isAllowedDynamicGasValues(targetChainId)) {
+      gasLimit = await targetNetwork.fiberRouterContract
+        .connect(targetSigner)
+        .estimateGas.withdrawSignedAndSwapOneInch(
+          obj.destinationWalletAddress,
+          obj.destinationAmountIn,
+          obj.destinationAmountOut,
+          obj.targetFoundryTokenAddress,
+          obj.targetTokenAddress,
+          obj.destinationOneInchData,
+          obj.salt,
+          obj.signatureExpiry,
+          obj.signature
+        );
+    }
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
       .withdrawSignedAndSwapOneInch(

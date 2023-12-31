@@ -18,6 +18,9 @@ module.exports = {
   async getAllNetworks() {
     try {
       let baseUrl = (global as any as any).environment.baseUrlGatewayBackend;
+      if ((global as any as any).utils.IS_LOCAL_ENV) {
+        baseUrl = "http://localhost:8080/api/v1";
+      }
       let url = `${baseUrl}/networks/list?isNonEVM=&isAllowedOnMultiSwap=true&allowFIBERData=${
         (global as any).environment.apiKeyForGateway
       }&isPagination=false`;
