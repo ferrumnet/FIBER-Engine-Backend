@@ -65,3 +65,8 @@ export const isAllowedDynamicGasValues = async (
   let item = await db.GasFees.findOne({ chainId: chainId });
   return item?.isAllowedDynamicGasLimit ? true : false;
 };
+
+export const addBuffer = (amount: any): any => {
+  console.log("beForBufferGasLimit", amount);
+  return amount.mul(110).div(100);
+};

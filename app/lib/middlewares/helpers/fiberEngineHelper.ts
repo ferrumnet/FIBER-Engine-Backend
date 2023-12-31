@@ -6,6 +6,7 @@ import {
 import {
   getGasForWithdraw,
   isAllowedDynamicGasValues,
+  addBuffer,
 } from "../../middlewares/helpers/gasEstimationHelper";
 
 export const getWithdrawSignedObject = (
@@ -72,6 +73,7 @@ export const doFoundaryWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
+      gasLimit = addBuffer(gasLimit);
     }
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
@@ -113,6 +115,7 @@ export const doOneInchWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
+      gasLimit = addBuffer(gasLimit);
     }
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
