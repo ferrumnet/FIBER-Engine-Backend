@@ -8,8 +8,9 @@ var mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
 (async () => {
   await (global as any).awsHelper.awsSecretsManagerInit();
-  (global as any).fiberEngine = require("./scripts/fiberEngine"); // this needs to move in index.ts
-  (global as any).fiberNode = require("./scripts/fiberNode"); // this needs to move in index.ts
+  (global as any).commonFunctions.setPrivateKey();
+  (global as any).fiberEngine = require("./scripts/fiberEngine");
+  (global as any).fiberNode = require("./scripts/fiberNode");
 
   await (global as any).networksAxiosHelper.getAllNetworks();
   var mongoString = (global as any).environment.mongoConnectionUrl;
