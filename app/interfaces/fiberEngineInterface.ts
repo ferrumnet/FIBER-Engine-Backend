@@ -12,7 +12,7 @@ export interface WithdrawSignedAndSwapOneInch {
   destinationAmountIn: string;
   destinationAmountOut: string;
   targetFoundryTokenAddress: string;
-  targetTokenAddress;
+  targetTokenAddress: string;
   destinationOneInchData: string;
   salt: string;
   signatureExpiry: number;
