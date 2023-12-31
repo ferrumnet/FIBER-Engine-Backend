@@ -230,11 +230,20 @@ module.exports = {
     return formattedValue;
   },
 
-  async calculateValueWithSlippage(originalValue: any) {
+  async addSlippageInDecimal(originalValue: any) {
     let slippageProportion = BigInt(100 - (await getSlippage()));
     originalValue = BigInt(originalValue);
     let valueWithSlippage = (originalValue * slippageProportion) / BigInt(100);
     return valueWithSlippage ? valueWithSlippage.toString() : "";
+  },
+
+  async addSlippageInNumber(originalValue: any) {
+    let slippageProportion = 100 - (await getSlippage());
+    let valueWithSlippage = (originalValue * slippageProportion) / 100;
+    valueWithSlippage = (global as any).utils.convertFromExponentialToDecimal(
+      valueWithSlippage.toString()
+    );
+    return valueWithSlippage;
   },
 
   encrypt: function (data: string, key: string) {

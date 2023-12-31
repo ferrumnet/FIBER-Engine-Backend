@@ -38,13 +38,8 @@ module.exports = {
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
       destinationTokenCategorizedInfo.destinationAmountIn =
         categorizedInfo?.destination?.bridgeAmountIn;
-      destinationTokenCategorizedInfo.destinationAmountOut = await (
-        global as any
-      ).commonFunctions.calculateValueWithSlippage(
-        categorizedInfo?.destination?.bridgeAmountOut
-          ? categorizedInfo?.destination?.bridgeAmountOut
-          : 0
-      );
+      destinationTokenCategorizedInfo.destinationAmountOut =
+        categorizedInfo?.destination?.bridgeAmountOut;
       destinationTokenCategorizedInfo.destinationOneInchData =
         destinationOneInchData;
       data.slippage = await getSlippage();
