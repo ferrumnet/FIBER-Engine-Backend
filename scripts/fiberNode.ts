@@ -1,6 +1,5 @@
 var tokenAbi = require("../artifacts/contracts/token/Token.sol/Token.json");
 var { ethers } = require("ethers");
-var signer = new ethers.Wallet((global as any).environment.PRI_KEY);
 import {
   getSourceAssetTypes,
   getTargetAssetTypes,

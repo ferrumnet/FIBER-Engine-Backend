@@ -212,6 +212,7 @@ module.exports = {
 
     return null;
   },
+
   numberIntoDecimals(amount: any, decimal: any) {
     let amountFormatted = ethers.utils.parseUnits(amount, decimal);
     amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
@@ -219,6 +220,7 @@ module.exports = {
     );
     return amountFormatted;
   },
+
   decimalsIntoNumber(amount: any, decimal: any) {
     const bigNumberValue = ethers.BigNumber.from(amount.toString());
     let formattedValue = ethers.utils.formatUnits(bigNumberValue, decimal);
@@ -227,10 +229,46 @@ module.exports = {
     );
     return formattedValue;
   },
+
   async calculateValueWithSlippage(originalValue: any) {
     let slippageProportion = BigInt(100 - (await getSlippage()));
     originalValue = BigInt(originalValue);
     let valueWithSlippage = (originalValue * slippageProportion) / BigInt(100);
     return valueWithSlippage ? valueWithSlippage.toString() : "";
+  },
+
+  encrypt: function (data: string, key: string) {
+    try {
+      var ciphertext = CryptoJS.AES.encrypt(data, key).toString();
+      return ciphertext;
+    } catch (e) {
+      return "";
+    }
+  },
+
+  decrypt: function (data: string, key: string) {
+    try {
+      var bytes = CryptoJS.AES.decrypt(data, key);
+      var originalText = bytes.toString(CryptoJS.enc.Utf8);
+      return originalText;
+    } catch (e) {
+      return "";
+    }
+  },
+
+  getPrivateKey: function () {
+    try {
+      return this.decrypt(
+        (global as any).environment.PRIVATE_KEY,
+        (global as any).environment.securityKey
+      );
+    } catch (e) {}
+    return "";
+  },
+
+  setPrivateKey: function () {
+    try {
+      (global as any).environment.PRI_KEY = this.getPrivateKey();
+    } catch (e) {}
   },
 };
