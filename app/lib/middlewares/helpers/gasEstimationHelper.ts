@@ -67,6 +67,6 @@ export const isAllowedDynamicGasValues = async (
 };
 
 export const addBuffer = (amount: any): any => {
-  console.log("beForBufferGasLimit", amount);
+  console.log("beForBufferGasLimit", amount?.toString());
   return amount.mul(110).div(100);
 };
