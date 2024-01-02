@@ -178,7 +178,7 @@ module.exports = {
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
         targetTokenAddress,
-        Math.floor(amountIn)
+        amountIn
       );
 
       const isTargetTokenFoundry = targetTypeResponse.isFoundryAsset;
@@ -202,7 +202,7 @@ module.exports = {
           sourceBridgeAmount *
           10 ** Number(targetFoundryTokenDecimal)
         ).toString();
-        machineDestinationAmountIn = Math.floor(machineDestinationAmountIn);
+        machineDestinationAmountIn = parseInt(machineDestinationAmountIn);
       } else {
         // if (isTargetRefineryToken == true) {
         //   amountIn = Math.floor(amountIn);
@@ -250,7 +250,7 @@ module.exports = {
           sourceBridgeAmount *
           10 ** Number(targetFoundryTokenDecimal)
         ).toString();
-        machineAmount = Math.floor(machineAmount);
+        machineAmount = parseInt(machineAmount);
         machineDestinationAmountIn = machineAmount;
         machineAmount = (global as any).utils.convertFromExponentialToDecimal(
           machineAmount
