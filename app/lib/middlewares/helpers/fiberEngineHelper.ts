@@ -152,7 +152,11 @@ export const doOneInchSwap = async (
 ): Promise<any> => {
   let result;
   try {
-    if ((global as any).commonFunctions.isNativeToken(obj.sourceTokenAddress)) {
+    if (
+      await (global as any).commonFunctions.isNativeToken(
+        obj.sourceTokenAddress
+      )
+    ) {
       result = fiberRouter.methods.swapAndCrossOneInchETH(
         obj.amountOut,
         obj.targetChainId,

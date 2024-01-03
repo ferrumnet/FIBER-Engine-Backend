@@ -580,7 +580,9 @@ module.exports = {
         ...(await getGasForSwap(sourceChainId, destinationWalletAddress)),
       };
 
-      if ((global as any).commonFunctions.isNativeToken(sourceTokenAddress)) {
+      if (
+        await (global as any).commonFunctions.isNativeToken(sourceTokenAddress)
+      ) {
         returnData = { ...returnData, value: amount };
       }
 

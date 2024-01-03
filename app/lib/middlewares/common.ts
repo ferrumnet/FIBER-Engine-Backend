@@ -306,8 +306,8 @@ module.exports = {
     return address;
   },
 
-  isNativeToken: function (address: string): boolean {
-    let tokens = this.getNativeTokens();
+  isNativeToken: async function (address: string): Promise<boolean> {
+    let tokens = await getNativeTokens();
     for (let item of tokens || []) {
       if (item?.address.toLowerCase() == address.toLowerCase()) {
         return true;
