@@ -41,7 +41,9 @@ module.exports = {
     // source
     if (!sourceNetwork.isNonEVM) {
       const sourceTokenContract = new ethers.Contract(
-        sourceTokenAddress,
+        await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+          sourceTokenAddress
+        ),
         tokenAbi.abi,
         sourceNetwork.provider
       );
@@ -59,14 +61,15 @@ module.exports = {
       );
       let sourceTypeResponse = await getSourceAssetTypes(
         sourceNetwork,
-        sourceTokenAddress,
+        await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+          sourceTokenAddress
+        ),
         amount
       );
       const isFoundryAsset = sourceTypeResponse.isFoundryAsset;
       const isRefineryAsset = sourceTypeResponse.isRefineryAsset;
       const isIonicAsset = sourceTypeResponse.isIonicAsset;
       const isOneInchAsset = sourceTypeResponse.isOneInch;
-
       if (isFoundryAsset) {
         sourceAssetType = (global as any).utils.assetType.FOUNDARY;
       } else if (isRefineryAsset) {
@@ -112,7 +115,9 @@ module.exports = {
         // 1Inch implementation
         let response = await OneInchSwap(
           sourceChainId,
-          sourceTokenAddress,
+          await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+            sourceTokenAddress
+          ),
           sourceNetwork?.foundryTokenAddress,
           amount,
           sourceNetwork?.fiberRouter,
@@ -149,7 +154,9 @@ module.exports = {
     // destination
     if (!targetNetwork.isNonEVM) {
       const targetTokenContract = new ethers.Contract(
-        targetTokenAddress,
+        await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+          targetTokenAddress
+        ),
         tokenAbi.abi,
         targetNetwork.provider
       );
@@ -177,7 +184,9 @@ module.exports = {
       amountIn = parseInt(amountIn);
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
-        targetTokenAddress,
+        await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+          targetTokenAddress
+        ),
         amountIn
       );
 
@@ -195,7 +204,6 @@ module.exports = {
       } else {
         targetAssetType = (global as any).utils.assetType.ONE_INCH;
       }
-
       if (isTargetTokenFoundry === true) {
         destinationAmountOut = sourceBridgeAmount;
         machineDestinationAmountIn = (
@@ -259,7 +267,9 @@ module.exports = {
         let response = await OneInchSwap(
           targetChainId,
           targetNetwork?.foundryTokenAddress,
-          targetTokenAddress,
+          await (global as any).commonFunctions.getOneInchTokenAddress(
+            targetTokenAddress
+          ),
           machineAmount,
           targetNetwork?.fiberRouter,
           destinationWalletAddress

@@ -32,10 +32,12 @@ import {
   getGasForWithdraw,
 } from "../app/lib/middlewares/helpers/gasEstimationHelper";
 import {
+  doOneInchSwap,
   doFoundaryWithdraw,
   doOneInchWithdraw,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
+  SwapOneInch,
   WithdrawSigned,
   WithdrawSignedAndSwapOneInch,
 } from "../app/interfaces/fiberEngineInterface";
@@ -142,7 +144,9 @@ module.exports = {
 
       const targetSigner = signer.connect(targetNetwork.provider);
       const targetTokenContract = new ethers.Contract(
-        targetTokenAddress,
+        await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+          targetTokenAddress
+        ),
         tokenAbi.abi,
         targetNetwork.provider
       );
@@ -349,7 +353,9 @@ module.exports = {
 
       // source token contract (required to approve function)
       const sourceTokenContract = new ethers.Contract(
-        sourceTokenAddress,
+        await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+          sourceTokenAddress
+        ),
         tokenAbi.abi,
         sourceNetwork.provider
       );
@@ -371,13 +377,6 @@ module.exports = {
       let swapResult;
       if (isFoundryAsset) {
         if (!targetNetwork.isNonEVM) {
-          // approve to fiber router to transfer tokens to the fund manager contract
-          const targetFoundryTokenAddress =
-            await sourceNetwork.fundManagerContract.allowedTargets(
-              sourceTokenAddress,
-              targetChainId
-            );
-          // fiber router add foundry asset to fund manager
           swapResult = fiberRouter.methods.swap(
             sourceTokenAddress,
             amount,
@@ -393,7 +392,6 @@ module.exports = {
               query?.destinationAssetType
             )
           );
-          //wait until the transaction be completed
           sourceBridgeAmount = amount;
         } else if (targetNetwork.isNonEVM) {
           // // approve to fiber router to transfer tokens to the fund manager contract
@@ -526,24 +524,26 @@ module.exports = {
       } else {
         // 1Inch implementation
         if (!targetNetwork.isNonEVM) {
-          swapResult = fiberRouter.methods.swapAndCrossOneInch(
-            amount,
-            query?.sourceBridgeAmount,
-            targetChainId,
-            targetTokenAddress,
-            destinationWalletAddress,
+          let withdrawalData = getWithdrawalDataHashForSwap(
             query?.sourceOneInchData,
-            sourceTokenAddress,
-            sourceNetwork.foundryTokenAddress,
-            getWithdrawalDataHashForSwap(
-              query?.sourceOneInchData,
-              query?.destinationOneInchData,
-              query?.destinationAmountIn,
-              query?.destinationAmountOut,
-              query?.sourceAssetType,
-              query?.destinationAssetType
-            )
+            query?.destinationOneInchData,
+            query?.destinationAmountIn,
+            query?.destinationAmountOut,
+            query?.sourceAssetType,
+            query?.destinationAssetType
           );
+          let obj: SwapOneInch = {
+            amountIn: amount,
+            amountOut: query?.sourceBridgeAmount,
+            targetChainId: targetChainId,
+            targetTokenAddress: targetTokenAddress,
+            destinationWalletAddress: destinationWalletAddress,
+            sourceOneInchData: query?.sourceOneInchData,
+            sourceTokenAddress: sourceTokenAddress,
+            foundryTokenAddress: sourceNetwork.foundryTokenAddress,
+            withdrawalData: withdrawalData,
+          };
+          swapResult = await doOneInchSwap(obj, fiberRouter);
         } else {
           // swapResult = fiberRouter.methods.nonEvmSwapAndCrossOneInch(
           //   sourceNetwork?.router,
@@ -569,7 +569,7 @@ module.exports = {
         sourceWalletAddress
       );
 
-      return {
+      let returnData = {
         currency: sourceNetwork.shortName + ":" + sourceTokenAddress,
         from: sourceWalletAddress,
         amount: "0",
@@ -579,6 +579,12 @@ module.exports = {
         description: `Swap `,
         ...(await getGasForSwap(sourceChainId, destinationWalletAddress)),
       };
+
+      if ((global as any).commonFunctions.isNativeToken(sourceTokenAddress)) {
+        returnData = { ...returnData, value: amount };
+      }
+
+      return returnData;
     } catch (error) {
       throw { error };
     }

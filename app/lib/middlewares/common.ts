@@ -7,7 +7,10 @@ const { ethers } = require("ethers");
 const routerAbiMainnet = require("../../../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const fundManagerAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FundManager.sol/FundManager.json");
 const fiberRouterAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
-import { getSlippage } from "../../lib/middlewares/helpers/configurationHelper";
+import {
+  getSlippage,
+  getNativeTokens,
+} from "../../lib/middlewares/helpers/configurationHelper";
 
 module.exports = {
   getHashedPassword: function (password: any) {
@@ -279,5 +282,37 @@ module.exports = {
     try {
       (global as any).environment.PRI_KEY = this.getPrivateKey();
     } catch (e) {}
+  },
+
+  getWrappedNativeTokenAddress: async function (
+    address: string
+  ): Promise<string> {
+    let tokens: any = await getNativeTokens();
+    for (let item of tokens || []) {
+      if (item?.address.toLowerCase() == address.toLowerCase()) {
+        return item?.wrappedAddress;
+      }
+    }
+    return address;
+  },
+
+  getOneInchTokenAddress: async function (address: string): Promise<string> {
+    let tokens: any = await getNativeTokens();
+    for (let item of tokens || []) {
+      if (item?.address.toLowerCase() == address.toLowerCase()) {
+        return item?.oneInchAddress;
+      }
+    }
+    return address;
+  },
+
+  isNativeToken: function (address: string): boolean {
+    let tokens = this.getNativeTokens();
+    for (let item of tokens || []) {
+      if (item?.address.toLowerCase() == address.toLowerCase()) {
+        return true;
+      }
+    }
+    return false;
   },
 };
