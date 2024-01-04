@@ -38,7 +38,7 @@ export const createEVMResponse = (tx: any): Response => {
   if (tx != null && tx.status != null && tx.status == true) {
     responseCode = CODE_200;
     responseMessage = SUCCESS;
-  } else if (tx.code == CODE_701) {
+  } else if (tx?.code == CODE_701) {
     responseCode = CODE_701;
     responseMessage = IN_SUFFICIENT_LIQUIDITY_ERROR;
   }

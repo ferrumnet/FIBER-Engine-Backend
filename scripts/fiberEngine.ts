@@ -286,7 +286,7 @@ module.exports = {
           targetSigner,
           targetChainId
         );
-        const receipt = await swapResult.wait();
+        const receipt = await swapResult?.wait();
         destinationAmount = (
           body?.destinationAmountOut /
           10 ** Number(targetTokenDecimal)
@@ -595,7 +595,7 @@ module.exports = {
   callEVMWithdrawAndGetReceipt: async function (data: any) {
     let receipt: any = { status: 0, responseMessage: "" };
     try {
-      receipt = await data.wait();
+      receipt = await data?.wait();
     } catch (e) {
       receipt.responseMessage = e;
     }

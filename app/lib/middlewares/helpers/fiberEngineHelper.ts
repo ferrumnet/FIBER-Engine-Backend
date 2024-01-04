@@ -58,12 +58,13 @@ export const doFoundaryWithdraw = async (
   obj: WithdrawSigned,
   targetNetwork: any,
   targetSigner: any,
-  targetChainId: any
+  targetChainId: any,
+  isDynamicGasLimit = true
 ): Promise<any> => {
   let result;
   try {
     let gasLimit;
-    if (await isAllowedDynamicGasValues(targetChainId)) {
+    if ((await isAllowedDynamicGasValues(targetChainId)) && isDynamicGasLimit) {
       gasLimit = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
         .estimateGas.withdrawSigned(
@@ -93,6 +94,15 @@ export const doFoundaryWithdraw = async (
       );
   } catch (e) {
     console.log(e);
+    if (isDynamicGasLimit) {
+      result = await doFoundaryWithdraw(
+        obj,
+        targetNetwork,
+        targetSigner,
+        targetChainId,
+        false
+      );
+    }
   }
   return result;
 };
@@ -101,12 +111,13 @@ export const doOneInchWithdraw = async (
   obj: WithdrawSignedAndSwapOneInch,
   targetNetwork: any,
   targetSigner: any,
-  targetChainId: any
+  targetChainId: any,
+  isDynamicGasLimit = true
 ): Promise<any> => {
   let result;
   try {
     let gasLimit;
-    if (await isAllowedDynamicGasValues(targetChainId)) {
+    if ((await isAllowedDynamicGasValues(targetChainId)) && isDynamicGasLimit) {
       gasLimit = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
         .estimateGas.withdrawSignedAndSwapOneInch(
@@ -142,6 +153,15 @@ export const doOneInchWithdraw = async (
       );
   } catch (e) {
     console.log(e);
+    if (isDynamicGasLimit) {
+      result = await doOneInchWithdraw(
+        obj,
+        targetNetwork,
+        targetSigner,
+        targetChainId,
+        false
+      );
+    }
   }
   return result;
 };
