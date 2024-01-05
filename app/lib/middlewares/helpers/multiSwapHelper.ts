@@ -55,12 +55,12 @@ module.exports = {
     let data: any = {};
     data = await fiberEngine.swapForAbi(
       req.query.sourceWalletAddress,
-      req.query.sourceTokenContractAddress, // goerli ada
-      req.query.destinationTokenContractAddress, // bsc ada
-      req.query.sourceNetworkChainId, // source chain id (goerli)
-      req.query.destinationNetworkChainId, // target chain id (bsc)
-      req.query.sourceAmount, //source token amount
-      req.query.destinationWalletAddress, // destination wallet address
+      req.query.sourceTokenContractAddress,
+      req.query.destinationTokenContractAddress,
+      req.query.sourceNetworkChainId,
+      req.query.destinationNetworkChainId,
+      req.query.sourceAmount,
+      req.query.destinationWalletAddress,
       req.query
     );
     return data;

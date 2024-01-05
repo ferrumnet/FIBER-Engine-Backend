@@ -1,4 +1,5 @@
 import {
+  SwapOneInch,
   WithdrawSigned,
   WithdrawSignedAndSwapOneInch,
 } from "../../../interfaces/fiberEngineInterface";
@@ -57,16 +58,19 @@ export const doFoundaryWithdraw = async (
   obj: WithdrawSigned,
   targetNetwork: any,
   targetSigner: any,
-  targetChainId: any
+  targetChainId: any,
+  isDynamicGasLimit = true
 ): Promise<any> => {
   let result;
   try {
     let gasLimit;
-    if (await isAllowedDynamicGasValues(targetChainId)) {
+    if ((await isAllowedDynamicGasValues(targetChainId)) && isDynamicGasLimit) {
       gasLimit = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
         .estimateGas.withdrawSigned(
-          obj.targetTokenAddress,
+          await (global as any).commonFunctions.getOneInchTokenAddress(
+            obj.targetTokenAddress
+          ),
           obj.destinationWalletAddress,
           obj.destinationAmountIn,
           obj.salt,
@@ -78,7 +82,9 @@ export const doFoundaryWithdraw = async (
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
       .withdrawSigned(
-        obj.targetTokenAddress,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
         obj.destinationWalletAddress,
         obj.destinationAmountIn,
         obj.salt,
@@ -88,6 +94,15 @@ export const doFoundaryWithdraw = async (
       );
   } catch (e) {
     console.log(e);
+    if (isDynamicGasLimit) {
+      result = await doFoundaryWithdraw(
+        obj,
+        targetNetwork,
+        targetSigner,
+        targetChainId,
+        false
+      );
+    }
   }
   return result;
 };
@@ -96,12 +111,13 @@ export const doOneInchWithdraw = async (
   obj: WithdrawSignedAndSwapOneInch,
   targetNetwork: any,
   targetSigner: any,
-  targetChainId: any
+  targetChainId: any,
+  isDynamicGasLimit = true
 ): Promise<any> => {
   let result;
   try {
     let gasLimit;
-    if (await isAllowedDynamicGasValues(targetChainId)) {
+    if ((await isAllowedDynamicGasValues(targetChainId)) && isDynamicGasLimit) {
       gasLimit = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
         .estimateGas.withdrawSignedAndSwapOneInch(
@@ -109,7 +125,9 @@ export const doOneInchWithdraw = async (
           obj.destinationAmountIn,
           obj.destinationAmountOut,
           obj.targetFoundryTokenAddress,
-          obj.targetTokenAddress,
+          await (global as any).commonFunctions.getOneInchTokenAddress(
+            obj.targetTokenAddress
+          ),
           obj.destinationOneInchData,
           obj.salt,
           obj.signatureExpiry,
@@ -124,13 +142,67 @@ export const doOneInchWithdraw = async (
         obj.destinationAmountIn,
         obj.destinationAmountOut,
         obj.targetFoundryTokenAddress,
-        obj.targetTokenAddress,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
         obj.destinationOneInchData,
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
         await getGasForWithdraw(targetChainId, gasLimit)
       );
+  } catch (e) {
+    console.log(e);
+    if (isDynamicGasLimit) {
+      result = await doOneInchWithdraw(
+        obj,
+        targetNetwork,
+        targetSigner,
+        targetChainId,
+        false
+      );
+    }
+  }
+  return result;
+};
+
+export const doOneInchSwap = async (
+  obj: SwapOneInch,
+  fiberRouter: any
+): Promise<any> => {
+  let result;
+  try {
+    if (
+      await (global as any).commonFunctions.isNativeToken(
+        obj.sourceTokenAddress
+      )
+    ) {
+      result = fiberRouter.methods.swapAndCrossOneInchETH(
+        obj.amountOut,
+        obj.targetChainId,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
+        obj.destinationWalletAddress,
+        obj.sourceOneInchData,
+        obj.foundryTokenAddress,
+        obj.withdrawalData
+      );
+    } else {
+      result = fiberRouter.methods.swapAndCrossOneInch(
+        obj.amountIn,
+        obj.amountOut,
+        obj.targetChainId,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
+        obj.destinationWalletAddress,
+        obj.sourceOneInchData,
+        obj.sourceTokenAddress,
+        obj.foundryTokenAddress,
+        obj.withdrawalData
+      );
+    }
   } catch (e) {
     console.log(e);
   }

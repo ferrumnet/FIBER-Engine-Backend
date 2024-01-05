@@ -24,7 +24,7 @@ export const getGasForWithdraw = async (
       Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
     );
 
-    data.gasLimit = item?.isAllowedDynamicGasLimit
+    data.gasLimit = dynamicGasLimit
       ? dynamicGasLimit?.toString()
       : staticGasLimit;
   }

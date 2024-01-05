@@ -18,3 +18,15 @@ export interface WithdrawSignedAndSwapOneInch {
   signatureExpiry: number;
   signature: string;
 }
+
+export interface SwapOneInch {
+  amountIn: string;
+  amountOut: string;
+  targetChainId: string;
+  targetTokenAddress: string;
+  destinationWalletAddress: string;
+  sourceOneInchData: string;
+  sourceTokenAddress: string;
+  foundryTokenAddress: string;
+  withdrawalData: string;
+}
