@@ -381,7 +381,9 @@ module.exports = {
             sourceTokenAddress,
             amount,
             targetChainId,
-            targetTokenAddress,
+            await (global as any).commonFunctions.getOneInchTokenAddress(
+              targetTokenAddress
+            ),
             destinationWalletAddress,
             getWithdrawalDataHashForSwap(
               query?.sourceOneInchData,
