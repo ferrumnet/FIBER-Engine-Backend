@@ -30,3 +30,7 @@ export interface SwapOneInch {
   foundryTokenAddress: string;
   withdrawalData: string;
 }
+
+export interface WithdrawOneInchLogs {
+  "2": string;
+}

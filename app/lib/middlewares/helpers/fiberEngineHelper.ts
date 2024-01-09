@@ -2,13 +2,14 @@ import {
   SwapOneInch,
   WithdrawSigned,
   WithdrawSignedAndSwapOneInch,
+  WithdrawOneInchLogs,
 } from "../../../interfaces/fiberEngineInterface";
-
 import {
   getGasForWithdraw,
   isAllowedDynamicGasValues,
   addBuffer,
 } from "../../middlewares/helpers/gasEstimationHelper";
+import { getLogsFromTransactionReceipt } from "../../middlewares/helpers/web3Helpers/web3Helper";
 
 export const getWithdrawSignedObject = (
   targetTokenAddress: string,
@@ -105,6 +106,26 @@ export const doFoundaryWithdraw = async (
     }
   }
   return result;
+};
+
+export const getDestinationAmountFromLogs = (
+  recipet: any,
+  rpcUrl: string,
+  destinationAmount: string,
+  isOneInch: boolean
+): any => {
+  if (recipet) {
+    let decodedLog: WithdrawOneInchLogs = getLogsFromTransactionReceipt(
+      recipet,
+      rpcUrl,
+      true
+    );
+    if (decodedLog) {
+      console.log("destinationAmountFromLogs:", decodedLog[2]);
+      return decodedLog[2];
+    }
+  }
+  return destinationAmount;
 };
 
 export const doOneInchWithdraw = async (

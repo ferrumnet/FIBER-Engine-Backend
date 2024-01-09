@@ -35,6 +35,7 @@ import {
   doOneInchSwap,
   doFoundaryWithdraw,
   doOneInchWithdraw,
+  getDestinationAmountFromLogs,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
   SwapOneInch,
@@ -287,10 +288,16 @@ module.exports = {
           targetChainId
         );
         const receipt = await swapResult?.wait();
-        destinationAmount = (
-          body?.destinationAmountOut /
-          10 ** Number(targetTokenDecimal)
-        ).toString();
+        let destinationAmountOut = getDestinationAmountFromLogs(
+          receipt,
+          targetNetwork?.rpcUrl,
+          body?.destinationAmountOut,
+          true
+        );
+        destinationAmount = (global as any).commonFunctions.decimalsIntoNumber(
+          destinationAmountOut,
+          targetTokenDecimal
+        );
         withdrawResponse = createEVMResponse(receipt);
         transactionHash = withdrawResponse?.transactionHash;
       }
