@@ -46,6 +46,7 @@ import {
 import {
   getWithdrawSignedObject,
   getWithdrawSignedAndSwapOneInchObject,
+  sendSlackNotification,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
@@ -53,9 +54,6 @@ const { ecsign, toRpcSig } = require("ethereumjs-util");
 var Big = require("big.js");
 const toWei = (i: any) => ethers.utils.parseEther(i);
 const toEther = (i: any) => ethers.utils.formatEther(i);
-const MAX_FEE_PER_GAS = "60";
-const MAX_PRIORITY_FEE_PER_GAS = "60";
-const GAS_LIMIT = "2000000";
 
 // user wallet
 var signer = new ethers.Wallet((global as any).environment.PRI_KEY);
@@ -98,7 +96,7 @@ module.exports = {
     targetChainId: any,
     inputAmount: any,
     destinationWalletAddress: any,
-    salt: any,
+    swapTransactionHash: any,
     body: any
   ) {
     let isValidLiquidityAvailable = true;
@@ -130,6 +128,10 @@ module.exports = {
     }
 
     if (!isValidLiquidityAvailable) {
+      sendSlackNotification(
+        swapTransactionHash,
+        "Error: " + IN_SUFFICIENT_LIQUIDITY_ERROR
+      );
       let receipt = { code: CODE_701 };
       withdrawResponse = createEVMResponse(receipt);
       let data: any = {};
@@ -180,7 +182,8 @@ module.exports = {
           obj,
           targetNetwork,
           targetSigner,
-          targetChainId
+          targetChainId,
+          swapTransactionHash
         );
         const receipt = await this.callEVMWithdrawAndGetReceipt(swapResult);
         destinationAmount = (
@@ -285,7 +288,8 @@ module.exports = {
           obj,
           targetNetwork,
           targetSigner,
-          targetChainId
+          targetChainId,
+          swapTransactionHash
         );
         const receipt = await swapResult?.wait();
         let destinationAmountOut = getDestinationAmountFromLogs(
