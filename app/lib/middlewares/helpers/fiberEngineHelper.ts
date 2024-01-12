@@ -10,6 +10,9 @@ import {
   addBuffer,
 } from "../../middlewares/helpers/gasEstimationHelper";
 import { getLogsFromTransactionReceipt } from "../../middlewares/helpers/web3Helpers/web3Helper";
+import { postAlertIntoChannel } from "../../httpCalls/slackAxiosHelper";
+const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 2;
+const MAX_WITHDRAW_TRIES = 3;
 
 export const getWithdrawSignedObject = (
   targetTokenAddress: string,
@@ -60,12 +63,16 @@ export const doFoundaryWithdraw = async (
   targetNetwork: any,
   targetSigner: any,
   targetChainId: any,
-  isDynamicGasLimit = true
+  swapTransactionHash: string,
+  count = 0
 ): Promise<any> => {
   let result;
   try {
     let gasLimit;
-    if ((await isAllowedDynamicGasValues(targetChainId)) && isDynamicGasLimit) {
+    if (
+      (await isAllowedDynamicGasValues(targetChainId)) &&
+      count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES
+    ) {
       gasLimit = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
         .estimateGas.withdrawSigned(
@@ -95,37 +102,20 @@ export const doFoundaryWithdraw = async (
       );
   } catch (e) {
     console.log(e);
-    if (isDynamicGasLimit) {
+    sendSlackNotification(swapTransactionHash, e);
+    count = count + 1;
+    if (count < MAX_WITHDRAW_TRIES) {
       result = await doFoundaryWithdraw(
         obj,
         targetNetwork,
         targetSigner,
         targetChainId,
-        false
+        swapTransactionHash,
+        count
       );
     }
   }
   return result;
-};
-
-export const getDestinationAmountFromLogs = (
-  recipet: any,
-  rpcUrl: string,
-  destinationAmount: string,
-  isOneInch: boolean
-): any => {
-  if (recipet) {
-    let decodedLog: WithdrawOneInchLogs = getLogsFromTransactionReceipt(
-      recipet,
-      rpcUrl,
-      true
-    );
-    if (decodedLog) {
-      console.log("destinationAmountFromLogs:", decodedLog[2]);
-      return decodedLog[2];
-    }
-  }
-  return destinationAmount;
 };
 
 export const doOneInchWithdraw = async (
@@ -133,12 +123,16 @@ export const doOneInchWithdraw = async (
   targetNetwork: any,
   targetSigner: any,
   targetChainId: any,
-  isDynamicGasLimit = true
+  swapTransactionHash: string,
+  count = 0
 ): Promise<any> => {
   let result;
   try {
     let gasLimit;
-    if ((await isAllowedDynamicGasValues(targetChainId)) && isDynamicGasLimit) {
+    if (
+      (await isAllowedDynamicGasValues(targetChainId)) &&
+      count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES
+    ) {
       gasLimit = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
         .estimateGas.withdrawSignedAndSwapOneInch(
@@ -174,13 +168,16 @@ export const doOneInchWithdraw = async (
       );
   } catch (e) {
     console.log(e);
-    if (isDynamicGasLimit) {
+    sendSlackNotification(swapTransactionHash, e);
+    count = count + 1;
+    if (count < MAX_WITHDRAW_TRIES) {
       result = await doOneInchWithdraw(
         obj,
         targetNetwork,
         targetSigner,
         targetChainId,
-        false
+        swapTransactionHash,
+        count
       );
     }
   }
@@ -228,4 +225,33 @@ export const doOneInchSwap = async (
     console.log(e);
   }
   return result;
+};
+
+export const getDestinationAmountFromLogs = (
+  recipet: any,
+  rpcUrl: string,
+  destinationAmount: string,
+  isOneInch: boolean
+): any => {
+  if (recipet) {
+    let decodedLog: WithdrawOneInchLogs = getLogsFromTransactionReceipt(
+      recipet,
+      rpcUrl,
+      true
+    );
+    if (decodedLog) {
+      console.log("destinationAmountFromLogs:", decodedLog[2]);
+      return decodedLog[2];
+    }
+  }
+  return destinationAmount;
+};
+
+export const sendSlackNotification = async (swapHash: string, mesg: any) => {
+  try {
+    let body = `FIBER Engine Backend Alert\nswapHash:\n${swapHash}\n\n${mesg?.toString()}\n========================`;
+    await postAlertIntoChannel({ text: body });
+  } catch (e) {
+    console.log(e);
+  }
 };
