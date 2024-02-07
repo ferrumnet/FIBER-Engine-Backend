@@ -11,8 +11,8 @@ import {
 } from "../../middlewares/helpers/gasEstimationHelper";
 import { getLogsFromTransactionReceipt } from "../../middlewares/helpers/web3Helpers/web3Helper";
 import { postAlertIntoChannel } from "../../httpCalls/slackAxiosHelper";
-const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 2;
-const MAX_WITHDRAW_TRIES = 3;
+const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;
+const MAX_WITHDRAW_TRIES = 10;
 
 export const getWithdrawSignedObject = (
   targetTokenAddress: string,
@@ -103,6 +103,7 @@ export const doFoundaryWithdraw = async (
   } catch (e) {
     console.log(e);
     sendSlackNotification(swapTransactionHash, e);
+    await delay();
     count = count + 1;
     if (count < MAX_WITHDRAW_TRIES) {
       result = await doFoundaryWithdraw(
@@ -169,6 +170,7 @@ export const doOneInchWithdraw = async (
   } catch (e) {
     console.log(e);
     sendSlackNotification(swapTransactionHash, e);
+    await delay();
     count = count + 1;
     if (count < MAX_WITHDRAW_TRIES) {
       result = await doOneInchWithdraw(
@@ -255,3 +257,5 @@ export const sendSlackNotification = async (swapHash: string, mesg: any) => {
     console.log(e);
   }
 };
+
+const delay = () => new Promise((res) => setTimeout(res, 10000));
