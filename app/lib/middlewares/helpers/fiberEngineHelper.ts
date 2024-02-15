@@ -8,7 +8,7 @@ import {
   getGasForWithdraw,
   isAllowedDynamicGasValues,
   addBuffer,
-} from "../../middlewares/helpers/gasEstimationHelper";
+} from "../../middlewares/helpers/gasFeeHelpers/gasEstimationHelper";
 import { getLogsFromTransactionReceipt } from "../../middlewares/helpers/web3Helpers/web3Helper";
 import { postAlertIntoChannel } from "../../httpCalls/slackAxiosHelper";
 const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;

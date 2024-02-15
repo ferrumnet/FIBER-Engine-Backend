@@ -5,17 +5,13 @@
   "abi": [
     {
       "inputs": [
+        { "internalType": "address", "name": "_weth", "type": "address" },
         {
           "internalType": "address",
-          "name": "_wethAddress",
+          "name": "_oneInchAggregatorRouter",
           "type": "address"
         },
-        {
-          "internalType": "address",
-          "name": "_oneInchAggregator",
-          "type": "address"
-        },
-        { "internalType": "address", "name": "_poolAddress", "type": "address" }
+        { "internalType": "address", "name": "_pool", "type": "address" }
       ],
       "stateMutability": "nonpayable",
       "type": "constructor"
@@ -156,6 +152,12 @@
           "internalType": "bytes32",
           "name": "withdrawalData",
           "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "gasAmount",
+          "type": "uint256"
         }
       ],
       "name": "Swap",
@@ -309,49 +311,49 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "",
+          "name": "to",
           "type": "address"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "",
+          "name": "amountIn",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "",
+          "name": "amountOutOneInch",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "address",
-          "name": "",
+          "name": "foundryToken",
           "type": "address"
         },
         {
           "indexed": false,
           "internalType": "address",
-          "name": "",
+          "name": "targetToken",
           "type": "address"
         },
         {
           "indexed": false,
           "internalType": "bytes",
-          "name": "",
+          "name": "oneInchData",
           "type": "bytes"
         },
         {
           "indexed": false,
           "internalType": "bytes32",
-          "name": "",
+          "name": "salt",
           "type": "bytes32"
         },
         {
           "indexed": false,
           "internalType": "bytes",
-          "name": "",
+          "name": "multiSignature",
           "type": "bytes"
         }
       ],
@@ -362,6 +364,15 @@
       "inputs": [],
       "name": "WETH",
       "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "gasWallet",
+      "outputs": [
+        { "internalType": "address payable", "name": "", "type": "address" }
+      ],
       "stateMutability": "view",
       "type": "function"
     },
@@ -391,43 +402,6 @@
       "type": "function"
     },
     {
-      "inputs": [
-        { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
-        { "internalType": "uint256", "name": "amountOut", "type": "uint256" },
-        {
-          "internalType": "string",
-          "name": "crossTargetNetwork",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "crossTargetToken",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "crossTargetAddress",
-          "type": "string"
-        },
-        { "internalType": "bytes", "name": "oneInchData", "type": "bytes" },
-        { "internalType": "address", "name": "fromToken", "type": "address" },
-        {
-          "internalType": "address",
-          "name": "foundryToken",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "withdrawalData",
-          "type": "bytes32"
-        }
-      ],
-      "name": "nonEvmSwapAndCrossOneInch",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "inputs": [],
       "name": "oneInchAggregatorRouter",
       "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
@@ -451,6 +425,19 @@
     {
       "inputs": [],
       "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "_gasWallet",
+          "type": "address"
+        }
+      ],
+      "name": "setGasWallet",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -500,7 +487,7 @@
       ],
       "name": "swap",
       "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "payable",
       "type": "function"
     },
     {
@@ -537,7 +524,7 @@
       ],
       "name": "swapAndCrossOneInch",
       "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "payable",
       "type": "function"
     },
     {
@@ -568,7 +555,8 @@
           "internalType": "bytes32",
           "name": "withdrawalData",
           "type": "bytes32"
-        }
+        },
+        { "internalType": "uint256", "name": "gasFee", "type": "uint256" }
       ],
       "name": "swapAndCrossOneInchETH",
       "outputs": [],
