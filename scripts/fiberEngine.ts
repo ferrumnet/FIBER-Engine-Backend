@@ -30,7 +30,7 @@ import {
 import {
   getGasForSwap,
   getGasForWithdraw,
-} from "../app/lib/middlewares/helpers/gasEstimationHelper";
+} from "../app/lib/middlewares/helpers/gasFeeHelpers/gasEstimationHelper";
 import {
   doOneInchSwap,
   doFoundaryWithdraw,
