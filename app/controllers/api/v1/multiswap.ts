@@ -42,10 +42,11 @@ module.exports = function (router: any) {
         !req.query.destinationTokenContractAddress ||
         !req.query.destinationNetworkChainId ||
         !req.query.sourceAssetType ||
-        !req.query.destinationAssetType
+        !req.query.destinationAssetType ||
+        !req.query.gasPrice
       ) {
         return res.http401(
-          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType are missing"
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType & gasPrice are missing"
         );
       }
 
@@ -80,13 +81,14 @@ module.exports = function (router: any) {
         !req.body.salt ||
         !req.body.hash ||
         !req.body.signatures ||
-        !req.params.txHash
+        !req.params.txHash ||
+        !req.body.gasLimit
       ) {
         return res.http401(
           "sourceWalletAddress & sourceTokenContractAddress &" +
             " sourceNetworkChainId & sourceAmount & destinationTokenContractAddress &" +
             " destinationNetworkChainId & salt & hash & signatures &" +
-            " swapTransactionHash are missing"
+            " swapTransactionHash & gasLimit are missing"
         );
       }
 

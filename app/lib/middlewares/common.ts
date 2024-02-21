@@ -7,6 +7,8 @@ const { ethers } = require("ethers");
 const routerAbiMainnet = require("../../../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const fundManagerAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FundManager.sol/FundManager.json");
 const fiberRouterAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
+var tokenAbi = require("../../../artifacts/contracts/token/Token.sol/Token.json");
+
 import {
   getSlippage,
   getNativeTokens,
@@ -205,12 +207,14 @@ module.exports = {
     return null;
   },
 
-  async decimals(rpcUrl: any, tokenContractAddress: any) {
-    if (rpcUrl && tokenContractAddress) {
-      let con = web3ConfigurationHelper.erc20(rpcUrl, tokenContractAddress);
-      if (con) {
-        return await con.methods.decimals().call();
-      }
+  async decimals(provider: any, tokenContractAddress: any) {
+    if (provider && tokenContractAddress) {
+      const contract = new ethers.Contract(
+        tokenContractAddress,
+        tokenAbi.abi,
+        provider
+      );
+      return await contract.decimals();
     }
 
     return null;
@@ -221,6 +225,16 @@ module.exports = {
     amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
       amountFormatted.toString()
     );
+    return amountFormatted;
+  },
+
+  numberIntoDecimals_(amount: any, decimal: any) {
+    let amountFormatted: any = (
+      amount?.toString() *
+      10 ** Number(decimal)
+    ).toString();
+    console.log(amountFormatted);
+    amountFormatted = parseInt(amountFormatted);
     return amountFormatted;
   },
 
@@ -314,5 +328,15 @@ module.exports = {
       }
     }
     return false;
+  },
+
+  getTokenByChainId: async function (chainId: string): Promise<string> {
+    let tokens: any = await getNativeTokens();
+    for (let item of tokens || []) {
+      if (item?.chainId.toString() == chainId.toString()) {
+        return item;
+      }
+    }
+    return "";
   },
 };
