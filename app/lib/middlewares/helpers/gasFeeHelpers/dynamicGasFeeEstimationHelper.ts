@@ -72,14 +72,12 @@ export const sourceGasEstimation = async (
       destinationGasPrice
     );
   }
-  console.log("sourcegasPrice", gasPrice);
   let gasPrices = await getSourceGasPrices(
     req.query.sourceNetworkChainId,
     SOURCE_NETWORK.rpcUrl,
     gasPrice,
     SOURCE_NETWORK.provider
   );
-  console.log("sourceGasPrices", gasPrices);
   return gasPrices;
 };
 
@@ -98,7 +96,6 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
   ).multiswapNetworkFIBERInformation;
 
   const SIGNATURE: any = getForgeSignature(req, SALT, EXPIRY, TARGET_NETWORK);
-  console.log(SIGNATURE);
   let contractObj: Contract = {
     rpcUrl: TARGET_NETWORK.rpcUrl,
     contractAddress: TARGET_NETWORK.forgeContractAddress,
@@ -260,7 +257,6 @@ async function getCurrentGasPrice(rpcUrl: string) {
   try {
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const gasPrice = await provider.getGasPrice();
-    console.log("Current Gas Price (Wei):", gasPrice.toString());
     return gasPrice;
   } catch (e) {
     console.error(e);
@@ -290,13 +286,7 @@ async function getSourceGasPrices(
     );
     gasPriceInNative = new Big(gasPriceInNative);
     let usdPrice = await getQuote(nativeToken?.symbol);
-    console.log(
-      "usdPrice and gasPriceInNumber",
-      usdPrice,
-      gasPriceInNative.toString()
-    );
     let gasPriceInToUSD = new Big(gasPriceInNative).mul(usdPrice);
-    console.log("gasPriceInToUSD", gasPriceInToUSD.toString());
     return {
       gasPrice: gasPriceInNative.toString(),
       gasPriceInUSD: gasPriceInToUSD.toString(),
@@ -329,13 +319,7 @@ async function getDestinationGasPrices(
     );
     gasPriceInNative = new Big(gasPriceInNative);
     let usdPrice = await getQuote(nativeToken?.symbol);
-    console.log(
-      "usdPrice and gasPriceInNumber",
-      usdPrice,
-      gasPriceInNative.toString()
-    );
     let gasPriceInToUSD = new Big(gasPriceInNative).mul(usdPrice);
-    console.log("gasPriceInToUSD", gasPriceInToUSD.toString());
     gasPriceInToUSD = addBuffer_(gasPriceInToUSD, 10);
     return {
       gasPrice: gasPriceInNative.toString(),
@@ -358,15 +342,7 @@ async function convertIntoSourceGasPrices(
       chainId
     );
     let usdPrice = await getQuote(nativeToken?.symbol);
-    console.log(
-      "usdPrice",
-      usdPrice,
-      "destinationGasPricesInUsd",
-      destinationGasPricesInUsd?.toString()
-    );
     let gasPriceInNative = new Big(destinationGasPricesInUsd).div(usdPrice);
-    console.log("gasPriceInNative", gasPriceInNative?.toString());
-
     let decimals = await (global as any).commonFunctions.decimals(
       provider,
       nativeToken?.wrappedAddress
@@ -375,7 +351,6 @@ async function convertIntoSourceGasPrices(
       gasPriceInNative.toString(),
       decimals
     );
-    console.log("gasPriceInNumber", gasPriceInDecimal);
     let gasPriceInToUSD = new Big(gasPriceInNative).mul(usdPrice);
     return {
       gasPrice: gasPriceInNative?.toString(),
