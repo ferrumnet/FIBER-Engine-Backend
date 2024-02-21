@@ -81,8 +81,9 @@ module.exports = function (router: any) {
         !req.body.salt ||
         !req.body.hash ||
         !req.body.signatures ||
-        !req.params.txHash ||
-        !req.body.gasLimit
+        !req.params.txHash
+        // ||
+        // !req.body.gasLimit
       ) {
         return res.http401(
           "sourceWalletAddress & sourceTokenContractAddress &" +
