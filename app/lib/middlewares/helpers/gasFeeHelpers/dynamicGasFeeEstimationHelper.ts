@@ -12,6 +12,7 @@ import {
   destinationFoundaryGasEstimation,
   destinationOneInchGasEstimation,
   sourceFoundaryGasEstimation,
+  sourceOneInchGasEstimation,
 } from "../forgeHelpers/forgeContractHelper";
 import {
   Contract,
@@ -20,7 +21,7 @@ import {
 } from "../../../../interfaces/forgeInterface";
 import { getQuote } from "../../../httpCalls/coinMarketCapAxiosHelper";
 import { addBuffer_ } from "./gasEstimationHelper";
-import { Swap } from "../../../../interfaces/fiberEngineInterface";
+import { Swap, SwapOneInch } from "../../../../interfaces/forgeInterface";
 import { getWithdrawalDataHashForSwap } from "../../../../lib/middlewares/helpers/signatureHelper";
 import { getValueForSwap } from "../../../../lib/middlewares/helpers/fiberEngineHelper";
 export const gasEstimationValidation = (req: any): any => {
@@ -36,7 +37,7 @@ export const gasEstimationValidation = (req: any): any => {
   ) {
     throw (
       "destinationNetworkChainId & destinationWalletAddress & destinationTokenContractAddress &" +
-      "destinationAmountIn & destinationAssetType & sourceNetworkChainId & sourceTokenContractAddress &sourceAssetType  are missing"
+      "destinationAmountIn & destinationAssetType & sourceNetworkChainId & sourceTokenContractAddress & sourceAssetType  are missing"
     );
   }
 };
@@ -65,11 +66,12 @@ export const sourceGasEstimation = async (
       destinationGasPrice
     );
   } else {
-    gasPrice = await doSourceFoundaryGasEstimation(
+    gasPrice = await doSourceOneInchGasEstimation(
       contractObj,
       req,
       SOURCE_NETWORK.provider,
-      destinationGasPrice
+      destinationGasPrice,
+      SOURCE_NETWORK.foundryTokenAddress
     );
   }
   let gasPrices = await getSourceGasPrices(
@@ -95,7 +97,12 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
     req.query.sourceNetworkChainId
   ).multiswapNetworkFIBERInformation;
 
-  const SIGNATURE: any = getForgeSignature(req, SALT, EXPIRY, TARGET_NETWORK);
+  const SIGNATURE: any = await getForgeSignature(
+    req,
+    SALT,
+    EXPIRY,
+    TARGET_NETWORK
+  );
   let contractObj: Contract = {
     rpcUrl: TARGET_NETWORK.rpcUrl,
     contractAddress: TARGET_NETWORK.forgeContractAddress,
@@ -144,7 +151,11 @@ export const doDestinationFoundaryGasEstimation = async (
   signature: string
 ): Promise<any> => {
   let obj: WithdrawSigned = {
-    targetTokenAddress: req.query.destinationTokenContractAddress,
+    targetTokenAddress: await (
+      global as any
+    ).commonFunctions.getOneInchTokenAddress(
+      req.query.destinationTokenContractAddress
+    ),
     destinationWalletAddress: req.query.destinationWalletAddress,
     destinationAmountIn: req.query.destinationAmountIn,
     salt: salt,
@@ -163,7 +174,11 @@ export const doDestinationOneInchGasEstimation = async (
   targetNetwork: any
 ): Promise<any> => {
   let obj: WithdrawSignedAndSwapOneInch = {
-    targetTokenAddress: req.query.destinationTokenContractAddress,
+    targetTokenAddress: await (
+      global as any
+    ).commonFunctions.getOneInchTokenAddress(
+      req.query.destinationTokenContractAddress
+    ),
     destinationWalletAddress: req.query.destinationWalletAddress,
     destinationAmountIn: req.query.destinationAmountIn,
     salt: salt,
@@ -219,18 +234,68 @@ export const doSourceFoundaryGasEstimation = async (
   return await sourceFoundaryGasEstimation(contractObj, obj);
 };
 
-export const getForgeSignature = (
+export const doSourceOneInchGasEstimation = async (
+  contractObj: Contract,
+  req: any,
+  provider: any,
+  gasPrice: string,
+  foundryTokenAddress: string
+): Promise<any> => {
+  let amount = await getSourceAmount(
+    req.query.sourceAmount,
+    await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+      req.query.sourceTokenContractAddress
+    ),
+    provider
+  );
+  let obj: SwapOneInch = {
+    amountIn: amount,
+    amountOut: req.query.sourceAmountOut,
+    targetChainId: req.query.destinationNetworkChainId,
+    targetTokenAddress: await (
+      global as any
+    ).commonFunctions.getOneInchTokenAddress(
+      req.query.destinationTokenContractAddress
+    ),
+    destinationWalletAddress: req.query.destinationWalletAddress,
+    sourceOneInchData: req.query.sourceOneInchData,
+    sourceTokenAddress: req.query.sourceTokenContractAddress,
+    foundryTokenAddress: foundryTokenAddress,
+    withdrawalData: getWithdrawalDataHashForSwap(
+      req.query?.sourceOneInchData,
+      req.query?.destinationOneInchData,
+      req.query?.destinationAmountIn,
+      req.query?.destinationAmountOut,
+      req.query?.sourceAssetType,
+      req.query?.destinationAssetType
+    ),
+    sourceWalletAddress: req.query.sourceWalletAddress,
+    gasPrice: gasPrice,
+    value: getValueForSwap(
+      amount,
+      gasPrice,
+      await (global as any).commonFunctions.isNativeToken(
+        req.query.sourceTokenContractAddress
+      )
+    ),
+  };
+  return await sourceOneInchGasEstimation(contractObj, obj);
+};
+
+export const getForgeSignature = async (
   req: any,
   salt: string,
   expiry: number,
   targetNetwork: any
-): any => {
+): Promise<any> => {
   const web3 = new Web3(targetNetwork.rpcUrl);
   const SIGNATURE = createSignedPayment(
     req.query.destinationNetworkChainId,
     req.query.destinationWalletAddress, // need to check
     req.query.destinationAmountIn,
-    req.query.destinationTokenContractAddress,
+    await (global as any).commonFunctions.getOneInchTokenAddress(
+      req.query.destinationTokenContractAddress
+    ),
     targetNetwork.fundManager,
     salt,
     req.query.destinationAssetType,

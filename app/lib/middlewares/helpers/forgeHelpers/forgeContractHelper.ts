@@ -4,7 +4,7 @@ import {
   WithdrawSigned,
   WithdrawSignedAndSwapOneInch,
 } from "../../../../interfaces/forgeInterface";
-import { Swap, SwapOneInch } from "../../../../interfaces/fiberEngineInterface";
+import { Swap, SwapOneInch } from "../../../../interfaces/forgeInterface";
 const forgeAbi: any = require("../../../../../config/forge.json");
 const fiberRouterAbi: any = require("../../../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
 
@@ -98,6 +98,64 @@ export const sourceFoundaryGasEstimation = async (
         from: obj.sourceWalletAddress,
         value: obj.value,
       });
+    return response;
+  } catch (e: any) {
+    console.log(e);
+  }
+};
+
+export const sourceOneInchGasEstimation = async (
+  contract: Contract,
+  obj: SwapOneInch
+): Promise<any> => {
+  try {
+    let response;
+    let fiberRouter = fiberRouterContract(
+      contract.rpcUrl,
+      contract.contractAddress
+    );
+    if (
+      await (global as any).commonFunctions.isNativeToken(
+        obj.sourceTokenAddress
+      )
+    ) {
+      response = fiberRouter.methods
+        .swapAndCrossOneInchETH(
+          obj.amountOut,
+          obj.targetChainId,
+          await (global as any).commonFunctions.getOneInchTokenAddress(
+            obj.targetTokenAddress
+          ),
+          obj.destinationWalletAddress,
+          obj.sourceOneInchData,
+          obj.foundryTokenAddress,
+          obj.withdrawalData,
+          obj.gasPrice
+        )
+        .estimateGas({
+          from: obj.sourceWalletAddress,
+          value: obj.value,
+        });
+    } else {
+      response = fiberRouter.methods
+        .swapAndCrossOneInch(
+          obj.amountIn,
+          obj.amountOut,
+          obj.targetChainId,
+          await (global as any).commonFunctions.getOneInchTokenAddress(
+            obj.targetTokenAddress
+          ),
+          obj.destinationWalletAddress,
+          obj.sourceOneInchData,
+          obj.sourceTokenAddress,
+          obj.foundryTokenAddress,
+          obj.withdrawalData
+        )
+        .estimateGas({
+          from: obj.sourceWalletAddress,
+          value: obj.value,
+        });
+    }
     return response;
   } catch (e: any) {
     console.log(e);
