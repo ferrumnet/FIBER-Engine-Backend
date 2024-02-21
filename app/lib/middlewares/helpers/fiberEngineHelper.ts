@@ -264,7 +264,7 @@ export const getDestinationAmountFromLogs = (
 export const sendSlackNotification = async (swapHash: string, mesg: any) => {
   try {
     let body = `FIBER Engine Backend Alert\nswapHash:\n${swapHash}\n\n${mesg?.toString()}\n========================`;
-    // await postAlertIntoChannel({ text: body });
+    await postAlertIntoChannel({ text: body });
   } catch (e) {
     console.log(e);
   }
