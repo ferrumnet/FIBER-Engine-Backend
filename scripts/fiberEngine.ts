@@ -36,6 +36,7 @@ import {
   doFoundaryWithdraw,
   doOneInchWithdraw,
   getDestinationAmountFromLogs,
+  getValueForSwap,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
   SwapOneInch,
@@ -183,7 +184,8 @@ module.exports = {
           targetNetwork,
           targetSigner,
           targetChainId,
-          swapTransactionHash
+          swapTransactionHash,
+          body?.gasLimit
         );
         const receipt = await this.callEVMWithdrawAndGetReceipt(swapResult);
         destinationAmount = (
@@ -289,7 +291,8 @@ module.exports = {
           targetNetwork,
           targetSigner,
           targetChainId,
-          swapTransactionHash
+          swapTransactionHash,
+          body?.gasLimit
         );
         const receipt = await swapResult?.wait();
         let destinationAmountOut = getDestinationAmountFromLogs(
@@ -555,6 +558,7 @@ module.exports = {
             sourceTokenAddress: sourceTokenAddress,
             foundryTokenAddress: sourceNetwork.foundryTokenAddress,
             withdrawalData: withdrawalData,
+            gasPrice: query?.gasPrice,
           };
           swapResult = await doOneInchSwap(obj, fiberRouter);
         } else {
@@ -592,13 +596,12 @@ module.exports = {
         description: `Swap `,
         ...(await getGasForSwap(sourceChainId, destinationWalletAddress)),
       };
-
-      if (
+      let value = getValueForSwap(
+        amount,
+        query?.gasPrice,
         await (global as any).commonFunctions.isNativeToken(sourceTokenAddress)
-      ) {
-        returnData = { ...returnData, value: amount };
-      }
-
+      );
+      returnData = { ...returnData, value: value };
       return returnData;
     } catch (error) {
       throw { error };

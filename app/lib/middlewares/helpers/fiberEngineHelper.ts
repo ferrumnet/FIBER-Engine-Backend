@@ -1,3 +1,4 @@
+const { Big } = require("big.js");
 import {
   SwapOneInch,
   WithdrawSigned,
@@ -11,8 +12,8 @@ import {
 } from "../../middlewares/helpers/gasFeeHelpers/gasEstimationHelper";
 import { getLogsFromTransactionReceipt } from "../../middlewares/helpers/web3Helpers/web3Helper";
 import { postAlertIntoChannel } from "../../httpCalls/slackAxiosHelper";
-const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;
-const MAX_WITHDRAW_TRIES = 10;
+const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 2;
+const MAX_WITHDRAW_TRIES = 3;
 
 export const getWithdrawSignedObject = (
   targetTokenAddress: string,
@@ -64,16 +65,18 @@ export const doFoundaryWithdraw = async (
   targetSigner: any,
   targetChainId: any,
   swapTransactionHash: string,
+  gasLimit: string,
   count = 0
 ): Promise<any> => {
   let result;
   try {
-    let gasLimit;
+    let dynamicGasPrice;
     if (
       (await isAllowedDynamicGasValues(targetChainId)) &&
-      count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES
+      count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES &&
+      !gasLimit
     ) {
-      gasLimit = await targetNetwork.fiberRouterContract
+      dynamicGasPrice = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
         .estimateGas.withdrawSigned(
           await (global as any).commonFunctions.getOneInchTokenAddress(
@@ -85,7 +88,9 @@ export const doFoundaryWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
-      gasLimit = addBuffer(gasLimit);
+      dynamicGasPrice = addBuffer(dynamicGasPrice, 10);
+    } else {
+      dynamicGasPrice = addBuffer(new Big(gasLimit), 10);
     }
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
@@ -98,7 +103,7 @@ export const doFoundaryWithdraw = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
-        await getGasForWithdraw(targetChainId, gasLimit)
+        await getGasForWithdraw(targetChainId, dynamicGasPrice)
       );
   } catch (e) {
     console.log(e);
@@ -112,6 +117,7 @@ export const doFoundaryWithdraw = async (
         targetSigner,
         targetChainId,
         swapTransactionHash,
+        gasLimit,
         count
       );
     }
@@ -125,16 +131,18 @@ export const doOneInchWithdraw = async (
   targetSigner: any,
   targetChainId: any,
   swapTransactionHash: string,
+  gasLimit: string,
   count = 0
 ): Promise<any> => {
   let result;
   try {
-    let gasLimit;
+    let dynamicGasPrice;
     if (
       (await isAllowedDynamicGasValues(targetChainId)) &&
-      count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES
+      count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES &&
+      !gasLimit
     ) {
-      gasLimit = await targetNetwork.fiberRouterContract
+      dynamicGasPrice = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
         .estimateGas.withdrawSignedAndSwapOneInch(
           obj.destinationWalletAddress,
@@ -149,7 +157,9 @@ export const doOneInchWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
-      gasLimit = addBuffer(gasLimit);
+      dynamicGasPrice = addBuffer(dynamicGasPrice, 10);
+    } else {
+      dynamicGasPrice = addBuffer(new Big(gasLimit), 10);
     }
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
@@ -165,7 +175,7 @@ export const doOneInchWithdraw = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
-        await getGasForWithdraw(targetChainId, gasLimit)
+        await getGasForWithdraw(targetChainId, dynamicGasPrice)
       );
   } catch (e) {
     console.log(e);
@@ -179,6 +189,7 @@ export const doOneInchWithdraw = async (
         targetSigner,
         targetChainId,
         swapTransactionHash,
+        gasLimit,
         count
       );
     }
@@ -206,7 +217,8 @@ export const doOneInchSwap = async (
         obj.destinationWalletAddress,
         obj.sourceOneInchData,
         obj.foundryTokenAddress,
-        obj.withdrawalData
+        obj.withdrawalData,
+        "gasFee"
       );
     } else {
       result = fiberRouter.methods.swapAndCrossOneInch(
@@ -252,7 +264,35 @@ export const getDestinationAmountFromLogs = (
 export const sendSlackNotification = async (swapHash: string, mesg: any) => {
   try {
     let body = `FIBER Engine Backend Alert\nswapHash:\n${swapHash}\n\n${mesg?.toString()}\n========================`;
-    await postAlertIntoChannel({ text: body });
+    // await postAlertIntoChannel({ text: body });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const getValueForSwap = (
+  amount: any,
+  gasPrice: any,
+  isNative: boolean
+) => {
+  try {
+    console.log(
+      "amount:",
+      amount,
+      "gasPrice:",
+      gasPrice,
+      "isNative:",
+      isNative
+    );
+    if (isNative) {
+      amount = new Big(amount);
+      gasPrice = new Big(gasPrice);
+      let value = amount.add(gasPrice);
+      console.log("value", value.toString());
+      return value.toString();
+    } else {
+      return gasPrice;
+    }
   } catch (e) {
     console.log(e);
   }
