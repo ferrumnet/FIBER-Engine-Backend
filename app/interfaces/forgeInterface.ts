@@ -24,6 +24,32 @@ export interface WithdrawSignedAndSwapOneInch {
   signature: string;
 }
 
+export interface Swap {
+  sourceTokenAddress: string;
+  amount: string;
+  targetChainId: string;
+  targetTokenAddress: string;
+  destinationWalletAddress: string;
+  withdrawalData: string;
+  sourceWalletAddress: string;
+  value: string;
+}
+
+export interface SwapOneInch {
+  amountIn: string;
+  amountOut: string;
+  targetChainId: string;
+  targetTokenAddress: string;
+  destinationWalletAddress: string;
+  sourceOneInchData: string;
+  sourceTokenAddress: string;
+  foundryTokenAddress: string;
+  withdrawalData: string;
+  gasPrice: string;
+  sourceWalletAddress: string;
+  value: string;
+}
+
 export interface DestinationGasEstimationResponse {
   gasPriceInNumber: string;
   gasPriceInMachine: string;

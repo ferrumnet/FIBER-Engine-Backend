@@ -32,17 +32,6 @@ export interface SwapOneInch {
   gasPrice: string;
 }
 
-export interface Swap {
-  sourceTokenAddress: string;
-  amount: string;
-  targetChainId: string;
-  targetTokenAddress: string;
-  destinationWalletAddress: string;
-  withdrawalData: string;
-  sourceWalletAddress: string;
-  value: string;
-}
-
 export interface WithdrawOneInchLogs {
   "2": string;
 }

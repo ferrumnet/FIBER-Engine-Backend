@@ -218,7 +218,7 @@ export const doOneInchSwap = async (
         obj.sourceOneInchData,
         obj.foundryTokenAddress,
         obj.withdrawalData,
-        "gasFee"
+        obj.gasPrice
       );
     } else {
       result = fiberRouter.methods.swapAndCrossOneInch(
