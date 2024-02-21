@@ -27,12 +27,13 @@ module.exports = {
 
           await this.saveRandomKey(tokenIntoJsonObject);
         }
+      } else {
+        return false;
       }
     } catch (e: any) {
-      console.log("error in auth", e);
+      console.log(e);
       return false;
     }
-    console.log("Token is valid");
     return true;
   },
 
