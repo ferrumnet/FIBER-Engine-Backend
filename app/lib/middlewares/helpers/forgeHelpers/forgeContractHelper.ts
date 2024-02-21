@@ -5,7 +5,7 @@ import {
   WithdrawSignedAndSwapOneInch,
 } from "../../../../interfaces/forgeInterface";
 import { Swap, SwapOneInch } from "../../../../interfaces/fiberEngineInterface";
-const forgeAbi: any = require("../../../../../Forge.json");
+const forgeAbi: any = require("../../../../../config/forge.json");
 const fiberRouterAbi: any = require("../../../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
 
 const web3 = (rpcUrl: any) => {
