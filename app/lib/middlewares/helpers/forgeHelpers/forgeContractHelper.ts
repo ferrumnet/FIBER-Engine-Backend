@@ -43,7 +43,6 @@ export const destinationFoundaryGasEstimation = async (
         obj.signature
       )
       .estimateGas();
-    console.log("gasAmount response", response);
     return response;
   } catch (e: any) {
     console.log(e);
@@ -71,7 +70,6 @@ export const destinationOneInchGasEstimation = async (
         obj.signature
       )
       .estimateGas();
-    console.log("gasAmount response", response);
     return response;
   } catch (e: any) {
     console.log(e);
@@ -100,7 +98,6 @@ export const sourceFoundaryGasEstimation = async (
         from: obj.sourceWalletAddress,
         value: obj.value,
       });
-    console.log("gasAmount response", response);
     return response;
   } catch (e: any) {
     console.log(e);
