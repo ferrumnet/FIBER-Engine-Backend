@@ -100,7 +100,7 @@ module.exports = function (router: any) {
       req.query = { ...req.query, ...req.body };
       req.query.swapTransactionHash = req.params.txHash;
       multiSwapHelper.validatonForSameSourceAndDestination(req);
-
+      console.log("body", req.query);
       if (req.query.destinationWalletAddress) {
         req.query.destinationWalletAddress =
           req.query.destinationWalletAddress.toLowerCase();
