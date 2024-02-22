@@ -58,7 +58,7 @@ export const sourceGasEstimation = async (
     contractAddress: SOURCE_NETWORK.fiberRouter,
   };
 
-  if (req.query.destinationAssetType == FOUNDARY) {
+  if (req.query.sourceAssetType == FOUNDARY) {
     gasPrice = await doSourceFoundaryGasEstimation(
       contractObj,
       req,
