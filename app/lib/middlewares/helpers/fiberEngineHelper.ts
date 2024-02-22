@@ -12,8 +12,8 @@ import {
 } from "../../middlewares/helpers/gasFeeHelpers/gasEstimationHelper";
 import { getLogsFromTransactionReceipt } from "../../middlewares/helpers/web3Helpers/web3Helper";
 import { postAlertIntoChannel } from "../../httpCalls/slackAxiosHelper";
-const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 2;
-const MAX_WITHDRAW_TRIES = 3;
+const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;
+const MAX_WITHDRAW_TRIES = 10;
 
 export const getWithdrawSignedObject = (
   targetTokenAddress: string,
@@ -71,6 +71,10 @@ export const doFoundaryWithdraw = async (
   let result;
   try {
     let dynamicGasPrice;
+    if (count > 0) {
+      gasLimit = "";
+      console.log("gas limit", gasLimit);
+    }
     if (
       (await isAllowedDynamicGasValues(targetChainId)) &&
       count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES &&
@@ -137,6 +141,10 @@ export const doOneInchWithdraw = async (
   let result;
   try {
     let dynamicGasPrice;
+    if (count > 0) {
+      gasLimit = "";
+      console.log("gas limit", gasLimit);
+    }
     if (
       (await isAllowedDynamicGasValues(targetChainId)) &&
       count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES &&
