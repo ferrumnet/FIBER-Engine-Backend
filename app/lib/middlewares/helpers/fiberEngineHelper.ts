@@ -93,7 +93,7 @@ export const doFoundaryWithdraw = async (
           obj.signature
         );
       dynamicGasPrice = addBuffer(dynamicGasPrice, 10);
-    } else {
+    } else if (gasLimit) {
       dynamicGasPrice = addBuffer(new Big(gasLimit), 10);
     }
     result = await targetNetwork.fiberRouterContract
@@ -166,7 +166,7 @@ export const doOneInchWithdraw = async (
           obj.signature
         );
       dynamicGasPrice = addBuffer(dynamicGasPrice, 10);
-    } else {
+    } else if (gasLimit) {
       dynamicGasPrice = addBuffer(new Big(gasLimit), 10);
     }
     result = await targetNetwork.fiberRouterContract
