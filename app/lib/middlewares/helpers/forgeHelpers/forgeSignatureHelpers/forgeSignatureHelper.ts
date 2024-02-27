@@ -69,7 +69,7 @@ export const produceFoundaryHash = (
   token: string,
   payee: string,
   amount: string,
-  swapTxId: string,
+  salt: string,
   expiry: number
 ): any => {
   console.log("i am foundary");
@@ -91,7 +91,7 @@ export const produceFoundaryHash = (
     token,
     payee,
     amount,
-    swapTxId,
+    salt,
     expiry,
   ]);
   const structureHash = Web3.utils.keccak256(structure);
