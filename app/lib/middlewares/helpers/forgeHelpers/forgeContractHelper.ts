@@ -1,4 +1,4 @@
-var Web3 = require("web3");
+var { ethers } = require("ethers");
 import {
   Contract,
   WithdrawSigned,
@@ -8,31 +8,33 @@ import { Swap, SwapOneInch } from "../../../../interfaces/forgeInterface";
 const forgeAbi: any = require("../../../../../config/forge.json");
 const fiberRouterAbi: any = require("../../../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
 
-const web3 = (rpcUrl: any) => {
-  if (rpcUrl) {
-    return new Web3(new Web3.providers.HttpProvider(rpcUrl));
-  }
-  return null;
+const forgeContract = (provider: any, tokenContractAddress: any) => {
+  return new ethers.Contract(tokenContractAddress, forgeAbi.abi, provider);
 };
 
-const forgeContract = (rpcUrl: any, tokenContractAddress: any) => {
-  let Web3 = web3(rpcUrl).eth;
-  return new Web3.Contract(forgeAbi.abi, tokenContractAddress);
+const getSigner = (provider: any) => {
+  var signer = new ethers.Wallet((global as any).environment.PRI_KEY);
+  return signer.connect(provider);
 };
 
-const fiberRouterContract = (rpcUrl: any, tokenContractAddress: any) => {
-  let Web3 = web3(rpcUrl).eth;
-  return new Web3.Contract(fiberRouterAbi.abi, tokenContractAddress);
+const fiberRouterContract = (provider: any, tokenContractAddress: any) => {
+  return new ethers.Contract(
+    tokenContractAddress,
+    fiberRouterAbi.abi,
+    provider
+  );
 };
 
 export const destinationFoundaryGasEstimation = async (
   contract: Contract,
+  network: any,
   obj: WithdrawSigned
 ): Promise<any> => {
   try {
-    let forge = forgeContract(contract.rpcUrl, contract.contractAddress);
-    let response = await forge.methods
-      .estimateGasForWithdrawSigned(
+    let forge = forgeContract(network.provider, contract.contractAddress);
+    let response = await forge
+      .connect(getSigner(network.provider))
+      .estimateGas.withdrawSignedForGasEstimation(
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
@@ -41,8 +43,7 @@ export const destinationFoundaryGasEstimation = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature
-      )
-      .estimateGas();
+      );
     return response;
   } catch (e: any) {
     console.log(e);
@@ -51,12 +52,14 @@ export const destinationFoundaryGasEstimation = async (
 
 export const destinationOneInchGasEstimation = async (
   contract: Contract,
+  network: any,
   obj: WithdrawSignedAndSwapOneInch
 ): Promise<any> => {
   try {
-    let forge = forgeContract(contract.rpcUrl, contract.contractAddress);
-    let response = await forge.methods
-      .estimateGasForWithdrawSignedAndSwapOneInch(
+    let forge = forgeContract(network.provider, contract.contractAddress);
+    let response = await forge
+      .connect(getSigner(network.provider))
+      .estimateGas.withdrawSignedAndSwapOneInchForGasEstimation(
         obj.destinationWalletAddress,
         obj.destinationAmountIn,
         obj.destinationAmountOut,
@@ -68,8 +71,7 @@ export const destinationOneInchGasEstimation = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature
-      )
-      .estimateGas();
+      );
     return response;
   } catch (e: any) {
     console.log(e);
@@ -78,26 +80,26 @@ export const destinationOneInchGasEstimation = async (
 
 export const sourceFoundaryGasEstimation = async (
   contract: Contract,
+  network: any,
   obj: Swap
 ): Promise<any> => {
   try {
     let fiberRouter = fiberRouterContract(
-      contract.rpcUrl,
+      network.provider,
       contract.contractAddress
     );
-    let response = await fiberRouter.methods
-      .swap(
-        obj.sourceTokenAddress,
-        obj.amount,
-        obj.targetChainId,
-        obj.targetTokenAddress,
-        obj.destinationWalletAddress,
-        obj.withdrawalData
-      )
-      .estimateGas({
+    let response = await fiberRouter.estimateGas.swap(
+      obj.sourceTokenAddress,
+      obj.amount,
+      obj.targetChainId,
+      obj.targetTokenAddress,
+      obj.destinationWalletAddress,
+      obj.withdrawalData,
+      {
         from: obj.sourceWalletAddress,
         value: obj.value,
-      });
+      }
+    );
     return response;
   } catch (e: any) {
     console.log(e);
@@ -106,12 +108,13 @@ export const sourceFoundaryGasEstimation = async (
 
 export const sourceOneInchGasEstimation = async (
   contract: Contract,
+  network: any,
   obj: SwapOneInch
 ): Promise<any> => {
   try {
     let response;
     let fiberRouter = fiberRouterContract(
-      contract.rpcUrl,
+      network.provider,
       contract.contractAddress
     );
     if (
@@ -119,42 +122,40 @@ export const sourceOneInchGasEstimation = async (
         obj.sourceTokenAddress
       )
     ) {
-      response = fiberRouter.methods
-        .swapAndCrossOneInchETH(
-          obj.amountOut,
-          obj.targetChainId,
-          await (global as any).commonFunctions.getOneInchTokenAddress(
-            obj.targetTokenAddress
-          ),
-          obj.destinationWalletAddress,
-          obj.sourceOneInchData,
-          obj.foundryTokenAddress,
-          obj.withdrawalData,
-          obj.gasPrice
-        )
-        .estimateGas({
+      response = await fiberRouter.estimateGas.swapAndCrossOneInchETH(
+        obj.amountOut,
+        obj.targetChainId,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
+        obj.destinationWalletAddress,
+        obj.sourceOneInchData,
+        obj.foundryTokenAddress,
+        obj.withdrawalData,
+        obj.gasPrice,
+        {
           from: obj.sourceWalletAddress,
           value: obj.value,
-        });
+        }
+      );
     } else {
-      response = fiberRouter.methods
-        .swapAndCrossOneInch(
-          obj.amountIn,
-          obj.amountOut,
-          obj.targetChainId,
-          await (global as any).commonFunctions.getOneInchTokenAddress(
-            obj.targetTokenAddress
-          ),
-          obj.destinationWalletAddress,
-          obj.sourceOneInchData,
-          obj.sourceTokenAddress,
-          obj.foundryTokenAddress,
-          obj.withdrawalData
-        )
-        .estimateGas({
+      response = await fiberRouter.estimateGas.swapAndCrossOneInch(
+        obj.amountIn,
+        obj.amountOut,
+        obj.targetChainId,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
+        obj.destinationWalletAddress,
+        obj.sourceOneInchData,
+        obj.sourceTokenAddress,
+        obj.foundryTokenAddress,
+        obj.withdrawalData,
+        {
           from: obj.sourceWalletAddress,
           value: obj.value,
-        });
+        }
+      );
     }
     return response;
   } catch (e: any) {
