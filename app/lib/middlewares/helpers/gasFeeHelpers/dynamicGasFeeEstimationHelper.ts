@@ -61,6 +61,7 @@ export const sourceGasEstimation = async (
   if (req.query.sourceAssetType == FOUNDARY) {
     gasPrice = await doSourceFoundaryGasEstimation(
       contractObj,
+      SOURCE_NETWORK,
       req,
       SOURCE_NETWORK.provider,
       destinationGasPrice
@@ -68,12 +69,14 @@ export const sourceGasEstimation = async (
   } else {
     gasPrice = await doSourceOneInchGasEstimation(
       contractObj,
+      SOURCE_NETWORK,
       req,
       SOURCE_NETWORK.provider,
       destinationGasPrice,
       SOURCE_NETWORK.foundryTokenAddress
     );
   }
+  console.log("source gas limit", gasPrice?.toString());
   let gasPrices = await getSourceGasPrices(
     req.query.sourceNetworkChainId,
     SOURCE_NETWORK.rpcUrl,
@@ -111,6 +114,7 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
   if (req.query.destinationAssetType == FOUNDARY) {
     gasPrice = await doDestinationFoundaryGasEstimation(
       contractObj,
+      TARGET_NETWORK,
       req,
       SALT,
       EXPIRY,
@@ -119,6 +123,7 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
   } else {
     gasPrice = await doDestinationOneInchGasEstimation(
       contractObj,
+      TARGET_NETWORK,
       req,
       SALT,
       EXPIRY,
@@ -126,6 +131,7 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
       TARGET_NETWORK
     );
   }
+  console.log("destination gas limit", gasPrice.toString());
   let destinationGasPrices = await getDestinationGasPrices(
     req.query.destinationNetworkChainId,
     TARGET_NETWORK.rpcUrl,
@@ -144,7 +150,8 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
 };
 
 export const doDestinationFoundaryGasEstimation = async (
-  contractObj: Contract,
+  contract: Contract,
+  network: any,
   req: any,
   salt: string,
   expiry: number,
@@ -162,11 +169,12 @@ export const doDestinationFoundaryGasEstimation = async (
     signatureExpiry: expiry,
     signature: signature,
   };
-  return await destinationFoundaryGasEstimation(contractObj, obj);
+  return await destinationFoundaryGasEstimation(contract, network, obj);
 };
 
 export const doDestinationOneInchGasEstimation = async (
   contractObj: Contract,
+  network: any,
   req: any,
   salt: string,
   expiry: number,
@@ -188,11 +196,12 @@ export const doDestinationOneInchGasEstimation = async (
     targetFoundryTokenAddress: targetNetwork.foundryTokenAddress,
     destinationOneInchData: req.query.destinationOneInchData,
   };
-  return await destinationOneInchGasEstimation(contractObj, obj);
+  return await destinationOneInchGasEstimation(contractObj, network, obj);
 };
 
 export const doSourceFoundaryGasEstimation = async (
   contractObj: Contract,
+  network: any,
   req: any,
   provider: any,
   gasPrice: string
@@ -200,7 +209,8 @@ export const doSourceFoundaryGasEstimation = async (
   let amount = await getSourceAmount(
     req.query.sourceAmount,
     await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-      req.query.sourceTokenContractAddress
+      req.query.sourceTokenContractAddress,
+      req.query.sourceNetworkChainId
     ),
     provider
   );
@@ -231,11 +241,12 @@ export const doSourceFoundaryGasEstimation = async (
       )
     ),
   };
-  return await sourceFoundaryGasEstimation(contractObj, obj);
+  return await sourceFoundaryGasEstimation(contractObj, network, obj);
 };
 
 export const doSourceOneInchGasEstimation = async (
   contractObj: Contract,
+  network: any,
   req: any,
   provider: any,
   gasPrice: string,
@@ -244,7 +255,8 @@ export const doSourceOneInchGasEstimation = async (
   let amount = await getSourceAmount(
     req.query.sourceAmount,
     await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-      req.query.sourceTokenContractAddress
+      req.query.sourceTokenContractAddress,
+      req.query.sourceNetworkChainId
     ),
     provider
   );
@@ -279,7 +291,7 @@ export const doSourceOneInchGasEstimation = async (
       )
     ),
   };
-  return await sourceOneInchGasEstimation(contractObj, obj);
+  return await sourceOneInchGasEstimation(contractObj, network, obj);
 };
 
 export const getForgeSignature = async (
@@ -296,7 +308,7 @@ export const getForgeSignature = async (
     await (global as any).commonFunctions.getOneInchTokenAddress(
       req.query.destinationTokenContractAddress
     ),
-    targetNetwork.fundManager,
+    targetNetwork.forgeFundManager,
     salt,
     req.query.destinationAssetType,
     req.query.destinationAmountIn,
@@ -311,16 +323,16 @@ export const getForgeSignature = async (
 };
 
 export const getExpiry = function () {
-  return moment().utc().add("week", 1).unix();
+  return moment().utc().add("days", 5).unix();
 };
 
 export const convertIntoSourceNative = async (
   destinationGasPrice: string
 ): Promise<any> => {};
 
-async function getCurrentGasPrice(rpcUrl: string) {
+async function getCurrentGasPrice(provider: any) {
   try {
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    // const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const gasPrice = await provider.getGasPrice();
     return gasPrice;
   } catch (e) {
@@ -335,7 +347,7 @@ async function getSourceGasPrices(
   provider: any
 ) {
   try {
-    let currentGasPrice = await getCurrentGasPrice(rpcUrl);
+    let currentGasPrice = await getCurrentGasPrice(provider);
     let gasPriceInMachine = new Big(gasPrice);
     gasPriceInMachine = gasPriceInMachine.mul(currentGasPrice);
     let nativeToken = await (global as any).commonFunctions.getTokenByChainId(
@@ -368,7 +380,8 @@ async function getDestinationGasPrices(
   provider: any
 ) {
   try {
-    let currentGasPrice = await getCurrentGasPrice(rpcUrl);
+    let currentGasPrice = await getCurrentGasPrice(provider);
+    console.log("currentGasPrice", currentGasPrice.toString());
     let gasPriceInMachine = new Big(gasPrice);
     gasPriceInMachine = gasPriceInMachine.mul(currentGasPrice);
     let nativeToken = await (global as any).commonFunctions.getTokenByChainId(
@@ -385,7 +398,7 @@ async function getDestinationGasPrices(
     gasPriceInNative = new Big(gasPriceInNative);
     let usdPrice = await getQuote(nativeToken?.symbol);
     let gasPriceInToUSD = new Big(gasPriceInNative).mul(usdPrice);
-    gasPriceInToUSD = addBuffer_(gasPriceInToUSD, 10);
+    gasPriceInToUSD = await addBuffer_(gasPriceInToUSD, chainId);
     return {
       gasPrice: gasPriceInNative.toString(),
       gasPriceInUSD: gasPriceInToUSD.toString(),
