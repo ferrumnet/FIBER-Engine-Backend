@@ -8,6 +8,7 @@ var schema = mongoose.Schema(
     maxFeePerGas: { type: String, default: "" },
     maxPriorityFeePerGas: { type: String, default: "" },
     gasLimit: { type: String, default: "" },
+    gasBuffer: { type: Number, default: 0 },
     isAllowedDynamicGasLimit: { type: Boolean, default: false },
     chainId: { type: String, default: "" },
     dynamicValues: {

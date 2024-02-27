@@ -69,14 +69,14 @@ export const doFoundaryWithdraw = async (
   count = 0
 ): Promise<any> => {
   let result;
+  let dynamicGasPrice: any;
   try {
-    let dynamicGasPrice;
+    let isAllowedDynamicGas = await isAllowedDynamicGasValues(targetChainId);
     if (count > 0) {
       gasLimit = "";
-      console.log("gas limit", gasLimit);
     }
     if (
-      (await isAllowedDynamicGasValues(targetChainId)) &&
+      isAllowedDynamicGas &&
       count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES &&
       !gasLimit
     ) {
@@ -92,10 +92,10 @@ export const doFoundaryWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
-      dynamicGasPrice = addBuffer(dynamicGasPrice, 10);
-    } else if (gasLimit) {
-      dynamicGasPrice = addBuffer(new Big(gasLimit), 10);
+    } else if (isAllowedDynamicGas && gasLimit) {
+      dynamicGasPrice = await addBuffer(new Big(gasLimit), targetChainId);
     }
+    console.log("dynamicGasPrice", dynamicGasPrice);
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
       .withdrawSigned(
@@ -111,7 +111,11 @@ export const doFoundaryWithdraw = async (
       );
   } catch (e) {
     console.log(e);
-    sendSlackNotification(swapTransactionHash, e);
+    sendSlackNotification(
+      swapTransactionHash,
+      e,
+      getGasLimitTagForSlackNotification(dynamicGasPrice, gasLimit)
+    );
     await delay();
     count = count + 1;
     if (count < MAX_WITHDRAW_TRIES) {
@@ -139,14 +143,14 @@ export const doOneInchWithdraw = async (
   count = 0
 ): Promise<any> => {
   let result;
+  let dynamicGasPrice: any;
   try {
-    let dynamicGasPrice;
+    let isAllowedDynamicGas = await isAllowedDynamicGasValues(targetChainId);
     if (count > 0) {
       gasLimit = "";
-      console.log("gas limit", gasLimit);
     }
     if (
-      (await isAllowedDynamicGasValues(targetChainId)) &&
+      isAllowedDynamicGas &&
       count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES &&
       !gasLimit
     ) {
@@ -165,10 +169,11 @@ export const doOneInchWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
-      dynamicGasPrice = addBuffer(dynamicGasPrice, 10);
-    } else if (gasLimit) {
-      dynamicGasPrice = addBuffer(new Big(gasLimit), 10);
+      dynamicGasPrice = await addBuffer(dynamicGasPrice, targetChainId);
+    } else if (isAllowedDynamicGas && gasLimit) {
+      dynamicGasPrice = await addBuffer(new Big(gasLimit), targetChainId);
     }
+    console.log("dynamicGasPrice", dynamicGasPrice);
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
       .withdrawSignedAndSwapOneInch(
@@ -187,7 +192,11 @@ export const doOneInchWithdraw = async (
       );
   } catch (e) {
     console.log(e);
-    sendSlackNotification(swapTransactionHash, e);
+    sendSlackNotification(
+      swapTransactionHash,
+      e,
+      getGasLimitTagForSlackNotification(dynamicGasPrice, gasLimit)
+    );
     await delay();
     count = count + 1;
     if (count < MAX_WITHDRAW_TRIES) {
@@ -269,9 +278,13 @@ export const getDestinationAmountFromLogs = (
   return destinationAmount;
 };
 
-export const sendSlackNotification = async (swapHash: string, mesg: any) => {
+export const sendSlackNotification = async (
+  swapHash: string,
+  mesg: any,
+  gasLimitTag: any
+) => {
   try {
-    let body = `FIBER Engine Backend Alert\nswapHash:\n${swapHash}\n\n${mesg?.toString()}\n========================`;
+    let body = `FIBER Engine Backend Alert\nswapHash:\n${swapHash}\ngasLimit:\n${gasLimitTag}\n\n${mesg?.toString()}\n========================`;
     await postAlertIntoChannel({ text: body });
   } catch (e) {
     console.log(e);
@@ -304,6 +317,17 @@ export const getValueForSwap = (
   } catch (e) {
     console.log(e);
   }
+};
+
+const getGasLimitTagForSlackNotification = (
+  dynamicGasPrice: any,
+  gasLimit: any
+) => {
+  let type = "Secondary";
+  if (gasLimit) {
+    type = "Primary";
+  }
+  return dynamicGasPrice?.toString() + " " + type;
 };
 
 const delay = () => new Promise((res) => setTimeout(res, 10000));

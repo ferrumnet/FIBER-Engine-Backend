@@ -299,11 +299,15 @@ module.exports = {
   },
 
   getWrappedNativeTokenAddress: async function (
-    address: string
+    address: string,
+    chainId: string
   ): Promise<string> {
     let tokens: any = await getNativeTokens();
     for (let item of tokens || []) {
-      if (item?.address.toLowerCase() == address.toLowerCase()) {
+      if (
+        item?.chainId.toString() == chainId.toString() &&
+        item?.address.toLowerCase() == address.toLowerCase()
+      ) {
         return item?.wrappedAddress;
       }
     }

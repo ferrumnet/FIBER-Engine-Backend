@@ -131,7 +131,8 @@ module.exports = {
     if (!isValidLiquidityAvailable) {
       sendSlackNotification(
         swapTransactionHash,
-        "Error: " + IN_SUFFICIENT_LIQUIDITY_ERROR
+        "Error: " + IN_SUFFICIENT_LIQUIDITY_ERROR,
+        "Not used"
       );
       let receipt = { code: CODE_701 };
       withdrawResponse = createEVMResponse(receipt);
@@ -149,7 +150,8 @@ module.exports = {
       const targetSigner = signer.connect(targetNetwork.provider);
       const targetTokenContract = new ethers.Contract(
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-          targetTokenAddress
+          targetTokenAddress,
+          targetChainId
         ),
         tokenAbi.abi,
         targetNetwork.provider
@@ -368,7 +370,8 @@ module.exports = {
       // source token contract (required to approve function)
       const sourceTokenContract = new ethers.Contract(
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-          sourceTokenAddress
+          sourceTokenAddress,
+          sourceChainId
         ),
         tokenAbi.abi,
         sourceNetwork.provider
