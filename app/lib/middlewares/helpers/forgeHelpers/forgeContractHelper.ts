@@ -47,6 +47,9 @@ export const destinationFoundaryGasEstimation = async (
     return response;
   } catch (e: any) {
     console.log(e);
+    if (e?.reason) {
+      throw e?.reason;
+    }
   }
 };
 
@@ -75,6 +78,9 @@ export const destinationOneInchGasEstimation = async (
     return response;
   } catch (e: any) {
     console.log(e);
+    if (e?.reason) {
+      throw e?.reason;
+    }
   }
 };
 
@@ -103,6 +109,9 @@ export const sourceFoundaryGasEstimation = async (
     return response;
   } catch (e: any) {
     console.log(e);
+    if (e?.reason) {
+      throw e?.reason;
+    }
   }
 };
 
@@ -160,5 +169,8 @@ export const sourceOneInchGasEstimation = async (
     return response;
   } catch (e: any) {
     console.log(e);
+    if (e?.reason) {
+      throw e?.reason;
+    }
   }
 };
