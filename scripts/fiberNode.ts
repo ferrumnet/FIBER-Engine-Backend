@@ -42,7 +42,8 @@ module.exports = {
     if (!sourceNetwork.isNonEVM) {
       const sourceTokenContract = new ethers.Contract(
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-          sourceTokenAddress
+          sourceTokenAddress,
+          sourceChainId
         ),
         tokenAbi.abi,
         sourceNetwork.provider
@@ -62,7 +63,8 @@ module.exports = {
       let sourceTypeResponse = await getSourceAssetTypes(
         sourceNetwork,
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-          sourceTokenAddress
+          sourceTokenAddress,
+          sourceChainId
         ),
         amount
       );
@@ -116,7 +118,8 @@ module.exports = {
         let response = await OneInchSwap(
           sourceChainId,
           await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-            sourceTokenAddress
+            sourceTokenAddress,
+            sourceChainId
           ),
           sourceNetwork?.foundryTokenAddress,
           amount,
@@ -155,7 +158,8 @@ module.exports = {
     if (!targetNetwork.isNonEVM) {
       const targetTokenContract = new ethers.Contract(
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-          targetTokenAddress
+          targetTokenAddress,
+          targetChainId
         ),
         tokenAbi.abi,
         targetNetwork.provider
@@ -185,7 +189,8 @@ module.exports = {
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
-          targetTokenAddress
+          targetTokenAddress,
+          targetChainId
         ),
         amountIn
       );
