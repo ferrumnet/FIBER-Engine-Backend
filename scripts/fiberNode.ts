@@ -11,6 +11,7 @@ import {
   isLiquidityAvailableForCudos,
 } from "../app/lib/middlewares/helpers/liquidityHelper";
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
+import { strErrorSwapInNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -268,6 +269,9 @@ module.exports = {
         machineAmount = (global as any).utils.convertFromExponentialToDecimal(
           machineAmount
         );
+        if (machineAmount <= 0) {
+          throw strErrorSwapInNotAvailable;
+        }
         await this.delay(1000);
         let response = await OneInchSwap(
           targetChainId,
