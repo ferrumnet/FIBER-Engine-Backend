@@ -7,45 +7,54 @@ var tokenAbi = require("../artifacts/contracts/token/Token.sol/Token.json");
 const routerAbi = require("../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 const { produecSignaturewithdrawHash, fixSig } = require("./utils/BridgeUtils");
 const { BigNumber } = require("ethers");
-// const {
-//   bscChainId,
-//   goerliChainId,
-//   goerliRPC,
-//   bscRPC,
-//   goerliFundManager,
-//   bscFundManager,
-//   goerliFiberRouter,
-//   bscFiberRouter,
-//   bscRouter,
-//   goerliRouter,
-//   bscUsdt,
-//   goerliUsdt,
-//   bscCake,
-//   goerliCake,
-//   goerliUsdc,
-//   bscUsdc,
-//   bscAda,
-//   goerliAda,
-//   bscLink,
-//   goerliLink,
-//   bscUsdtOracle,
-//   goerliUsdtOracle,
-//   bscLinkOracle,
-//   goerliLinkOracle,
-//   goerliAave,
-//   bscAave,
-//   networks,
-//   goerliCudos,
-//   bscCudos,
-// } = (global as any).networkHelper;
+import {
+  convertIntoAssetTypesObjectForSource,
+  convertIntoAssetTypesObjectForTarget,
+} from "../app/lib/middlewares/helpers/assetTypeHelper";
+import {
+  createCudosResponse,
+  createEVMResponse,
+  IN_SUFFICIENT_LIQUIDITY_ERROR,
+  CODE_701,
+} from "../app/lib/middlewares/helpers/withdrawResponseHelper";
+import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
+import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
+import {
+  isLiquidityAvailableForEVM,
+  isLiquidityAvailableForCudos,
+} from "../app/lib/middlewares/helpers/liquidityHelper";
+import {
+  getSignature,
+  getWithdrawalDataHashForSwap,
+} from "../app/lib/middlewares/helpers/signatureHelper";
+import {
+  getGasForSwap,
+  getGasForWithdraw,
+} from "../app/lib/middlewares/helpers/gasFeeHelpers/gasEstimationHelper";
+import {
+  doOneInchSwap,
+  doFoundaryWithdraw,
+  doOneInchWithdraw,
+  getDestinationAmountFromLogs,
+  getValueForSwap,
+} from "../app/lib/middlewares/helpers/fiberEngineHelper";
+import {
+  SwapOneInch,
+  WithdrawSigned,
+  WithdrawSignedAndSwapOneInch,
+} from "../app/interfaces/fiberEngineInterface";
+
+import {
+  getWithdrawSignedObject,
+  getWithdrawSignedAndSwapOneInchObject,
+  sendSlackNotification,
+} from "../app/lib/middlewares/helpers/fiberEngineHelper";
+
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
 var Big = require("big.js");
 const toWei = (i: any) => ethers.utils.parseEther(i);
 const toEther = (i: any) => ethers.utils.formatEther(i);
-const MAX_FEE_PER_GAS = "60";
-const MAX_PRIORITY_FEE_PER_GAS = "60";
-const GAS_LIMIT = "2000000";
 
 // user wallet
 var signer = new ethers.Wallet((global as any).environment.PRI_KEY);
@@ -75,157 +84,12 @@ module.exports = {
     return null;
   },
 
-  //check the requested token exist on the Source network Fund Manager
-  sourceFACCheck: async function (sourceNetwork: any, tokenAddress: any) {
-    const isSourceTokenFoundryAsset =
-      await sourceNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
-    return isSourceTokenFoundryAsset;
-  },
-  //check the requested token exist on the Source network Fund Manager
-  targetFACCheck: async function (
-    targetNetwork: any,
-    tokenAddress: any,
-    amount: any
-  ) {
-    const targetTokenContract = new ethers.Contract(
-      tokenAddress,
-      tokenAbi.abi,
-      targetNetwork.provider
-    );
-    const isTargetTokenFoundryAsset =
-      await targetNetwork.fundManagerContract.isFoundryAsset(tokenAddress);
-    const targetFoundryAssetLiquidity = await targetTokenContract.balanceOf(
-      targetNetwork.fundManagerContract.address
-    );
-
-    if (
-      isTargetTokenFoundryAsset === true &&
-      Number(targetFoundryAssetLiquidity) > Number(amount)
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  },
-
-  //check source toke is foundry asset
-  isSourceRefineryAsset: async function (
-    sourceNetwork: any,
-    tokenAddress: any,
-    amount: any
-  ) {
-    try {
-      const isTokenFoundryAsset = await this.sourceFACCheck(
-        sourceNetwork,
-        tokenAddress
-      );
-
-      let path = [tokenAddress, sourceNetwork.foundryTokenAddress];
-      const amounts = await sourceNetwork.dexContract.getAmountsOut(
-        String(amount),
-        path
-      );
-      const amountsOut = amounts[1];
-      if (isTokenFoundryAsset == false && Number(amountsOut) > 0) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      return false;
-    }
-  },
-
-  //check source token is foundry asset
-  isTargetRefineryAsset: async function (
-    targetNetwork: any,
-    tokenAddress: any,
-    amount: any
-  ) {
-    try {
-      const isTokenFoundryAsset = await this.targetFACCheck(
-        targetNetwork,
-        tokenAddress,
-        amount
-      );
-
-      let path = [targetNetwork.foundryTokenAddress, tokenAddress];
-      const amounts = await targetNetwork.dexContract.getAmountsOut(
-        String(amount),
-        path
-      );
-      const amountsOut = amounts[1];
-      if (isTokenFoundryAsset == false && Number(amountsOut) > 0) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      return false;
-    }
-  },
-
   getDeadLine: function () {
     const currentDate = new Date();
     const deadLine = currentDate.getTime() + 20 * 60000;
     return deadLine;
   },
 
-  estimateGasForWithdraw: async function (sourceChainId: any, from: any) {
-    let data: any = {};
-    if (sourceChainId == 137 || sourceChainId == 250) {
-      let maxFeePerGas = MAX_FEE_PER_GAS;
-      let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
-      let gasLimit = GAS_LIMIT;
-
-      let item = await db.GasFees.findOne({ type: "polygon" });
-      if (item) {
-        maxFeePerGas = item.maxFeePerGas;
-        maxPriorityFeePerGas = item.maxPriorityFeePerGas;
-        gasLimit = item.gasLimit;
-      }
-
-      data.maxFeePerGas = Web3.utils.toHex(
-        Web3.utils.toWei(maxFeePerGas, "gwei")
-      );
-      data.maxPriorityFeePerGas = Web3.utils.toHex(
-        Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
-      );
-      data.gasLimit = gasLimit;
-    } else {
-      data.gasPrice = 15000000000;
-    }
-    return data;
-  },
-
-  estimateGasForSwap: async function (sourceChainId: any, from: any) {
-    let data: any = {};
-    if (sourceChainId == 137 || sourceChainId == 250) {
-      let maxFeePerGas = MAX_FEE_PER_GAS;
-      let maxPriorityFeePerGas = MAX_PRIORITY_FEE_PER_GAS;
-      let gasLimit = GAS_LIMIT;
-
-      let item = await db.GasFees.findOne({ type: "polygon" });
-      if (item) {
-        maxFeePerGas = item.maxFeePerGas;
-        maxPriorityFeePerGas = item.maxPriorityFeePerGas;
-        gasLimit = item.gasLimit;
-      }
-
-      data.maxFeePerGas = Web3.utils.toHex(
-        Web3.utils.toWei(maxFeePerGas, "gwei")
-      );
-      data.maxPriorityFeePerGas = Web3.utils.toHex(
-        Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
-      );
-      data.gas = { gasLimit: gasLimit };
-    } else {
-      data.gas = {};
-    }
-    return data;
-  },
-
-  //main function to bridge and swap tokens
   withdraw: async function (
     sourceTokenAddress: any,
     targetTokenAddress: any,
@@ -233,14 +97,13 @@ module.exports = {
     targetChainId: any,
     inputAmount: any,
     destinationWalletAddress: any,
-    salt: any,
+    swapTransactionHash: any,
     body: any
   ) {
-    console.log(1);
-    const gas = await this.estimateGasForWithdraw(
-      targetChainId,
-      destinationWalletAddress
-    );
+    let isValidLiquidityAvailable = true;
+    let transactionHash = "";
+    let withdrawResponse;
+    let destinationAmount;
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
     ).multiswapNetworkFIBERInformation;
@@ -248,113 +111,48 @@ module.exports = {
       targetChainId
     ).multiswapNetworkFIBERInformation;
 
-    let receipt;
-    let transactionHash = "";
-    let destinationAmount;
-    let sourceBridgeAmount: any;
-    let swapResult;
-
-    // calculate amount
-    if (!sourceNetwork.isNonEVM) {
-      // source token contract (required to approve function)
-      const sourceTokenContract = new ethers.Contract(
-        sourceTokenAddress,
-        tokenAbi.abi,
-        sourceNetwork.provider
+    if (!targetNetwork.isNonEVM) {
+      isValidLiquidityAvailable = await isLiquidityAvailableForEVM(
+        targetNetwork.foundryTokenAddress,
+        targetNetwork.fundManager,
+        targetNetwork.provider,
+        body.destinationAmountIn
       );
-      const sourceFoundryTokenContract = new ethers.Contract(
-        sourceNetwork.foundryTokenAddress,
-        tokenAbi.abi,
-        sourceNetwork.provider
+    } else {
+      isValidLiquidityAvailable = await isLiquidityAvailableForCudos(
+        targetNetwork.foundryTokenAddress,
+        targetNetwork.fundManager,
+        targetNetwork.rpcUrl,
+        (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
+        body.destinationAmountIn
       );
-      const sourceTokenDecimal = await sourceTokenContract.decimals();
-      const sourceFoundryTokenDecimal =
-        await sourceFoundryTokenContract.decimals();
-      const amount = (
-        inputAmount *
-        10 ** Number(sourceTokenDecimal)
-      ).toString();
-      // is source token foundy asset
-      const isFoundryAsset = await this.sourceFACCheck(
-        sourceNetwork,
-        sourceTokenAddress
-      );
-      //is source token refinery asset
-      const isRefineryAsset = await this.isSourceRefineryAsset(
-        sourceNetwork,
-        sourceTokenAddress,
-        amount
-      );
-      if (isFoundryAsset) {
-        console.log("SN-1: Source Token is Foundry Asset");
-        console.log("SN-2: Add Foundry Asset in Source Network FundManager");
-        // approve to fiber router to transfer tokens to the fund manager contract
-        sourceBridgeAmount = inputAmount;
-        // receipt = await swapResult.wait();
-      } else if (isRefineryAsset) {
-        console.log("SN-1: Source Token is Refinery Asset");
-        console.log("SN-2: Swap Refinery Asset to Foundry Asset ...");
-        //swap refinery token to the foundry token
-        let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-        let amounts;
-        try {
-          amounts = await sourceNetwork.dexContract.getAmountsOut(
-            String(amount),
-            path
-          );
-        } catch (error) {
-          throw "ALERT: DEX doesn't have liquidity for this pair";
-        }
-        const amountsOut = amounts[1];
-        sourceBridgeAmount = (
-          amountsOut /
-          10 ** Number(sourceFoundryTokenDecimal)
-        ).toString();
-      } else {
-        console.log("SN-1: Source Token is Ionic Asset");
-        console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
-        //swap refinery token to the foundry token
-        let path = [
-          sourceTokenAddress,
-          sourceNetwork.weth,
-          sourceNetwork.foundryTokenAddress,
-        ];
-        let amounts;
-        try {
-          amounts = await sourceNetwork.dexContract.getAmountsOut(
-            String(amount),
-            path
-          );
-        } catch (error) {
-          throw "ALERT: DEX doesn't have liquidity for this pair";
-        }
-        const amountsOut = amounts[amounts.length - 1];
-        sourceBridgeAmount = (
-          amountsOut /
-          10 ** Number(sourceFoundryTokenDecimal)
-        ).toString();
-        //wait until the transaction be completed
-        receipt = { status: 1 };
-      }
-    } else if (sourceNetwork.isNonEVM) {
-      const recentCudosPriceInDollars =
-        await cudosPriceAxiosHelper.getCudosPrice();
-      console.log("recentCudosPriceInDollars", recentCudosPriceInDollars);
-      console.log("inputAmount", inputAmount);
-      sourceBridgeAmount = (await inputAmount) * recentCudosPriceInDollars;
-
-      console.log("sourceBridgeAmount", sourceBridgeAmount);
     }
 
-    // withdraw
+    if (!isValidLiquidityAvailable) {
+      sendSlackNotification(
+        swapTransactionHash,
+        "Error: " + IN_SUFFICIENT_LIQUIDITY_ERROR,
+        "Not used"
+      );
+      let receipt = { code: CODE_701 };
+      withdrawResponse = createEVMResponse(receipt);
+      let data: any = {};
+      data.responseCode = withdrawResponse?.responseCode;
+      data.responseMessage = withdrawResponse?.responseMessage;
+      return data;
+    }
+
+    let targetTypeResponse = await convertIntoAssetTypesObjectForTarget(body);
+
     if (!targetNetwork.isNonEVM) {
       // ==========================================
 
       const targetSigner = signer.connect(targetNetwork.provider);
-
-      // source token contract
       const targetTokenContract = new ethers.Contract(
-        targetTokenAddress,
+        await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+          targetTokenAddress,
+          targetChainId
+        ),
         tokenAbi.abi,
         targetNetwork.provider
       );
@@ -368,304 +166,178 @@ module.exports = {
       const targetFoundryTokenDecimal =
         await targetFoundryTokenContract.decimals();
 
-      if ((receipt = 1)) {
-        console.log(
-          "SUCCESS: Assets are successfully Swapped in Source Network !"
-        );
-        console.log("Cheers! your bridge and swap was successful !!!");
+      const isTargetTokenFoundry = targetTypeResponse.isFoundryAsset;
+      const isTargetRefineryToken = targetTypeResponse.isRefineryAsset;
+      const isTargetIonicFoundry = targetTypeResponse.isIonicAsset;
+      const isTargetOneInchAsset = targetTypeResponse.isOneInch;
 
-        let amountIn: any = (
-          sourceBridgeAmount *
-          10 ** Number(targetFoundryTokenDecimal)
-        ).toString();
-        const isTargetTokenFoundry = await this.targetFACCheck(
-          targetNetwork,
+      if (isTargetTokenFoundry === true) {
+        let signatureResponse: any = getSignature(body);
+        let obj: WithdrawSigned = getWithdrawSignedObject(
           targetTokenAddress,
-          Math.floor(amountIn)
+          destinationWalletAddress,
+          String(signatureResponse.amount),
+          signatureResponse.salt,
+          body.signatureExpiry,
+          String(signatureResponse.signature)
         );
-        console.log("isTargetTokenFoundry", isTargetTokenFoundry);
-        if (isTargetTokenFoundry === true) {
-          console.log("TN-1: Target Token is Foundry Asset");
-          console.log("TN-2: Withdraw Foundry Asset...");
-          // const hash = await produecSignaturewithdrawHash(
-          //   targetNetwork.chainId,
-          //   targetNetwork.fundManager,
-          //   targetTokenAddress,
-          //   destinationWalletAddress,
-          //   String(Math.floor(amountIn)),
-          //   salt
-          // );
-          // const sigP2 = ecsign(
-          //   Buffer.from(hash.replace("0x", ""), "hex"),
-          //   Buffer.from((global as any).environment.SIGNER.replace("0x", ""), "hex")
-          // );
-          // let sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
-          //if target token is foundry asset
-          let localSignatureData = (
-            global as any
-          ).signatureHelper.createLocalSignatureDataObject(
-            targetNetwork.chainId,
-            targetNetwork.fundManager,
-            targetTokenAddress,
+        const swapResult = await doFoundaryWithdraw(
+          obj,
+          targetNetwork,
+          targetSigner,
+          targetChainId,
+          swapTransactionHash,
+          body?.gasLimit
+        );
+        const receipt = await this.callEVMWithdrawAndGetReceipt(swapResult);
+        destinationAmount = (
+          signatureResponse.amount /
+          10 ** Number(targetTokenDecimal)
+        ).toString();
+        withdrawResponse = createEVMResponse(receipt);
+        transactionHash = withdrawResponse?.transactionHash;
+      } else {
+        // if (isTargetRefineryToken == true) {
+        // let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
+        // let signatureResponse: any = getSignature(body);
+        // let response = await getAmountOut(
+        //   targetNetwork,
+        //   path2,
+        //   String(signatureResponse.amount)
+        // );
+        // if (response?.responseMessage) {
+        //   throw response?.responseMessage;
+        // }
+        // const amountsOut2 = response?.amounts[1];
+        // const swapResult2 = await targetNetwork.fiberRouterContract
+        //   .connect(targetSigner)
+        //   .withdrawSignedAndSwap(
+        //     destinationWalletAddress,
+        //     targetNetwork.router,
+        //     String(signatureResponse.amount),
+        //     String(amountsOut2),
+        //     path2,
+        //     this.getDeadLine().toString(),
+        //     signatureResponse.salt,
+        //     String(signatureResponse.signature),
+        //     gas
+        //   );
+        // const receipt2 = await swapResult2.wait();
+        // if (receipt2.status == 1) {
+        //   if (swapResult2 && swapResult2.hash) {
+        //     destinationAmount = (
+        //       amountsOut2 /
+        //       10 ** Number(targetTokenDecimal)
+        //     ).toString();
+        //     withdrawResponse = createEVMResponse(receipt2);
+        //     transactionHash = withdrawResponse?.transactionHash;
+        //   }
+        // }
+        // } else if (isTargetIonicFoundry == true) {
+        // let path2 = [
+        //   targetNetwork.foundryTokenAddress,
+        //   targetNetwork.weth,
+        //   targetTokenAddress,
+        // ];
+        // let signatureResponse = getSignature(body);
+        // let response = await getAmountOut(
+        //   targetNetwork,
+        //   path2,
+        //   String(signatureResponse.amount)
+        // );
+        // if (response?.responseMessage) {
+        //   throw response?.responseMessage;
+        // }
+        // const amountsOut2 = response?.amounts[response?.amounts.length - 1];
+        // const swapResult3 = await targetNetwork.fiberRouterContract
+        //   .connect(targetSigner)
+        //   .withdrawSignedAndSwap(
+        //     destinationWalletAddress,
+        //     targetNetwork.router,
+        //     String(signatureResponse.amount),
+        //     String(amountsOut2),
+        //     path2,
+        //     this.getDeadLine().toString(), //deadline
+        //     signatureResponse.salt,
+        //     String(signatureResponse.signature),
+        //     gas
+        //   );
+        // const receipt3 = await swapResult3.wait();
+        // if (receipt3.status == 1) {
+        //   if (swapResult3 && swapResult3.hash) {
+        //     destinationAmount = (
+        //       amountsOut2 /
+        //       10 ** Number(targetTokenDecimal)
+        //     ).toString();
+        //     withdrawResponse = createEVMResponse(receipt3);
+        //     transactionHash = withdrawResponse?.transactionHash;
+        //   }
+        // }
+        // } else {
+        // 1Inch implementation
+        let signatureResponse: any = getSignature(body);
+        let obj: WithdrawSignedAndSwapOneInch =
+          getWithdrawSignedAndSwapOneInchObject(
             destinationWalletAddress,
-            String(Math.floor(amountIn)),
-            salt
-          );
-          let signatureResponse = await (
-            global as any
-          ).signatureHelper.getSignature(
-            body,
-            (global as any).utils.assetType.FOUNDARY,
-            localSignatureData
-          );
-          const swapResult = await targetNetwork.fiberRouterContract
-            .connect(targetSigner)
-            .withdrawSigned(
-              targetTokenAddress, //token address on network 2
-              destinationWalletAddress, //reciver
-              String(signatureResponse.amount), //targetToken amount
-              signatureResponse.salt,
-              String(signatureResponse.signature),
-              gas
-            );
-          const receipt = await swapResult.wait();
-          if (receipt.status == 1) {
-            console.log(
-              "SUCCESS: Foundry Assets are Successfully Withdrawn on Source Network !"
-            );
-            console.log("Cheers! your bridge and swap was successful !!!");
-            if (swapResult && swapResult.hash) {
-              destinationAmount = sourceBridgeAmount;
-              transactionHash = swapResult.hash;
-              console.log("Transaction hash is: swapResult", swapResult.hash);
-            }
-          }
-        } else {
-          let amountIn: any = (
-            sourceBridgeAmount *
-            10 ** Number(targetFoundryTokenDecimal)
-          ).toString();
-          const isTargetRefineryToken = await this.isTargetRefineryAsset(
-            targetNetwork,
+            body?.destinationAmountIn,
+            body?.destinationAmountOut,
+            targetNetwork?.foundryTokenAddress,
             targetTokenAddress,
-            Math.floor(amountIn)
+            body.destinationOneInchData,
+            signatureResponse.salt,
+            body.signatureExpiry,
+            String(signatureResponse.signature)
           );
-          console.log("isTargetRefineryToken", isTargetRefineryToken);
-          if (isTargetRefineryToken == true) {
-            console.log("TN-1: Target token is Refinery Asset");
-
-            console.log(
-              "TN-2: Withdraw and Swap Foundry Asset to Target Token ...."
-            );
-            let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
-            // const hash = await produecSignaturewithdrawHash(
-            //   targetNetwork.chainId,
-            //   targetNetwork.fundManager,
-            //   path2[0],
-            //   targetNetwork.fiberRouter,
-            //   String(Math.floor(amountIn)),
-            //   salt
-            // );
-            // const sigP2 = ecsign(
-            //   Buffer.from(hash.replace("0x", ""), "hex"),
-            //   Buffer.from((global as any).environment.SIGNER.replace("0x", ""), "hex")
-            // );
-            // const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
-            let localSignatureData = (
-              global as any
-            ).signatureHelper.createLocalSignatureDataObject(
-              targetNetwork.chainId,
-              targetNetwork.fundManager,
-              path2[0],
-              targetNetwork.fiberRouter,
-              String(Math.floor(amountIn)),
-              salt
-            );
-            let signatureResponse = await (
-              global as any
-            ).signatureHelper.getSignature(
-              body,
-              (global as any).utils.assetType.REFINERY,
-              localSignatureData
-            );
-            let amounts2;
-            try {
-              amounts2 = await targetNetwork.dexContract.getAmountsOut(
-                String(signatureResponse.amount),
-                path2
-              );
-            } catch (error) {
-              throw "ALERT: DEX doesn't have liquidity for this pair";
-            }
-            const amountsOut2 = amounts2[1];
-            console.log("amountsOut2", amountsOut2);
-            const swapResult2 = await targetNetwork.fiberRouterContract
-              .connect(targetSigner)
-              .withdrawSignedAndSwap(
-                destinationWalletAddress,
-                targetNetwork.router,
-                String(signatureResponse.amount),
-                String(amountsOut2),
-                path2,
-                this.getDeadLine().toString(),
-                signatureResponse.salt,
-                String(signatureResponse.signature),
-                gas
-              );
-            const receipt2 = await swapResult2.wait();
-            if (receipt2.status == 1) {
-              console.log(
-                "SUCCESS: Foundry Assets are Successfully swapped to Target Token !"
-              );
-              console.log("Cheers! your bridge and swap was successful !!!");
-              if (swapResult2 && swapResult2.hash) {
-                destinationAmount = (
-                  amountsOut2 /
-                  10 ** Number(targetTokenDecimal)
-                ).toString();
-                transactionHash = swapResult2.hash;
-                console.log(
-                  "Transaction hash is:swapResult2 ",
-                  swapResult2.hash
-                );
-              }
-            }
-          } else {
-            console.log("TN-1: Target Token is Ionic Asset");
-
-            console.log(
-              "TN-2: Withdraw and Swap Foundry Token to Target Token ...."
-            );
-
-            let amountIn = (
-              sourceBridgeAmount *
-              10 ** Number(targetFoundryTokenDecimal)
-            ).toString();
-            let path2 = [
-              targetNetwork.foundryTokenAddress,
-              targetNetwork.weth,
-              targetTokenAddress,
-            ];
-            // const hash = await produecSignaturewithdrawHash(
-            //   targetNetwork.chainId,
-            //   targetNetwork.fundManager,
-            //   path2[0],
-            //   targetNetwork.fiberRouter,
-            //   amountIn,
-            //   salt
-            // );
-            // const sigP2 = ecsign(
-            //   Buffer.from(hash.replace("0x", ""), "hex"),
-            //   Buffer.from((global as any).environment.SIGNER.replace("0x", ""), "hex")
-            // );
-            // const sig2 = fixSig(toRpcSig(sigP2.v, sigP2.r, sigP2.s));
-            let localSignatureData = (
-              global as any
-            ).signatureHelper.createLocalSignatureDataObject(
-              targetNetwork.chainId,
-              targetNetwork.fundManager,
-              path2[0],
-              targetNetwork.fiberRouter,
-              amountIn,
-              salt
-            );
-            let signatureResponse = await (
-              global as any
-            ).signatureHelper.getSignature(
-              body,
-              (global as any).utils.assetType.IONIC,
-              localSignatureData
-            );
-            let amounts2;
-            try {
-              amounts2 = await targetNetwork.dexContract.getAmountsOut(
-                String(signatureResponse.amount),
-                path2
-              );
-            } catch (error) {
-              throw "ALERT: DEX doesn't have liquidity for this pair";
-            }
-            const amountsOut2 = amounts2[amounts2.length - 1];
-            console.log("amountsOut2", amountsOut2);
-            const swapResult3 = await targetNetwork.fiberRouterContract
-              .connect(targetSigner)
-              .withdrawSignedAndSwap(
-                destinationWalletAddress,
-                targetNetwork.router,
-                String(signatureResponse.amount),
-                String(amountsOut2),
-                path2,
-                this.getDeadLine().toString(), //deadline
-                signatureResponse.salt,
-                String(signatureResponse.signature),
-                gas
-              );
-            const receipt3 = await swapResult3.wait();
-            if (receipt3.status == 1) {
-              console.log(
-                "TN-3: Successfully Swapped Foundry Token to Target Token"
-              );
-              console.log("Cheers! your bridge and swap was successful !!!");
-              if (swapResult3 && swapResult3.hash) {
-                destinationAmount = (
-                  amountsOut2 /
-                  10 ** Number(targetTokenDecimal)
-                ).toString();
-                transactionHash = swapResult3.hash;
-                console.log("Transaction hash is: ", swapResult3.hash);
-              }
-            }
-          }
-        }
+        const swapResult = await doOneInchWithdraw(
+          obj,
+          targetNetwork,
+          targetSigner,
+          targetChainId,
+          swapTransactionHash,
+          body?.gasLimit
+        );
+        const receipt = await swapResult?.wait();
+        let destinationAmountOut = getDestinationAmountFromLogs(
+          receipt,
+          targetNetwork?.rpcUrl,
+          body?.destinationAmountOut,
+          true
+        );
+        destinationAmount = (global as any).commonFunctions.decimalsIntoNumber(
+          destinationAmountOut,
+          targetTokenDecimal
+        );
+        withdrawResponse = createEVMResponse(receipt);
+        transactionHash = withdrawResponse?.transactionHash;
       }
-    } else if (targetNetwork.isNonEVM) {
-      const recentCudosPriceInDollars =
-        await cudosPriceAxiosHelper.getCudosPrice();
-      console.log("amount 1", recentCudosPriceInDollars);
-      sourceBridgeAmount =
-        (await sourceBridgeAmount) / recentCudosPriceInDollars;
-      destinationAmount = sourceBridgeAmount;
-      console.log("sourceBridgeAmount2", sourceBridgeAmount);
-      sourceBridgeAmount = (
-        sourceBridgeAmount *
-        10 ** Number(targetNetwork.decimals)
-      ).toString();
-      console.log("sourceBridgeAmount final", sourceBridgeAmount);
-      let localSignatureData = (
-        global as any
-      ).signatureHelper.createLocalSignatureDataObject(
-        targetNetwork.chainId,
-        targetNetwork.fundManager,
-        "",
-        targetNetwork.fiberRouter,
-        sourceBridgeAmount,
-        salt
-      );
-      let signatureResponse = await (
-        global as any
-      ).signatureHelper.getSignature(
-        body,
-        (global as any).utils.assetType.IONIC,
-        localSignatureData
-      );
-      const swapResult = await cudosWithdraw(
-        targetTokenAddress,
-        String(signatureResponse.amount),
-        destinationWalletAddress,
-        targetNetwork.fundManager,
-        targetNetwork.fiberRouter,
-        targetNetwork.rpcUrl,
-        (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
-        (global as any).environment.CUDOS_GAS_PRICE,
-        signatureResponse.salt,
-        String(signatureResponse.signature)
-      );
-      console.log("swapResult.transactionHash", swapResult.transactionHash);
-      transactionHash = await swapResult.transactionHash;
     }
+    // else if (targetNetwork.isNonEVM) {
+    // let signatureResponse: any = getSignature(body);
+    // const swapResult = await cudosWithdraw(
+    //   targetTokenAddress,
+    //   String(signatureResponse.amount),
+    //   destinationWalletAddress,
+    //   targetNetwork.fundManager,
+    //   targetNetwork.fiberRouter,
+    //   targetNetwork.rpcUrl,
+    //   (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
+    //   (global as any).environment.CUDOS_GAS_PRICE,
+    //   signatureResponse.salt,
+    //   String(signatureResponse.signature)
+    // );
+    // destinationAmount = (
+    //   signatureResponse.amount /
+    //   10 ** Number(18)
+    // ).toString();
+    // withdrawResponse = createCudosResponse(swapResult);
+    // transactionHash = withdrawResponse?.transactionHash;
+    // }
+
     let data: any = {};
-    data.txHash = transactionHash;
+    data.txHash = withdrawResponse?.transactionHash;
     data.destinationAmount = String(destinationAmount);
+    data.responseCode = withdrawResponse?.responseCode;
+    data.responseMessage = withdrawResponse?.responseMessage;
     return data;
   },
 
@@ -676,7 +348,8 @@ module.exports = {
     sourceChainId: any,
     targetChainId: any,
     inputAmount: any,
-    destinationWalletAddress: any
+    destinationWalletAddress: any,
+    query: any
   ) {
     try {
       const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
@@ -685,6 +358,7 @@ module.exports = {
       const targetNetwork = (global as any).commonFunctions.getNetworkByChainId(
         targetChainId
       ).multiswapNetworkFIBERInformation;
+
       if (sourceNetwork.isNonEVM) {
         throw "CUDOS Swap: Please Perform Swap From Frontend";
       }
@@ -693,195 +367,216 @@ module.exports = {
         sourceNetwork.fiberRouter
       );
 
-      //signers for both side networks
-      const sourceSigner = signer.connect(sourceNetwork.provider);
       // source token contract (required to approve function)
       const sourceTokenContract = new ethers.Contract(
-        sourceTokenAddress,
+        await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+          sourceTokenAddress,
+          sourceChainId
+        ),
         tokenAbi.abi,
         sourceNetwork.provider
       );
 
       const sourceTokenDecimal = await sourceTokenContract.decimals();
-      const amount = (
-        inputAmount *
-        10 ** Number(sourceTokenDecimal)
-      ).toString();
-      console.log("INIT: Swap Initiated for this Amount: ", inputAmount);
-      // is source token foundy asset
-      const isFoundryAsset = await this.sourceFACCheck(
-        sourceNetwork,
-        sourceTokenAddress
+      let amount = (global as any).commonFunctions.numberIntoDecimals(
+        inputAmount,
+        sourceTokenDecimal
       );
-      //is source token refinery asset
-      const isRefineryAsset = await this.isSourceRefineryAsset(
-        sourceNetwork,
-        sourceTokenAddress,
-        amount
+      let sourceTypeResponse = await convertIntoAssetTypesObjectForSource(
+        query
       );
+      const isFoundryAsset = sourceTypeResponse.isFoundryAsset;
+      const isRefineryAsset = sourceTypeResponse.isRefineryAsset;
+      const isIonicAsset = sourceTypeResponse.isIonicAsset;
+      const isOneIncheAsset = sourceTypeResponse.isOneInch;
 
       let sourceBridgeAmount;
       let swapResult;
       if (isFoundryAsset) {
         if (!targetNetwork.isNonEVM) {
-          console.log("SN-1: Source Token is Foundry Asset");
-          console.log("SN-2: Add Foundry Asset in Source Network FundManager");
-          // approve to fiber router to transfer tokens to the fund manager contract
-          const targetFoundryTokenAddress =
-            await sourceNetwork.fundManagerContract.allowedTargets(
-              sourceTokenAddress,
-              targetChainId
-            );
-          // fiber router add foundry asset to fund manager
           swapResult = fiberRouter.methods.swap(
             sourceTokenAddress,
             amount,
             targetChainId,
-            targetFoundryTokenAddress,
-            destinationWalletAddress
+            await (global as any).commonFunctions.getOneInchTokenAddress(
+              targetTokenAddress
+            ),
+            destinationWalletAddress,
+            getWithdrawalDataHashForSwap(
+              query?.sourceOneInchData,
+              query?.destinationOneInchData,
+              query?.destinationAmountIn,
+              query?.destinationAmountOut,
+              query?.sourceAssetType,
+              query?.destinationAssetType
+            )
           );
-          //wait until the transaction be completed
           sourceBridgeAmount = amount;
         } else if (targetNetwork.isNonEVM) {
-          console.log("SN-1: Non Evm Source Token is Foundry Asset");
-          console.log(
-            "SN-2: Non Evm Add Foundry Asset in Source Network FundManager"
-          );
-          // approve to fiber router to transfer tokens to the fund manager contract
-          const targetFoundryTokenAddress =
-            await sourceNetwork.fundManagerContract.nonEvmAllowedTargets(
-              sourceTokenAddress,
-              targetChainId
-            );
-          // fiber router add foundry asset to fund manager
-          swapResult = fiberRouter.methods.nonEvmSwap(
-            sourceTokenAddress,
-            amount,
-            targetChainId,
-            targetFoundryTokenAddress,
-            destinationWalletAddress
-          );
-          //wait until the transaction be completed
-          sourceBridgeAmount = amount;
+          // // approve to fiber router to transfer tokens to the fund manager contract
+          // const targetFoundryTokenAddress =
+          //   await sourceNetwork.fundManagerContract.nonEvmAllowedTargets(
+          //     sourceTokenAddress,
+          //     targetChainId
+          //   );
+          // // fiber router add foundry asset to fund manager
+          // swapResult = fiberRouter.methods.nonEvmSwap(
+          //   sourceTokenAddress,
+          //   amount,
+          //   targetChainId,
+          //   targetFoundryTokenAddress,
+          //   destinationWalletAddress,
+          //   query.destinationAmountIn
+          // );
+          // //wait until the transaction be completed
+          // sourceBridgeAmount = amount;
         }
       } else if (isRefineryAsset) {
         if (!targetNetwork.isNonEVM) {
-          console.log("SN-1: Source Token is Refinery Asset");
-          console.log("SN-2: Swap Refinery Asset to Foundry Asset ...");
-          //swap refinery token to the foundry token
-          let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-          let amounts;
-          try {
-            amounts = await sourceNetwork.dexContract.getAmountsOut(
-              String(amount),
-              path
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
-          }
-          const amountsOut = amounts[1];
-          sourceBridgeAmount = amountsOut;
-          swapResult = fiberRouter.methods.swapAndCross(
-            sourceNetwork.dexContract.address,
-            amount,
-            amountsOut,
-            path,
-            this.getDeadLine().toString(), // deadline
-            targetChainId,
-            targetNetwork.foundryTokenAddress,
-            destinationWalletAddress
-          );
+          // //swap refinery token to the foundry token
+          // let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
+          // let response = await getAmountOut(
+          //   sourceNetwork,
+          //   path,
+          //   String(amount)
+          // );
+          // if (response?.responseMessage) {
+          //   throw response?.responseMessage;
+          // }
+          // const amountsOut = response?.amounts[1];
+          // sourceBridgeAmount = amountsOut;
+          // swapResult = fiberRouter.methods.swapAndCross(
+          //   sourceNetwork.dexContract.address,
+          //   amount,
+          //   amountsOut,
+          //   path,
+          //   this.getDeadLine().toString(), // deadline
+          //   targetChainId,
+          //   targetNetwork.foundryTokenAddress,
+          //   destinationWalletAddress,
+          //   query.destinationAmountIn
+          // );
         } else if (targetNetwork.isNonEVM) {
-          console.log("SN-1: Non Evm Source Token is Refinery Asset");
-          console.log("SN-2: Non Evm Swap Refinery Asset to Foundry Asset ...");
-          //swap refinery token to the foundry token
-          // const amount = await (inputAmount * 10 ** Number(targetNetwork.decimals)).toString();
-          let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-          let amounts;
-          try {
-            amounts = await sourceNetwork.dexContract.getAmountsOut(
-              String(amount),
-              path
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
-          }
-          const amountsOut = amounts[1];
-          sourceBridgeAmount = amountsOut;
-          swapResult = fiberRouter.methods.nonEvmSwapAndCross(
-            sourceNetwork.dexContract.address,
-            amount,
-            amountsOut,
-            path,
-            this.getDeadLine().toString(), // deadline
-            targetChainId,
-            targetNetwork.foundryTokenAddress,
-            destinationWalletAddress
-          );
+          // //swap refinery token to the foundry token
+          // // const amount = await (inputAmount * 10 ** Number(targetNetwork.decimals)).toString();
+          // let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
+          // let response = await getAmountOut(
+          //   sourceNetwork,
+          //   path,
+          //   String(amount)
+          // );
+          // if (response?.responseMessage) {
+          //   throw response?.responseMessage;
+          // }
+          // const amountsOut = response?.amounts[1];
+          // sourceBridgeAmount = amountsOut;
+          // swapResult = fiberRouter.methods.nonEvmSwapAndCross(
+          //   sourceNetwork.dexContract.address,
+          //   amount,
+          //   amountsOut,
+          //   path,
+          //   this.getDeadLine().toString(), // deadline
+          //   targetChainId,
+          //   targetNetwork.foundryTokenAddress,
+          //   destinationWalletAddress,
+          //   query.destinationAmountIn
+          // );
+        }
+      } else if (isIonicAsset) {
+        if (!targetNetwork.isNonEVM) {
+          // //swap refinery token to the foundry token
+          // let path = [
+          //   sourceTokenAddress,
+          //   sourceNetwork.weth,
+          //   sourceNetwork.foundryTokenAddress,
+          // ];
+          // let response = await getAmountOut(
+          //   sourceNetwork,
+          //   path,
+          //   String(amount)
+          // );
+          // if (response?.responseMessage) {
+          //   throw response?.responseMessage;
+          // }
+          // const amountsOut = response?.amounts[response?.amounts.length - 1];
+          // sourceBridgeAmount = amountsOut;
+          // swapResult = fiberRouter.methods.swapAndCross(
+          //   sourceNetwork.dexContract.address,
+          //   amount,
+          //   amountsOut,
+          //   path,
+          //   this.getDeadLine().toString(), // deadline
+          //   targetChainId,
+          //   targetNetwork.foundryTokenAddress,
+          //   destinationWalletAddress,
+          //   query.destinationAmountIn
+          // );
+        } else if (targetNetwork.isNonEVM) {
+          // //swap refinery token to the foundry token
+          // let path = [
+          //   sourceTokenAddress,
+          //   sourceNetwork.weth,
+          //   sourceNetwork.foundryTokenAddress,
+          // ];
+          // let response = await getAmountOut(
+          //   sourceNetwork,
+          //   path,
+          //   String(amount)
+          // );
+          // if (response?.responseMessage) {
+          //   throw response?.responseMessage;
+          // }
+          // const amountsOut = response?.amounts[response?.amounts.length - 1];
+          // sourceBridgeAmount = amountsOut;
+          // swapResult = fiberRouter.methods.nonEvmSwapAndCross(
+          //   sourceNetwork.dexContract.address,
+          //   amount,
+          //   amountsOut,
+          //   path,
+          //   this.getDeadLine().toString(), // deadline
+          //   targetChainId,
+          //   targetNetwork.foundryTokenAddress,
+          //   destinationWalletAddress,
+          //   query.destinationAmountIn
+          // );
         }
       } else {
+        // 1Inch implementation
         if (!targetNetwork.isNonEVM) {
-          console.log("SN-1: Source Token is Ionic Asset");
-          console.log("SN-2: Swap Ionic Asset to Foundry Asset ...");
-          //swap refinery token to the foundry token
-          let path = [
-            sourceTokenAddress,
-            sourceNetwork.weth,
-            sourceNetwork.foundryTokenAddress,
-          ];
-          console.log("path", path);
-          let amounts;
-          try {
-            amounts = await sourceNetwork.dexContract.getAmountsOut(
-              String(amount),
-              path
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
-          }
-          const amountsOut = amounts[amounts.length - 1];
-          sourceBridgeAmount = amountsOut;
-          swapResult = fiberRouter.methods.swapAndCross(
-            sourceNetwork.dexContract.address,
-            amount,
-            amountsOut,
-            path,
-            this.getDeadLine().toString(), // deadline
-            targetChainId,
-            targetNetwork.foundryTokenAddress,
-            destinationWalletAddress
+          let withdrawalData = getWithdrawalDataHashForSwap(
+            query?.sourceOneInchData,
+            query?.destinationOneInchData,
+            query?.destinationAmountIn,
+            query?.destinationAmountOut,
+            query?.sourceAssetType,
+            query?.destinationAssetType
           );
-        } else if (targetNetwork.isNonEVM) {
-          console.log("SN-1: Non Evm Source Token is Ionic Asset");
-          console.log("SN-2: Non Evm Swap Ionic Asset to Foundry Asset ...");
-          //swap refinery token to the foundry token
-          let path = [
-            sourceTokenAddress,
-            sourceNetwork.weth,
-            sourceNetwork.foundryTokenAddress,
-          ];
-          console.log("path", path);
-          let amounts;
-          try {
-            amounts = await sourceNetwork.dexContract.getAmountsOut(
-              String(amount),
-              path
-            );
-          } catch (error) {
-            throw "ALERT: DEX doesn't have liquidity for this pair";
-          }
-          const amountsOut = amounts[amounts.length - 1];
-          sourceBridgeAmount = amountsOut;
-          swapResult = fiberRouter.methods.nonEvmSwapAndCross(
-            sourceNetwork.dexContract.address,
-            amount,
-            amountsOut,
-            path,
-            this.getDeadLine().toString(), // deadline
-            targetChainId,
-            targetNetwork.foundryTokenAddress,
-            destinationWalletAddress
-          );
+          let obj: SwapOneInch = {
+            amountIn: amount,
+            amountOut: query?.sourceBridgeAmount,
+            targetChainId: targetChainId,
+            targetTokenAddress: targetTokenAddress,
+            destinationWalletAddress: destinationWalletAddress,
+            sourceOneInchData: query?.sourceOneInchData,
+            sourceTokenAddress: sourceTokenAddress,
+            foundryTokenAddress: sourceNetwork.foundryTokenAddress,
+            withdrawalData: withdrawalData,
+            gasPrice: query?.gasPrice,
+          };
+          swapResult = await doOneInchSwap(obj, fiberRouter);
+        } else {
+          // swapResult = fiberRouter.methods.nonEvmSwapAndCrossOneInch(
+          //   sourceNetwork?.router,
+          //   amount,
+          //   query?.sourceBridgeAmount,
+          //   targetChainId,
+          //   targetNetwork.foundryTokenAddress,
+          //   destinationWalletAddress,
+          //   query?.sourceOneInchData,
+          //   sourceTokenAddress,
+          //   sourceNetwork.foundryTokenAddress,
+          //   query?.destinationAmountIn
+          // );
         }
       }
 
@@ -894,7 +589,7 @@ module.exports = {
         sourceWalletAddress
       );
 
-      return {
+      let returnData = {
         currency: sourceNetwork.shortName + ":" + sourceTokenAddress,
         from: sourceWalletAddress,
         amount: "0",
@@ -902,13 +597,27 @@ module.exports = {
         data: data,
         nonce,
         description: `Swap `,
-        ...(await this.estimateGasForSwap(
-          sourceChainId,
-          destinationWalletAddress
-        )),
+        ...(await getGasForSwap(sourceChainId, destinationWalletAddress)),
       };
+      let value = getValueForSwap(
+        amount,
+        query?.gasPrice,
+        await (global as any).commonFunctions.isNativeToken(sourceTokenAddress)
+      );
+      returnData = { ...returnData, value: value };
+      return returnData;
     } catch (error) {
       throw { error };
     }
+  },
+
+  callEVMWithdrawAndGetReceipt: async function (data: any) {
+    let receipt: any = { status: 0, responseMessage: "" };
+    try {
+      receipt = await data?.wait();
+    } catch (e) {
+      receipt.responseMessage = e;
+    }
+    return receipt;
   },
 };

@@ -1,16 +1,21 @@
 "use strict";
 
 var mongoose = require("mongoose");
-var collectionName = 'gasFees';
+var collectionName = "gasFees";
 
 var schema = mongoose.Schema(
   {
-    maxFeePerGas: { type: String, default: '' },
-    maxPriorityFeePerGas: { type: String, default: '' },
-    gasLimit: { type: String, default: '' },
-    type: { type: String, default: '' },
+    maxFeePerGas: { type: String, default: "" },
+    maxPriorityFeePerGas: { type: String, default: "" },
+    gasLimit: { type: String, default: "" },
+    gasBuffer: { type: Number, default: 0 },
+    isAllowedDynamicGasLimit: { type: Boolean, default: false },
+    chainId: { type: String, default: "" },
+    dynamicValues: {
+      maxFeePerGas: { type: String, default: "" },
+      maxPriorityFeePerGas: { type: String, default: "" },
+    },
     isActive: { type: Boolean, default: true },
-
     createdAt: { type: Date, default: new Date() },
     updatedAt: { type: Date, default: new Date() },
   },

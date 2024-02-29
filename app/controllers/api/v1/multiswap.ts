@@ -3,6 +3,7 @@ module.exports = function (router: any) {
     "/token/categorized/quote/info",
     asyncMiddleware(async (req: any, res: any) => {
       if (
+        !req.query.sourceWalletAddress ||
         !req.query.sourceTokenContractAddress ||
         !req.query.sourceNetworkChainId ||
         !req.query.sourceAmount ||
@@ -10,8 +11,16 @@ module.exports = function (router: any) {
         !req.query.destinationNetworkChainId
       ) {
         return res.http401(
-          "sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing"
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing"
         );
+      }
+
+      if (req.query.destinationWalletAddress) {
+        req.query.destinationWalletAddress =
+          req.query.destinationWalletAddress.toLowerCase();
+      } else {
+        req.query.destinationWalletAddress =
+          req.query.sourceWalletAddress.toLowerCase();
       }
 
       multiSwapHelper.validatonForSameSourceAndDestination(req);
@@ -31,10 +40,13 @@ module.exports = function (router: any) {
         !req.query.sourceNetworkChainId ||
         !req.query.sourceAmount ||
         !req.query.destinationTokenContractAddress ||
-        !req.query.destinationNetworkChainId
+        !req.query.destinationNetworkChainId ||
+        !req.query.sourceAssetType ||
+        !req.query.destinationAssetType ||
+        !req.query.gasPrice
       ) {
         return res.http401(
-          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing"
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType & gasPrice are missing"
         );
       }
 
@@ -56,35 +68,47 @@ module.exports = function (router: any) {
     })
   );
 
-  router.get(
-    "/withdraw/signed",
+  router.post(
+    "/withdraw/signed/:txHash",
     asyncMiddleware(async (req: any, res: any) => {
       if (
-        !req.query.sourceWalletAddress ||
-        !req.query.sourceTokenContractAddress ||
-        !req.query.sourceNetworkChainId ||
-        !req.query.sourceAmount ||
-        !req.query.destinationTokenContractAddress ||
-        !req.query.destinationNetworkChainId
+        !req.body.sourceWalletAddress ||
+        !req.body.sourceTokenContractAddress ||
+        !req.body.sourceNetworkChainId ||
+        !req.body.sourceAmount ||
+        !req.body.destinationTokenContractAddress ||
+        !req.body.destinationNetworkChainId ||
+        !req.body.salt ||
+        !req.body.hash ||
+        !req.body.signatures ||
+        !req.params.txHash
+        // ||
+        // !req.body.gasLimit
       ) {
         return res.http401(
-          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing"
+          "sourceWalletAddress & sourceTokenContractAddress &" +
+            " sourceNetworkChainId & sourceAmount & destinationTokenContractAddress &" +
+            " destinationNetworkChainId & salt & hash & signatures &" +
+            " swapTransactionHash & gasLimit are missing"
         );
       }
 
-      multiSwapHelper.validatonForSameSourceAndDestination(req);
+      if (req.body.signatures && req.body.signatures.length == 0) {
+        return res.http401("signatures can not be empty");
+      }
 
+      req.query = { ...req.query, ...req.body };
+      req.query.swapTransactionHash = req.params.txHash;
+      multiSwapHelper.validatonForSameSourceAndDestination(req);
+      console.log("body", req.query);
       if (req.query.destinationWalletAddress) {
         req.query.destinationWalletAddress =
           req.query.destinationWalletAddress.toLowerCase();
       } else {
         req.query.destinationWalletAddress = req.query.sourceWalletAddress;
       }
-      let data = await multiSwapHelper.getWithdrawSigned(req, "v1");
-      return res.http200({
-        data: data.txHash,
-        withdraw: data,
-      });
+      let data = await multiSwapHelper.getWithdrawSigned(req);
+      return res.http200(data);
     })
   );
 };
