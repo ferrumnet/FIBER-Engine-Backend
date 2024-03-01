@@ -8,7 +8,8 @@ module.exports = {
       req.query.destinationNetworkChainId,
       req.query.destinationTokenContractAddress,
       req.query.sourceAmount,
-      req.query.destinationWalletAddress
+      req.query.destinationWalletAddress,
+      req.query.gasEstimationDestinationAmount
     );
     let data: any = {};
     if (categorizedInfo) {
