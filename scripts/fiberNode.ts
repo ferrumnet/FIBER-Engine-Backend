@@ -12,6 +12,7 @@ import {
 } from "../app/lib/middlewares/helpers/liquidityHelper";
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 import { strErrorSwapInNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
+import { getSourceAmountOut } from "../app/lib/middlewares/helpers/fiberNodeHelper";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -20,7 +21,8 @@ module.exports = {
     targetChainId: any,
     targetTokenAddress: any,
     inputAmount: any,
-    destinationWalletAddress: string
+    destinationWalletAddress: string,
+    gasEstimationDestinationAmount: string
   ) {
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
@@ -30,7 +32,7 @@ module.exports = {
     ).multiswapNetworkFIBERInformation;
     let targetAssetType;
     let sourceAssetType;
-    let sourceBridgeAmount;
+    let sourceBridgeAmount: any;
     let sourceOneInchData;
     let destinationOneInchData;
     let destinationAmountOut;
@@ -40,7 +42,7 @@ module.exports = {
     let targetFoundryTokenAddress;
 
     // source
-    if (!sourceNetwork.isNonEVM) {
+    if (!sourceNetwork.isNonEVM && !gasEstimationDestinationAmount) {
       const sourceTokenContract = new ethers.Contract(
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
           sourceTokenAddress,
@@ -148,12 +150,6 @@ module.exports = {
         }
       }
     }
-    // else if (sourceNetwork.isNonEVM) {
-    // const recentCudosPriceInDollars =
-    //   await cudosPriceAxiosHelper.getCudosPrice();
-    // sourceBridgeAmount = (await inputAmount) * recentCudosPriceInDollars;
-    // sourceAssetType = "Foundry";
-    // }
 
     // destination
     if (!targetNetwork.isNonEVM) {
@@ -178,7 +174,6 @@ module.exports = {
         tokenAbi.abi,
         targetNetwork.provider
       );
-      //convert to wei
       const targetTokenDecimal = await targetTokenContract.decimals();
       const targetFoundryTokenDecimal =
         await targetFoundryTokenContract.decimals();
@@ -195,22 +190,17 @@ module.exports = {
         ),
         amountIn
       );
-
       const isTargetTokenFoundry = targetTypeResponse.isFoundryAsset;
-      const isTargetRefineryToken = targetTypeResponse.isRefineryAsset;
-      const isTargetIonicToken = targetTypeResponse.isIonicAsset;
-      const isTargetOneInchToken = targetTypeResponse.isOneInch;
-
       if (isTargetTokenFoundry) {
         targetAssetType = (global as any).utils.assetType.FOUNDARY;
-      } else if (isTargetRefineryToken) {
-        targetAssetType = (global as any).utils.assetType.REFINERY;
-      } else if (isTargetIonicToken) {
-        targetAssetType = (global as any).utils.assetType.IONIC;
       } else {
         targetAssetType = (global as any).utils.assetType.ONE_INCH;
       }
       if (isTargetTokenFoundry === true) {
+        sourceBridgeAmount = getSourceAmountOut(
+          gasEstimationDestinationAmount,
+          sourceBridgeAmount
+        );
         destinationAmountOut = sourceBridgeAmount;
         machineDestinationAmountIn = (
           sourceBridgeAmount *
@@ -218,48 +208,11 @@ module.exports = {
         ).toString();
         machineDestinationAmountIn = parseInt(machineDestinationAmountIn);
       } else {
-        // if (isTargetRefineryToken == true) {
-        //   amountIn = Math.floor(amountIn);
-        //   machineDestinationAmountIn = amountIn;
-        //   let path2 = [targetNetwork.foundryTokenAddress, targetTokenAddress];
-        //   let response = await getAmountOut(
-        //     targetNetwork,
-        //     path2,
-        //     String(Math.floor(amountIn))
-        //   );
-        //   if (response?.responseMessage) {
-        //     throw response?.responseMessage;
-        //   }
-        //   const amountsOut2 = response?.amounts[1];
-
-        //   destinationAmountOut = (
-        //     amountsOut2 /
-        //     10 ** Number(targetTokenDecimal)
-        //   ).toString();
-        // } else if (isTargetIonicToken) {
-        //   amountIn = Math.floor(amountIn);
-        //   machineDestinationAmountIn = amountIn;
-        //   let path2 = [
-        //     targetNetwork.foundryTokenAddress,
-        //     targetNetwork.weth,
-        //     targetTokenAddress,
-        //   ];
-        //   let response = await getAmountOut(
-        //     targetNetwork,
-        //     path2,
-        //     String(amountIn)
-        //   );
-        //   if (response?.responseMessage) {
-        //     throw response?.responseMessage;
-        //   }
-        //   const amountsOut2 = response?.amounts[response?.amounts.length - 1];
-
-        //   destinationAmountOut = (
-        //     amountsOut2 /
-        //     10 ** Number(targetTokenDecimal)
-        //   ).toString();
-        // } else {
-        // 1Inch implementation
+        sourceBridgeAmount = getSourceAmountOut(
+          gasEstimationDestinationAmount,
+          sourceBridgeAmount
+        );
+        console.log("sourceBridgeAmount", sourceBridgeAmount);
         let machineAmount: any = (
           sourceBridgeAmount *
           10 ** Number(targetFoundryTokenDecimal)
@@ -283,15 +236,12 @@ module.exports = {
           targetNetwork?.fiberRouter,
           destinationWalletAddress
         );
-
         if (response?.responseMessage) {
           throw response?.responseMessage;
         }
-
         if (response && response.data) {
           destinationOneInchData = response.data;
         }
-
         if (response && response.amounts) {
           machineDestinationAmountOut = response.amounts;
           machineDestinationAmountOut = await (
@@ -304,20 +254,8 @@ module.exports = {
             targetTokenDecimal
           );
         }
-        // }
       }
     }
-    // else if (targetNetwork.isNonEVM) {
-    //   const recentCudosPriceInDollars =
-    //     await cudosPriceAxiosHelper.getCudosPrice();
-    //   destinationAmountOut =
-    //     (await sourceBridgeAmount) / recentCudosPriceInDollars;
-    //   machineDestinationAmountIn = destinationAmountOut * 10 ** 18;
-    //   machineDestinationAmountIn = (
-    //     global as any
-    //   ).utils.convertFromExponentialToDecimal(machineDestinationAmountIn);
-    //   targetAssetType = "Foundry";
-    // }
 
     if (!targetNetwork.isNonEVM) {
       let isValidLiquidityAvailable = await isLiquidityAvailableForEVM(
