@@ -86,38 +86,8 @@ module.exports = {
       }
 
       if (isFoundryAsset) {
-        // approve to fiber router to transfer tokens to the fund manager contract
         sourceBridgeAmount = inputAmount;
-        // } else if (isRefineryAsset) {
-        //   let path = [sourceTokenAddress, sourceNetwork.foundryTokenAddress];
-        //   let response = await getAmountOut(sourceNetwork, path, String(amount));
-        //   if (response?.responseMessage) {
-        //     throw response?.responseMessage;
-        //   }
-        //   const amountsOut = response?.amounts[1];
-        //   sourceBridgeAmount = (
-        //     amountsOut /
-        //     10 ** Number(sourceFoundryTokenDecimal)
-        //   ).toString();
-        // } else if (isIonicAsset) {
-        //   //swap refinery token to the foundry token
-        //   let path = [
-        //     sourceTokenAddress,
-        //     sourceNetwork.weth,
-        //     sourceNetwork.foundryTokenAddress,
-        //   ];
-        //   let response = await getAmountOut(sourceNetwork, path, String(amount));
-        //   if (response?.responseMessage) {
-        //     throw response?.responseMessage;
-        //   }
-        //   const amountsOut = response?.amounts[response?.amounts.length - 1];
-        //   sourceBridgeAmount = (
-        //     amountsOut /
-        //     10 ** Number(sourceFoundryTokenDecimal)
-        //   ).toString();
-        //wait until the transaction be completed
       } else {
-        // 1Inch implementation
         let response = await OneInchSwap(
           sourceChainId,
           await (global as any).commonFunctions.getWrappedNativeTokenAddress(
@@ -212,7 +182,6 @@ module.exports = {
           gasEstimationDestinationAmount,
           sourceBridgeAmount
         );
-        console.log("sourceBridgeAmount", sourceBridgeAmount);
         let machineAmount: any = (
           sourceBridgeAmount *
           10 ** Number(targetFoundryTokenDecimal)
