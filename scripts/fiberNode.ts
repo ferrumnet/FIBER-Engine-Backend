@@ -148,7 +148,7 @@ module.exports = {
       const targetFoundryTokenDecimal =
         await targetFoundryTokenContract.decimals();
       let amountIn: any = (global as any).commonFunctions.numberIntoDecimals__(
-        sourceBridgeAmount,
+        getSourceAmountOut(gasEstimationDestinationAmount, sourceBridgeAmount),
         targetFoundryTokenDecimal
       );
       amountIn = parseInt(amountIn);
