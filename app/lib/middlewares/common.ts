@@ -238,6 +238,14 @@ module.exports = {
     return amountFormatted;
   },
 
+  numberIntoDecimals__(amount: any, decimal: any) {
+    amount = Big(amount);
+    decimal = Big(10 ** Number(decimal));
+    let amountFormatted = amount.mul(decimal).toString();
+    amountFormatted = parseInt(amountFormatted);
+    return amountFormatted;
+  },
+
   decimalsIntoNumber(amount: any, decimal: any) {
     const bigNumberValue = ethers.BigNumber.from(amount.toString());
     let formattedValue = ethers.utils.formatUnits(bigNumberValue, decimal);
