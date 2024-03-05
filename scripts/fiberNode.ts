@@ -147,10 +147,10 @@ module.exports = {
       const targetTokenDecimal = await targetTokenContract.decimals();
       const targetFoundryTokenDecimal =
         await targetFoundryTokenContract.decimals();
-      let amountIn: any = (
-        sourceBridgeAmount *
-        10 ** Number(targetFoundryTokenDecimal)
-      ).toString();
+      let amountIn: any = (global as any).commonFunctions.numberIntoDecimals__(
+        sourceBridgeAmount,
+        targetFoundryTokenDecimal
+      );
       amountIn = parseInt(amountIn);
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
@@ -173,9 +173,11 @@ module.exports = {
         );
         destinationAmountOut = sourceBridgeAmount;
         machineDestinationAmountIn = (
-          sourceBridgeAmount *
-          10 ** Number(targetFoundryTokenDecimal)
-        ).toString();
+          global as any
+        ).commonFunctions.numberIntoDecimals__(
+          sourceBridgeAmount,
+          targetFoundryTokenDecimal
+        );
         machineDestinationAmountIn = parseInt(machineDestinationAmountIn);
       } else {
         sourceBridgeAmount = getSourceAmountOut(
@@ -183,9 +185,11 @@ module.exports = {
           sourceBridgeAmount
         );
         let machineAmount: any = (
-          sourceBridgeAmount *
-          10 ** Number(targetFoundryTokenDecimal)
-        ).toString();
+          global as any
+        ).commonFunctions.numberIntoDecimals__(
+          sourceBridgeAmount,
+          targetFoundryTokenDecimal
+        );
         machineAmount = parseInt(machineAmount);
         machineDestinationAmountIn = machineAmount;
         machineAmount = (global as any).utils.convertFromExponentialToDecimal(
