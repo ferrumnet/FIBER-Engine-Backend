@@ -259,7 +259,7 @@ module.exports = {
     let slippageProportion = BigInt(100 - (await getSlippage()));
     originalValue = BigInt(originalValue);
     let valueWithSlippage = (originalValue * slippageProportion) / BigInt(100);
-    return valueWithSlippage ? valueWithSlippage.toString() : "";
+    return valueWithSlippage ? valueWithSlippage.toString() : "0";
   },
 
   async addSlippageInNumber(originalValue: any) {
