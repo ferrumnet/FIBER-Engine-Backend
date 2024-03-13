@@ -13,6 +13,11 @@ import {
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 import { strErrorSwapInNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
 import { getSourceAmountOut } from "../app/lib/middlewares/helpers/fiberNodeHelper";
+import {
+  removeSelector,
+  getSelector,
+} from "../app/lib/middlewares/helpers/oneInchDecoderHelper";
+import { isValidOneInchSelector } from "../app/lib/middlewares/helpers/configurationHelper";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -117,6 +122,12 @@ module.exports = {
         }
         if (response && response.data) {
           sourceOneInchData = response.data;
+        }
+        if (
+          sourceOneInchData &&
+          (await !isValidOneInchSelector(getSelector(sourceOneInchData)))
+        ) {
+          return strErrorSwapInNotAvailable;
         }
       }
     }
@@ -241,6 +252,12 @@ module.exports = {
       );
       if (!isValidLiquidityAvailable) {
         throw IN_SUFFICIENT_LIQUIDITY_ERROR;
+      }
+      if (
+        destinationOneInchData &&
+        (await !isValidOneInchSelector(getSelector(destinationOneInchData)))
+      ) {
+        return strErrorSwapInNotAvailable;
       }
     } else {
       let isValidLiquidityAvailable = await isLiquidityAvailableForCudos(

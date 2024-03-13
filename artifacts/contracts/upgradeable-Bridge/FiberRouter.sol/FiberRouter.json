@@ -466,6 +466,15 @@
     },
     {
       "inputs": [
+        { "internalType": "address", "name": "_weth", "type": "address" }
+      ],
+      "name": "setWETH",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
         { "internalType": "address", "name": "token", "type": "address" },
         { "internalType": "uint256", "name": "amount", "type": "uint256" },
         {
@@ -520,6 +529,11 @@
           "internalType": "bytes32",
           "name": "withdrawalData",
           "type": "bytes32"
+        },
+        {
+          "internalType": "enum FiberRouter.OneInchFunction",
+          "name": "funcSelector",
+          "type": "uint8"
         }
       ],
       "name": "swapAndCrossOneInch",
@@ -556,7 +570,12 @@
           "name": "withdrawalData",
           "type": "bytes32"
         },
-        { "internalType": "uint256", "name": "gasFee", "type": "uint256" }
+        { "internalType": "uint256", "name": "gasFee", "type": "uint256" },
+        {
+          "internalType": "enum FiberRouter.OneInchFunction",
+          "name": "funcSelector",
+          "type": "uint8"
+        }
       ],
       "name": "swapAndCrossOneInchETH",
       "outputs": [],
@@ -598,6 +617,11 @@
         },
         { "internalType": "address", "name": "targetToken", "type": "address" },
         { "internalType": "bytes", "name": "oneInchData", "type": "bytes" },
+        {
+          "internalType": "enum FiberRouter.OneInchFunction",
+          "name": "funcSelector",
+          "type": "uint8"
+        },
         { "internalType": "bytes32", "name": "salt", "type": "bytes32" },
         { "internalType": "uint256", "name": "expiry", "type": "uint256" },
         { "internalType": "bytes", "name": "multiSignature", "type": "bytes" }
