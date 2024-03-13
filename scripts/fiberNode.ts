@@ -11,7 +11,7 @@ import {
   isLiquidityAvailableForCudos,
 } from "../app/lib/middlewares/helpers/liquidityHelper";
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
-import { strErrorSwapInNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
+import { swapIsNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
 import { getSourceAmountOut } from "../app/lib/middlewares/helpers/fiberNodeHelper";
 
 module.exports = {
@@ -196,7 +196,7 @@ module.exports = {
           machineAmount
         );
         if (machineAmount <= 0) {
-          throw strErrorSwapInNotAvailable;
+          throw swapIsNotAvailable;
         }
         await this.delay(1000);
         let response = await OneInchSwap(
