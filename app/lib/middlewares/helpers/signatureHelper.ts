@@ -1,4 +1,5 @@
 import Web3 from "web3";
+import { removeSelector } from "../helpers/oneInchDecoderHelper";
 
 export interface SignatureResponse {
   hash: String;
@@ -41,7 +42,7 @@ export const getWithdrawalDataHashForSwap = (
 ): string => {
   let hash = Web3.utils.keccak256(
     sourceOneInchData +
-      destinationOneInchData +
+      removeSelector(destinationOneInchData) +
       amountIn +
       amountOut +
       sourceAssetType +

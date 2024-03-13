@@ -43,7 +43,8 @@ export const getWithdrawSignedAndSwapOneInchObject = (
   destinationOneInchData: string,
   salt: string,
   signatureExpiry: number,
-  signature: string
+  signature: string,
+  destinationOneInchSelector: string
 ): WithdrawSignedAndSwapOneInch => {
   let object: WithdrawSignedAndSwapOneInch = {
     destinationWalletAddress: destinationWalletAddress,
@@ -55,6 +56,7 @@ export const getWithdrawSignedAndSwapOneInchObject = (
     salt: salt,
     signatureExpiry: signatureExpiry,
     signature: signature,
+    oneInchSelector: destinationOneInchSelector,
   };
   return object;
 };
@@ -165,6 +167,7 @@ export const doOneInchWithdraw = async (
             obj.targetTokenAddress
           ),
           obj.destinationOneInchData,
+          obj.oneInchSelector,
           obj.salt,
           obj.signatureExpiry,
           obj.signature
@@ -185,6 +188,7 @@ export const doOneInchWithdraw = async (
           obj.targetTokenAddress
         ),
         obj.destinationOneInchData,
+        obj.oneInchSelector,
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
@@ -235,7 +239,8 @@ export const doOneInchSwap = async (
         obj.sourceOneInchData,
         obj.foundryTokenAddress,
         obj.withdrawalData,
-        obj.gasPrice
+        obj.gasPrice,
+        obj.oneInchSelector
       );
     } else {
       result = fiberRouter.methods.swapAndCrossOneInch(
@@ -249,7 +254,8 @@ export const doOneInchSwap = async (
         obj.sourceOneInchData,
         obj.sourceTokenAddress,
         obj.foundryTokenAddress,
-        obj.withdrawalData
+        obj.withdrawalData,
+        obj.oneInchSelector
       );
     }
   } catch (e) {
