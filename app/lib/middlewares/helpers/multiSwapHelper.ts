@@ -1,4 +1,5 @@
 import { getSlippage } from "../../../lib/middlewares/helpers/configurationHelper";
+import { sameNetworkSwapError } from "../../../lib/middlewares/helpers/stringHelper";
 
 module.exports = {
   getTokenCategorizedInformation: async function (req: any) {
@@ -86,7 +87,7 @@ module.exports = {
       if (
         req.query.sourceNetworkChainId == req.query.destinationNetworkChainId
       ) {
-        throw "From and to information cannot be same";
+        throw sameNetworkSwapError;
       }
     }
   },
