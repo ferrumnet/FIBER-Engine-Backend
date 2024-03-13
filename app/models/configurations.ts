@@ -15,6 +15,12 @@ var schema = mongoose.Schema(
         oneInchAddress: { type: String, default: "" },
       },
     ],
+    oneInchSelector: [
+      {
+        type: { type: String, default: "0" },
+        hash: { type: String, default: "" },
+      },
+    ],
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: new Date() },
     updatedAt: { type: Date, default: new Date() },

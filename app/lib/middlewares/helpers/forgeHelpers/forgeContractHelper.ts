@@ -71,6 +71,7 @@ export const destinationOneInchGasEstimation = async (
           obj.targetTokenAddress
         ),
         obj.destinationOneInchData,
+        obj.oneInchSelector,
         obj.salt,
         obj.signatureExpiry,
         obj.signature
@@ -121,6 +122,7 @@ export const sourceOneInchGasEstimation = async (
   obj: SwapOneInch
 ): Promise<any> => {
   try {
+    console.log("obj", obj);
     let response;
     let fiberRouter = fiberRouterContract(
       network.provider,
@@ -142,6 +144,7 @@ export const sourceOneInchGasEstimation = async (
         obj.foundryTokenAddress,
         obj.withdrawalData,
         obj.gasPrice,
+        obj.oneInchSelector,
         {
           from: obj.sourceWalletAddress,
           value: obj.value,
@@ -160,6 +163,7 @@ export const sourceOneInchGasEstimation = async (
         obj.sourceTokenAddress,
         obj.foundryTokenAddress,
         obj.withdrawalData,
+        obj.oneInchSelector,
         {
           from: obj.sourceWalletAddress,
           value: obj.value,

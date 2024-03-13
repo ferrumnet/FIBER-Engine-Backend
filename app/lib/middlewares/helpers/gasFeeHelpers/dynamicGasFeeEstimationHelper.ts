@@ -195,6 +195,7 @@ export const doDestinationOneInchGasEstimation = async (
     destinationAmountOut: req.query.destinationAmountOut,
     targetFoundryTokenAddress: targetNetwork.foundryTokenAddress,
     destinationOneInchData: req.query.destinationOneInchData,
+    oneInchSelector: req.query.destinationOneInchSelector,
   };
   return await destinationOneInchGasEstimation(contractObj, network, obj);
 };
@@ -290,6 +291,9 @@ export const doSourceOneInchGasEstimation = async (
         req.query.sourceTokenContractAddress
       )
     ),
+    oneInchSelector: req.query.sourceOneInchSelector
+      ? req.query.sourceOneInchSelector
+      : "2",
   };
   return await sourceOneInchGasEstimation(contractObj, network, obj);
 };

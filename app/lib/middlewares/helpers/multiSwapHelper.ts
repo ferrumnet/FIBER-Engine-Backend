@@ -1,5 +1,9 @@
 import { getSlippage } from "../../../lib/middlewares/helpers/configurationHelper";
-
+import {
+  removeSelector,
+  getSelector,
+} from "../../../lib/middlewares/helpers/oneInchDecoderHelper";
+import { getOneInchSelector } from "../../../lib/middlewares/helpers/configurationHelper";
 module.exports = {
   getTokenCategorizedInformation: async function (req: any) {
     let categorizedInfo = await fiberNode.categoriseSwapAssets(
@@ -32,7 +36,10 @@ module.exports = {
       sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
       sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
       sourceTokenCategorizedInfo.sourceBridgeAmount = sourceBridgeAmount;
-      sourceTokenCategorizedInfo.sourceOneInchData = sourceOneInchData;
+      sourceTokenCategorizedInfo.sourceOneInchData =
+        removeSelector(sourceOneInchData);
+      sourceTokenCategorizedInfo.sourceOneInchSelector =
+        await getOneInchSelector(getSelector(sourceOneInchData));
 
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
@@ -43,8 +50,11 @@ module.exports = {
         ?.destination?.bridgeAmountOut
         ? categorizedInfo?.destination?.bridgeAmountOut
         : "";
-      destinationTokenCategorizedInfo.destinationOneInchData =
-        destinationOneInchData;
+      destinationTokenCategorizedInfo.destinationOneInchData = removeSelector(
+        destinationOneInchData
+      );
+      destinationTokenCategorizedInfo.destinationOneInchSelector =
+        await getOneInchSelector(getSelector(destinationOneInchData));
       data.slippage = await getSlippage();
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
