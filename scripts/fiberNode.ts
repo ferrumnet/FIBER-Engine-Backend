@@ -125,9 +125,9 @@ module.exports = {
         }
         if (
           sourceOneInchData &&
-          (await !isValidOneInchSelector(getSelector(sourceOneInchData)))
+          !(await isValidOneInchSelector(getSelector(sourceOneInchData)))
         ) {
-          return strErrorSwapInNotAvailable;
+          throw strErrorSwapInNotAvailable;
         }
       }
     }
@@ -255,9 +255,9 @@ module.exports = {
       }
       if (
         destinationOneInchData &&
-        (await !isValidOneInchSelector(getSelector(destinationOneInchData)))
+        !(await isValidOneInchSelector(getSelector(destinationOneInchData)))
       ) {
-        return strErrorSwapInNotAvailable;
+        throw strErrorSwapInNotAvailable;
       }
     } else {
       let isValidLiquidityAvailable = await isLiquidityAvailableForCudos(

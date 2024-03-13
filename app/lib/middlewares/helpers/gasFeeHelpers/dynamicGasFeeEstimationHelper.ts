@@ -291,9 +291,7 @@ export const doSourceOneInchGasEstimation = async (
         req.query.sourceTokenContractAddress
       )
     ),
-    oneInchSelector: req.query.sourceOneInchSelector
-      ? req.query.sourceOneInchSelector
-      : "2",
+    oneInchSelector: req.query.sourceOneInchSelector,
   };
   return await sourceOneInchGasEstimation(contractObj, network, obj);
 };

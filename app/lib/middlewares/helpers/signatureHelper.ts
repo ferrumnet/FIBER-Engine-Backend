@@ -42,7 +42,7 @@ export const getWithdrawalDataHashForSwap = (
 ): string => {
   let hash = Web3.utils.keccak256(
     sourceOneInchData +
-      removeSelector(destinationOneInchData) +
+      destinationOneInchData +
       amountIn +
       amountOut +
       sourceAssetType +

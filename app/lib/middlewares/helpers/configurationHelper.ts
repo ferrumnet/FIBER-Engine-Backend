@@ -18,23 +18,21 @@ export const getOneInchSelector = async (hash: string): Promise<any> => {
   if (data?.oneInchSelector?.length > 0) {
     for (let item of data?.oneInchSelector) {
       if (item.hash == hash) {
-        console.log("type", item.type);
         return item.type;
       }
     }
   }
   return "";
 };
-
-export const isValidOneInchSelector = async (hash: string): Promise<any> => {
-  console.log("i am here");
+export const isValidOneInchSelector = async (
+  hash: string
+): Promise<boolean> => {
   let filter: any = {
     "oneInchSelector.hash": {
-      $eq: "abc",
+      $eq: hash,
     },
   };
   let count = await db.Configurations.countDocuments(filter);
-  console.log("count", count);
   if (count > 0) {
     return true;
   }
