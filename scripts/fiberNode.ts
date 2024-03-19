@@ -151,7 +151,6 @@ module.exports = {
         getSourceAmountOut(gasEstimationDestinationAmount, sourceBridgeAmount),
         targetFoundryTokenDecimal
       );
-      amountIn = parseInt(amountIn);
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
@@ -178,7 +177,6 @@ module.exports = {
           sourceBridgeAmount,
           targetFoundryTokenDecimal
         );
-        machineDestinationAmountIn = parseInt(machineDestinationAmountIn);
       } else {
         sourceBridgeAmount = getSourceAmountOut(
           gasEstimationDestinationAmount,
@@ -190,7 +188,6 @@ module.exports = {
           sourceBridgeAmount,
           targetFoundryTokenDecimal
         );
-        machineAmount = parseInt(machineAmount);
         machineDestinationAmountIn = machineAmount;
         machineAmount = (global as any).utils.convertFromExponentialToDecimal(
           machineAmount
@@ -228,6 +225,8 @@ module.exports = {
           );
         }
       }
+      console.log("machineDestinationAmountIn", machineDestinationAmountIn);
+      console.log("machineDestinationAmountOut", machineDestinationAmountOut);
     }
 
     if (!targetNetwork.isNonEVM) {

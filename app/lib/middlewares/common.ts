@@ -241,8 +241,14 @@ module.exports = {
   numberIntoDecimals__(amount: any, decimal: any) {
     amount = Big(amount);
     decimal = Big(10 ** Number(decimal));
-    let amountFormatted = amount.mul(decimal).toString();
+    let amountFormatted = amount.mul(decimal);
+    amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
+      amountFormatted.toString()
+    );
     amountFormatted = parseInt(amountFormatted);
+    amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
+      amountFormatted.toString()
+    );
     return amountFormatted;
   },
 
