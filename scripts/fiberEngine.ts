@@ -184,7 +184,10 @@ module.exports = {
           swapTransactionHash,
           body?.gasLimit
         );
-        const receipt = await this.callEVMWithdrawAndGetReceipt(swapResult);
+        const receipt = await this.callEVMWithdrawAndGetReceipt(
+          swapResult,
+          swapTransactionHash
+        );
         destinationAmount = (
           signatureResponse.amount /
           10 ** Number(targetTokenDecimal)
@@ -215,7 +218,10 @@ module.exports = {
           swapTransactionHash,
           body?.gasLimit
         );
-        const receipt = await swapResult?.wait();
+        const receipt = await this.callEVMWithdrawAndGetReceipt(
+          swapResult,
+          swapTransactionHash
+        );
         let destinationAmountOut = getDestinationAmountFromLogs(
           receipt,
           targetNetwork?.rpcUrl,
@@ -401,7 +407,10 @@ module.exports = {
     }
   },
 
-  callEVMWithdrawAndGetReceipt: async function (data: any) {
+  callEVMWithdrawAndGetReceipt: async function (
+    data: any,
+    swapTransactionHash: string
+  ) {
     let receipt: any = { status: 0, responseMessage: "" };
     try {
       receipt = await data?.wait();
