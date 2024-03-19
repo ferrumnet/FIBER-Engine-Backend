@@ -50,6 +50,7 @@ module.exports = {
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     }
+    console.log("getTokenCategorizedInformation response", data);
     return data;
   },
 
