@@ -416,6 +416,7 @@ module.exports = {
       receipt = await data?.wait();
     } catch (e) {
       receipt.responseMessage = e;
+      sendSlackNotification(swapTransactionHash, e, "Not available");
     }
     return receipt;
   },
