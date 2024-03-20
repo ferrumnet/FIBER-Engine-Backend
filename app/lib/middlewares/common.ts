@@ -261,8 +261,8 @@ module.exports = {
     return formattedValue;
   },
 
-  async addSlippageInDecimal(originalValue: any) {
-    let slippageProportion = BigInt(100 - (await getSlippage()));
+  async addSlippageInDecimal(originalValue: any, slippage = "") {
+    let slippageProportion = BigInt(100 - (await getSlippage(slippage)));
     originalValue = BigInt(originalValue);
     let valueWithSlippage = (originalValue * slippageProportion) / BigInt(100);
     return valueWithSlippage ? valueWithSlippage.toString() : "0";

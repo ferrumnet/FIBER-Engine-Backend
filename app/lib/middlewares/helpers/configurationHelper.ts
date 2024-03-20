@@ -1,6 +1,9 @@
-export const getSlippage = async (): Promise<number> => {
+export const getSlippage = async (slippage = ""): Promise<any> => {
+  if (slippage) {
+    return slippage;
+  }
   let data = await db.Configurations.findOne();
-  return data?.slippage ? data?.slippage : 2;
+  return data?.slippage ? data?.slippage?.toString() : "2";
 };
 
 export const getNativeTokens = async (): Promise<any> => {
