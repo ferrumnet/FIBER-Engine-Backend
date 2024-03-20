@@ -22,7 +22,8 @@ module.exports = {
     targetTokenAddress: any,
     inputAmount: any,
     destinationWalletAddress: string,
-    gasEstimationDestinationAmount: string
+    gasEstimationDestinationAmount: string,
+    slippage: string
   ) {
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
@@ -97,7 +98,8 @@ module.exports = {
           sourceNetwork?.foundryTokenAddress,
           amount,
           sourceNetwork?.fiberRouter,
-          sourceNetwork?.fundManager
+          sourceNetwork?.fundManager,
+          slippage
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -107,7 +109,10 @@ module.exports = {
           machineSourceAmountOut = response.amounts;
           machineSourceAmountOut = await (
             global as any
-          ).commonFunctions.addSlippageInDecimal(machineSourceAmountOut);
+          ).commonFunctions.addSlippageInDecimal(
+            machineSourceAmountOut,
+            slippage
+          );
           sourceBridgeAmount = (
             global as any
           ).commonFunctions.decimalsIntoNumber(
@@ -204,7 +209,8 @@ module.exports = {
           ),
           machineAmount,
           targetNetwork?.fiberRouter,
-          destinationWalletAddress
+          destinationWalletAddress,
+          slippage
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -216,7 +222,10 @@ module.exports = {
           machineDestinationAmountOut = response.amounts;
           machineDestinationAmountOut = await (
             global as any
-          ).commonFunctions.addSlippageInDecimal(machineDestinationAmountOut);
+          ).commonFunctions.addSlippageInDecimal(
+            machineDestinationAmountOut,
+            slippage
+          );
           destinationAmountOut = (
             global as any
           ).commonFunctions.decimalsIntoNumber(
