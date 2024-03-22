@@ -11,7 +11,7 @@ import {
   isLiquidityAvailableForCudos,
 } from "../app/lib/middlewares/helpers/liquidityHelper";
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
-import { strErrorSwapInNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
+import { swapIsNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
 import { getSourceAmountOut } from "../app/lib/middlewares/helpers/fiberNodeHelper";
 import {
   removeSelector,
@@ -27,7 +27,8 @@ module.exports = {
     targetTokenAddress: any,
     inputAmount: any,
     destinationWalletAddress: string,
-    gasEstimationDestinationAmount: string
+    gasEstimationDestinationAmount: string,
+    slippage: string
   ) {
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
@@ -102,7 +103,8 @@ module.exports = {
           sourceNetwork?.foundryTokenAddress,
           amount,
           sourceNetwork?.fiberRouter,
-          sourceNetwork?.fundManager
+          sourceNetwork?.fundManager,
+          slippage
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -112,7 +114,10 @@ module.exports = {
           machineSourceAmountOut = response.amounts;
           machineSourceAmountOut = await (
             global as any
-          ).commonFunctions.addSlippageInDecimal(machineSourceAmountOut);
+          ).commonFunctions.addSlippageInDecimal(
+            machineSourceAmountOut,
+            slippage
+          );
           sourceBridgeAmount = (
             global as any
           ).commonFunctions.decimalsIntoNumber(
@@ -162,7 +167,6 @@ module.exports = {
         getSourceAmountOut(gasEstimationDestinationAmount, sourceBridgeAmount),
         targetFoundryTokenDecimal
       );
-      amountIn = parseInt(amountIn);
       let targetTypeResponse = await getTargetAssetTypes(
         targetNetwork,
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
@@ -189,7 +193,6 @@ module.exports = {
           sourceBridgeAmount,
           targetFoundryTokenDecimal
         );
-        machineDestinationAmountIn = parseInt(machineDestinationAmountIn);
       } else {
         sourceBridgeAmount = getSourceAmountOut(
           gasEstimationDestinationAmount,
@@ -201,13 +204,12 @@ module.exports = {
           sourceBridgeAmount,
           targetFoundryTokenDecimal
         );
-        machineAmount = parseInt(machineAmount);
         machineDestinationAmountIn = machineAmount;
         machineAmount = (global as any).utils.convertFromExponentialToDecimal(
           machineAmount
         );
         if (machineAmount <= 0) {
-          throw strErrorSwapInNotAvailable;
+          throw swapIsNotAvailable;
         }
         await this.delay(1000);
         let response = await OneInchSwap(
@@ -218,7 +220,8 @@ module.exports = {
           ),
           machineAmount,
           targetNetwork?.fiberRouter,
-          destinationWalletAddress
+          destinationWalletAddress,
+          slippage
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -230,7 +233,10 @@ module.exports = {
           machineDestinationAmountOut = response.amounts;
           machineDestinationAmountOut = await (
             global as any
-          ).commonFunctions.addSlippageInDecimal(machineDestinationAmountOut);
+          ).commonFunctions.addSlippageInDecimal(
+            machineDestinationAmountOut,
+            slippage
+          );
           destinationAmountOut = (
             global as any
           ).commonFunctions.decimalsIntoNumber(
@@ -239,6 +245,8 @@ module.exports = {
           );
         }
       }
+      console.log("machineDestinationAmountIn", machineDestinationAmountIn);
+      console.log("machineDestinationAmountOut", machineDestinationAmountOut);
     }
 
     if (!targetNetwork.isNonEVM) {

@@ -427,7 +427,9 @@ async function convertIntoSourceGasPrices(
       provider,
       nativeToken?.wrappedAddress
     );
-    let gasPriceInDecimal = (global as any).commonFunctions.numberIntoDecimals_(
+    let gasPriceInDecimal = (
+      global as any
+    ).commonFunctions.numberIntoDecimals__(
       gasPriceInNative.toString(),
       decimals
     );
