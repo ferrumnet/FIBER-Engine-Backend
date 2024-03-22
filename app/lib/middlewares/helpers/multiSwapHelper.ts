@@ -4,6 +4,8 @@ import {
   getSelector,
 } from "../../../lib/middlewares/helpers/oneInchDecoderHelper";
 import { getOneInchSelector } from "../../../lib/middlewares/helpers/configurationHelper";
+import { sameNetworkSwapError } from "../../../lib/middlewares/helpers/stringHelper";
+
 module.exports = {
   getTokenCategorizedInformation: async function (req: any) {
     let categorizedInfo = await fiberNode.categoriseSwapAssets(
@@ -13,7 +15,8 @@ module.exports = {
       req.query.destinationTokenContractAddress,
       req.query.sourceAmount,
       req.query.destinationWalletAddress,
-      req.query.gasEstimationDestinationAmount
+      req.query.gasEstimationDestinationAmount,
+      req.query.slippage
     );
     let data: any = {};
     if (categorizedInfo) {
@@ -55,10 +58,11 @@ module.exports = {
       );
       destinationTokenCategorizedInfo.destinationOneInchSelector =
         await getOneInchSelector(getSelector(destinationOneInchData));
-      data.slippage = await getSlippage();
+      data.slippage = await getSlippage(req.query.slippage);
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     }
+    console.log("getTokenCategorizedInformation response", data);
     return data;
   },
 
@@ -96,7 +100,7 @@ module.exports = {
       if (
         req.query.sourceNetworkChainId == req.query.destinationNetworkChainId
       ) {
-        throw "From and to information cannot be same";
+        throw sameNetworkSwapError;
       }
     }
   },

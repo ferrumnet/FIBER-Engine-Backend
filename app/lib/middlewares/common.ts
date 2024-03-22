@@ -241,8 +241,14 @@ module.exports = {
   numberIntoDecimals__(amount: any, decimal: any) {
     amount = Big(amount);
     decimal = Big(10 ** Number(decimal));
-    let amountFormatted = amount.mul(decimal).toString();
+    let amountFormatted = amount.mul(decimal);
+    amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
+      amountFormatted.toString()
+    );
     amountFormatted = parseInt(amountFormatted);
+    amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
+      amountFormatted.toString()
+    );
     return amountFormatted;
   },
 
@@ -255,8 +261,8 @@ module.exports = {
     return formattedValue;
   },
 
-  async addSlippageInDecimal(originalValue: any) {
-    let slippageProportion = BigInt(100 - (await getSlippage()));
+  async addSlippageInDecimal(originalValue: any, slippage = "") {
+    let slippageProportion = BigInt(100 - (await getSlippage(slippage)));
     originalValue = BigInt(originalValue);
     let valueWithSlippage = (originalValue * slippageProportion) / BigInt(100);
     return valueWithSlippage ? valueWithSlippage.toString() : "0";

@@ -1,5 +1,6 @@
 var axios = require("axios").default;
 import { getSlippage } from "../../lib/middlewares/helpers/configurationHelper";
+import { genericOneInchError } from "../../lib/middlewares/helpers/stringHelper";
 
 interface Response {
   responseMessage: string;
@@ -13,7 +14,8 @@ export const OneInchSwap = async (
   dst: string,
   amount: string,
   from: string,
-  receiver: string
+  receiver: string,
+  slippage: string
 ): Promise<Response> => {
   let amounts = null;
   let data = null;
@@ -27,7 +29,9 @@ export const OneInchSwap = async (
         }`,
       },
     };
-    let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${await getSlippage()}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}`;
+    let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${await getSlippage(
+      slippage
+    )}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}&compatibility=true`;
     let res = await axios.get(url, config);
     if (res?.data?.toAmount) {
       amounts = res?.data?.toAmount;
@@ -37,9 +41,7 @@ export const OneInchSwap = async (
     }
   } catch (error: any) {
     console.log("1Inch error", error);
-    responseMessage = error?.response?.data?.description
-      ? error?.response?.data?.description
-      : "1Inch is not responding please try again";
+    responseMessage = genericOneInchError;
   }
 
   let response: Response = {
