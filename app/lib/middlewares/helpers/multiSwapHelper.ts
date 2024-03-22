@@ -1,14 +1,11 @@
 import { getSlippage } from "../../../lib/middlewares/helpers/configurationHelper";
-<<<<<<< HEAD
 import {
   removeSelector,
   getSelector,
 } from "../../../lib/middlewares/helpers/oneInchDecoderHelper";
 import { getOneInchSelector } from "../../../lib/middlewares/helpers/configurationHelper";
-=======
 import { sameNetworkSwapError } from "../../../lib/middlewares/helpers/stringHelper";
 
->>>>>>> 5b9c7195ff37b07bc82b19696c029e31876bd79d
 module.exports = {
   getTokenCategorizedInformation: async function (req: any) {
     let categorizedInfo = await fiberNode.categoriseSwapAssets(
@@ -56,18 +53,12 @@ module.exports = {
         ?.destination?.bridgeAmountOut
         ? categorizedInfo?.destination?.bridgeAmountOut
         : "";
-<<<<<<< HEAD
       destinationTokenCategorizedInfo.destinationOneInchData = removeSelector(
         destinationOneInchData
       );
       destinationTokenCategorizedInfo.destinationOneInchSelector =
         await getOneInchSelector(getSelector(destinationOneInchData));
-      data.slippage = await getSlippage();
-=======
-      destinationTokenCategorizedInfo.destinationOneInchData =
-        destinationOneInchData;
       data.slippage = await getSlippage(req.query.slippage);
->>>>>>> 5b9c7195ff37b07bc82b19696c029e31876bd79d
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     }
