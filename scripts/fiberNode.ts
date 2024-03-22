@@ -132,7 +132,7 @@ module.exports = {
           sourceOneInchData &&
           !(await isValidOneInchSelector(getSelector(sourceOneInchData)))
         ) {
-          throw strErrorSwapInNotAvailable;
+          throw swapIsNotAvailable;
         }
       }
     }
@@ -265,7 +265,7 @@ module.exports = {
         destinationOneInchData &&
         !(await isValidOneInchSelector(getSelector(destinationOneInchData)))
       ) {
-        throw strErrorSwapInNotAvailable;
+        throw swapIsNotAvailable;
       }
     } else {
       let isValidLiquidityAvailable = await isLiquidityAvailableForCudos(
