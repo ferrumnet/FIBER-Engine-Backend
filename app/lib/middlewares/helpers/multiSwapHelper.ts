@@ -39,6 +39,8 @@ module.exports = {
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
+      destinationTokenCategorizedInfo.minDestinationAmount =
+        categorizedInfo?.destination?.minAmount;
       destinationTokenCategorizedInfo.destinationAmountIn =
         categorizedInfo?.destination?.bridgeAmountIn;
       destinationTokenCategorizedInfo.destinationAmountOut = categorizedInfo
