@@ -262,9 +262,17 @@ module.exports = {
   },
 
   async addSlippageInDecimal(originalValue: any, slippage = "") {
-    let slippageProportion = BigInt(100 - (await getSlippage(slippage)));
-    originalValue = BigInt(originalValue);
-    let valueWithSlippage = (originalValue * slippageProportion) / BigInt(100);
+    let slippageProportion = Big(100 - (await getSlippage(slippage)));
+    originalValue = Big(originalValue);
+    let mul = originalValue.mul(slippageProportion);
+    let valueWithSlippage = mul.div(Big(100));
+    valueWithSlippage = (global as any).utils.convertFromExponentialToDecimal(
+      valueWithSlippage.toString()
+    );
+    valueWithSlippage = parseInt(valueWithSlippage);
+    valueWithSlippage = (global as any).utils.convertFromExponentialToDecimal(
+      valueWithSlippage.toString()
+    );
     return valueWithSlippage ? valueWithSlippage.toString() : "0";
   },
 

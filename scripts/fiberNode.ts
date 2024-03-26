@@ -220,17 +220,17 @@ module.exports = {
         }
         if (response && response.amounts) {
           machineDestinationAmountOut = response.amounts;
-          machineDestinationAmountOut = await (
-            global as any
-          ).commonFunctions.addSlippageInDecimal(
-            machineDestinationAmountOut,
-            slippage
-          );
           destinationAmountOut = (
             global as any
           ).commonFunctions.decimalsIntoNumber(
             machineDestinationAmountOut,
             targetTokenDecimal
+          );
+          machineDestinationAmountOut = await (
+            global as any
+          ).commonFunctions.addSlippageInDecimal(
+            machineDestinationAmountOut,
+            slippage
           );
         }
       }
