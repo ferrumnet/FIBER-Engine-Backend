@@ -269,10 +269,9 @@ module.exports = {
     valueWithSlippage = (global as any).utils.convertFromExponentialToDecimal(
       valueWithSlippage.toString()
     );
-    valueWithSlippage = parseInt(valueWithSlippage);
-    valueWithSlippage = (global as any).utils.convertFromExponentialToDecimal(
-      valueWithSlippage.toString()
-    );
+    if (valueWithSlippage.includes(".")) {
+      valueWithSlippage = valueWithSlippage.split(".")[0];
+    }
     return valueWithSlippage ? valueWithSlippage.toString() : "0";
   },
 
