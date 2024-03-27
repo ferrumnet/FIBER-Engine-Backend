@@ -16,7 +16,11 @@ module.exports = {
     let data: any = {};
     if (categorizedInfo) {
       let destinationAmount = 0;
+      let minDestinationAmount;
       destinationAmount = categorizedInfo?.destination?.amount;
+      minDestinationAmount = categorizedInfo?.destination?.minAmount
+        ? categorizedInfo?.destination?.minAmount
+        : categorizedInfo?.destination?.amount;
       let sourceOneInchData = "";
       let destinationOneInchData = "";
       let sourceBridgeAmount = "";
@@ -40,7 +44,7 @@ module.exports = {
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
       destinationTokenCategorizedInfo.minDestinationAmount =
-        categorizedInfo?.destination?.minAmount;
+        minDestinationAmount;
       destinationTokenCategorizedInfo.destinationAmountIn =
         categorizedInfo?.destination?.bridgeAmountIn;
       destinationTokenCategorizedInfo.destinationAmountOut = categorizedInfo
