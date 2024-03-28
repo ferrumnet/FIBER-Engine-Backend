@@ -23,7 +23,8 @@ module.exports = {
     inputAmount: any,
     destinationWalletAddress: string,
     gasEstimationDestinationAmount: string,
-    slippage: string
+    sourceSlippage: string,
+    destinationSlippage: string
   ) {
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
@@ -100,7 +101,7 @@ module.exports = {
           amount,
           sourceNetwork?.fiberRouter,
           sourceNetwork?.fundManager,
-          slippage
+          sourceSlippage
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -112,7 +113,7 @@ module.exports = {
             global as any
           ).commonFunctions.addSlippageInDecimal(
             machineSourceAmountOut,
-            slippage
+            sourceSlippage
           );
           sourceBridgeAmount = (
             global as any
@@ -211,7 +212,7 @@ module.exports = {
           machineAmount,
           targetNetwork?.fiberRouter,
           destinationWalletAddress,
-          slippage
+          destinationSlippage
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -231,7 +232,7 @@ module.exports = {
             global as any
           ).commonFunctions.addSlippageInDecimal(
             machineDestinationAmountOut,
-            slippage
+            destinationSlippage
           );
           minDestinationAmountOut = (
             global as any
