@@ -16,7 +16,8 @@ module.exports = {
       req.query.sourceAmount,
       req.query.destinationWalletAddress,
       req.query.gasEstimationDestinationAmount,
-      req.query.slippage
+      req.query.sourceSlippage,
+      req.query.destinationSlippage
     );
     let data: any = {};
     if (categorizedInfo) {
@@ -64,7 +65,11 @@ module.exports = {
       );
       destinationTokenCategorizedInfo.destinationOneInchSelector =
         await getOneInchSelector(getSelector(destinationOneInchData));
-      data.slippage = await getSlippage(req.query.slippage);
+      data.sourceSlippage = await getSlippage(req.query.sourceSlippage);
+      data.destinationSlippage = await getSlippage(
+        req.query.destinationSlippage
+      );
+
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     }
