@@ -5,7 +5,7 @@ import { getInfuraGas } from "../httpCalls/gasEstimationAxiosHelper";
 import { updateGasPriceEstimations } from "../middlewares/helpers/gasFeeHelpers/gasEstimationHelper";
 import {
   getGasNetworks,
-  OWLRACLE_PROVIDER_TAG,
+  INFURA_PROVIDER_TAG,
 } from "../middlewares/helpers/configurationHelper";
 
 module.exports = function () {
@@ -32,7 +32,7 @@ async function start() {
 }
 
 async function triggerJobs() {
-  let networks = await getGasNetworks(OWLRACLE_PROVIDER_TAG);
+  let networks = await getGasNetworks(INFURA_PROVIDER_TAG);
   if (networks && networks.length > 0) {
     for (let i = 0; i < networks.length; i++) {
       let network = networks[i];
