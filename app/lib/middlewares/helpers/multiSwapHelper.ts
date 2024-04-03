@@ -16,12 +16,17 @@ module.exports = {
       req.query.sourceAmount,
       req.query.destinationWalletAddress,
       req.query.gasEstimationDestinationAmount,
-      req.query.slippage
+      req.query.sourceSlippage,
+      req.query.destinationSlippage
     );
     let data: any = {};
     if (categorizedInfo) {
       let destinationAmount = 0;
+      let minDestinationAmount;
       destinationAmount = categorizedInfo?.destination?.amount;
+      minDestinationAmount = categorizedInfo?.destination?.minAmount
+        ? categorizedInfo?.destination?.minAmount
+        : categorizedInfo?.destination?.amount;
       let sourceOneInchData = "";
       let destinationOneInchData = "";
       let sourceBridgeAmount = "";
@@ -47,6 +52,8 @@ module.exports = {
       let destinationTokenCategorizedInfo: any = {};
       destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
       destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
+      destinationTokenCategorizedInfo.minDestinationAmount =
+        minDestinationAmount;
       destinationTokenCategorizedInfo.destinationAmountIn =
         categorizedInfo?.destination?.bridgeAmountIn;
       destinationTokenCategorizedInfo.destinationAmountOut = categorizedInfo
@@ -58,7 +65,11 @@ module.exports = {
       );
       destinationTokenCategorizedInfo.destinationOneInchSelector =
         await getOneInchSelector(getSelector(destinationOneInchData));
-      data.slippage = await getSlippage(req.query.slippage);
+      data.sourceSlippage = await getSlippage(req.query.sourceSlippage);
+      data.destinationSlippage = await getSlippage(
+        req.query.destinationSlippage
+      );
+
       data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
       data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     }

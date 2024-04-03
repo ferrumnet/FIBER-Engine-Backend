@@ -28,7 +28,8 @@ module.exports = {
     inputAmount: any,
     destinationWalletAddress: string,
     gasEstimationDestinationAmount: string,
-    slippage: string
+    sourceSlippage: string,
+    destinationSlippage: string
   ) {
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
@@ -42,6 +43,7 @@ module.exports = {
     let sourceOneInchData;
     let destinationOneInchData;
     let destinationAmountOut;
+    let minDestinationAmountOut;
     let machineSourceAmountOut: any;
     let machineDestinationAmountIn: any;
     let machineDestinationAmountOut: any;
@@ -104,7 +106,7 @@ module.exports = {
           amount,
           sourceNetwork?.fiberRouter,
           sourceNetwork?.fundManager,
-          slippage
+          sourceSlippage
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -116,7 +118,7 @@ module.exports = {
             global as any
           ).commonFunctions.addSlippageInDecimal(
             machineSourceAmountOut,
-            slippage
+            sourceSlippage
           );
           sourceBridgeAmount = (
             global as any
@@ -221,7 +223,7 @@ module.exports = {
           machineAmount,
           targetNetwork?.fiberRouter,
           destinationWalletAddress,
-          slippage
+          destinationSlippage
         );
         if (response?.responseMessage) {
           throw response?.responseMessage;
@@ -231,13 +233,19 @@ module.exports = {
         }
         if (response && response.amounts) {
           machineDestinationAmountOut = response.amounts;
+          destinationAmountOut = (
+            global as any
+          ).commonFunctions.decimalsIntoNumber(
+            machineDestinationAmountOut,
+            targetTokenDecimal
+          );
           machineDestinationAmountOut = await (
             global as any
           ).commonFunctions.addSlippageInDecimal(
             machineDestinationAmountOut,
-            slippage
+            destinationSlippage
           );
-          destinationAmountOut = (
+          minDestinationAmountOut = (
             global as any
           ).commonFunctions.decimalsIntoNumber(
             machineDestinationAmountOut,
@@ -291,7 +299,8 @@ module.exports = {
     data.source.oneInchData = sourceOneInchData;
 
     data.destination.type = targetAssetType;
-    data.destination.amount = String(destinationAmountOut);
+    data.destination.amount = destinationAmountOut;
+    data.destination.minAmount = minDestinationAmountOut;
     data.destination.bridgeAmountIn = machineDestinationAmountIn;
     data.destination.bridgeAmountOut = machineDestinationAmountOut;
     data.destination.oneInchData = destinationOneInchData;
