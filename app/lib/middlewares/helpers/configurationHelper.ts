@@ -1,3 +1,6 @@
+export const OWLRACLE_PROVIDER_TAG = "owlracle";
+export const INFURA_PROVIDER_TAG = "infura";
+
 export const getSlippage = async (slippage = ""): Promise<any> => {
   if (slippage) {
     return slippage;
@@ -27,6 +30,7 @@ export const getOneInchSelector = async (hash: string): Promise<any> => {
   }
   return "";
 };
+
 export const isValidOneInchSelector = async (
   hash: string
 ): Promise<boolean> => {
@@ -40,4 +44,22 @@ export const isValidOneInchSelector = async (
     return true;
   }
   return false;
+};
+
+export const getGasNetworks = async (provider: string) => {
+  let networks: any = [];
+  let filter: any = {
+    "gasNetworks.provider": {
+      $eq: provider,
+    },
+  };
+  let data = await db.Configurations.findOne(filter);
+  if (data?.gasNetworks?.length > 0) {
+    for (let item of data?.gasNetworks) {
+      if (item.provider == provider) {
+        networks.push(item);
+      }
+    }
+  }
+  return networks;
 };
