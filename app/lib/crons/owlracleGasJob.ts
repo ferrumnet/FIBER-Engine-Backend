@@ -11,7 +11,7 @@ import {
 module.exports = function () {
   if (
     (global as any).starterEnvironment
-      .isCronEnvironmentSupportedForGetGasEstimation === "no"
+      .isCronEnvironmentSupportedForGetGasEstimation === "yes"
   ) {
     start();
   }
