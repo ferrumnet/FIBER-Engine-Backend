@@ -84,18 +84,14 @@ if (
 (
   global as any
 ).transactionUpdateAxiosHelper = require("./app/lib/httpCalls/transactionUpdateAxiosHelper");
-(
-  global as any
-).gasEstimationAxiosHelper = require("./app/lib/httpCalls/gasEstimationAxiosHelper");
 
 // crons
 (
   global as any
 ).removeRandomKeyJob = require("./app/lib/crons/removeRandomKeyJob");
 (global as any).getAllNetworkJob = require("./app/lib/crons/getAllNetworkJob");
-(
-  global as any
-).getGasEstimationJob = require("./app/lib/crons/getGasEstimationJob");
+(global as any).owlracleGasJob = require("./app/lib/crons/owlracleGasJob");
+(global as any).infuraGasJob = require("./app/lib/crons/infuraGasJob");
 
 // fiber
 (global as any).networkHelper = require("./network");
