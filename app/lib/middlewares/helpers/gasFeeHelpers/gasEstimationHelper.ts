@@ -156,5 +156,5 @@ const valueFixed = (x: any, d: any) => {
 
 const getPriceBuffer = async (chainId: any) => {
   let data = await db.GasFees.findOne({ chainId: chainId });
-  return data?.priceBuffer ? data?.priceBuffer?.toString() : 0.1;
+  return data?.priceBuffer ? data?.priceBuffer : 0.1;
 };
