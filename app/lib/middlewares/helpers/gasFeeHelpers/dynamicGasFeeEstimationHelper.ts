@@ -336,10 +336,16 @@ export const convertIntoSourceNative = async (
   destinationGasPrice: string
 ): Promise<any> => {};
 
-async function getCurrentGasPrice(chainId: string, provider: any) {
+async function getCurrentGasPrice(
+  chainId: string,
+  provider: any,
+  isSource: boolean
+) {
   try {
     let gasPrice: any;
-    if (await isAllowedAggressivePriceForDynamicGasEstimation(chainId)) {
+    if (
+      await isAllowedAggressivePriceForDynamicGasEstimation(chainId, isSource)
+    ) {
       gasPrice = await getGasPrice(chainId);
       gasPrice = Web3.utils.toWei(gasPrice, "gwei");
     } else {
@@ -359,7 +365,7 @@ async function getSourceGasPrices(
   provider: any
 ) {
   try {
-    let currentGasPrice = await getCurrentGasPrice(chainId, provider);
+    let currentGasPrice = await getCurrentGasPrice(chainId, provider, true);
     let gasPriceInMachine = new Big(gasPrice);
     gasPriceInMachine = gasPriceInMachine.mul(currentGasPrice);
     let nativeToken = await (global as any).commonFunctions.getTokenByChainId(
@@ -392,7 +398,7 @@ async function getDestinationGasPrices(
   provider: any
 ) {
   try {
-    let currentGasPrice = await getCurrentGasPrice(chainId, provider);
+    let currentGasPrice = await getCurrentGasPrice(chainId, provider, false);
     let gasPriceInMachine = new Big(gasPrice);
     gasPriceInMachine = gasPriceInMachine.mul(currentGasPrice);
     let nativeToken = await (global as any).commonFunctions.getTokenByChainId(
