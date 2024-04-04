@@ -11,7 +11,11 @@ var schema = mongoose.Schema(
     gasBuffer: { type: Number, default: 0 },
     aggressivePriceBuffer: { type: Number, default: 0 },
     isAllowedDynamicGasLimit: { type: Boolean, default: false },
-    isAllowedAggressivePriceForDynamicGasEstimation: {
+    isAllowedSourceAggressivePriceForDynamicGas: {
+      type: Boolean,
+      default: false,
+    },
+    isAllowedDestinationAggressivePriceForDynamicGas: {
       type: Boolean,
       default: false,
     },

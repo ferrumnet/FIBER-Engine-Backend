@@ -160,8 +160,15 @@ const getPriceBuffer = async (chainId: any) => {
 };
 
 export const isAllowedAggressivePriceForDynamicGasEstimation = async (
-  chainId: any
+  chainId: any,
+  isSource: boolean
 ): Promise<boolean> => {
   let data = await db.GasFees.findOne({ chainId: chainId });
-  return data?.isAllowedAggressivePriceForDynamicGasEstimation ? true : false;
+  if (isSource) {
+    return data?.isAllowedSourceAggressivePriceForDynamicGas ? true : false;
+  } else {
+    return data?.isAllowedDestinationAggressivePriceForDynamicGas
+      ? true
+      : false;
+  }
 };
