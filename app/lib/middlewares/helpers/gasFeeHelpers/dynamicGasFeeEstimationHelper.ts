@@ -20,7 +20,11 @@ import {
   WithdrawSignedAndSwapOneInch,
 } from "../../../../interfaces/forgeInterface";
 import { getQuote } from "../../../httpCalls/coinMarketCapAxiosHelper";
-import { addBuffer_, getGasPrice } from "./gasEstimationHelper";
+import {
+  addBuffer_,
+  getGasPrice,
+  isAllowedAggressivePriceForDynamicGasEstimation,
+} from "./gasEstimationHelper";
 import { Swap, SwapOneInch } from "../../../../interfaces/forgeInterface";
 import { getWithdrawalDataHashForSwap } from "../../../../lib/middlewares/helpers/signatureHelper";
 import { getValueForSwap } from "../../../../lib/middlewares/helpers/fiberEngineHelper";
@@ -332,10 +336,15 @@ export const convertIntoSourceNative = async (
   destinationGasPrice: string
 ): Promise<any> => {};
 
-async function getCurrentGasPrice(chainId: string) {
+async function getCurrentGasPrice(chainId: string, provider: any) {
   try {
-    let gasPrice = await getGasPrice(chainId);
-    gasPrice = Web3.utils.toWei(gasPrice, "gwei");
+    let gasPrice: any;
+    if (await isAllowedAggressivePriceForDynamicGasEstimation(chainId)) {
+      gasPrice = await getGasPrice(chainId);
+      gasPrice = Web3.utils.toWei(gasPrice, "gwei");
+    } else {
+      gasPrice = await provider.getGasPrice();
+    }
     console.log("CP:", gasPrice.toString(), "CI:", chainId);
     return gasPrice;
   } catch (e) {
@@ -350,7 +359,7 @@ async function getSourceGasPrices(
   provider: any
 ) {
   try {
-    let currentGasPrice = await getCurrentGasPrice(chainId);
+    let currentGasPrice = await getCurrentGasPrice(chainId, provider);
     let gasPriceInMachine = new Big(gasPrice);
     gasPriceInMachine = gasPriceInMachine.mul(currentGasPrice);
     let nativeToken = await (global as any).commonFunctions.getTokenByChainId(
@@ -383,7 +392,7 @@ async function getDestinationGasPrices(
   provider: any
 ) {
   try {
-    let currentGasPrice = await getCurrentGasPrice(chainId);
+    let currentGasPrice = await getCurrentGasPrice(chainId, provider);
     let gasPriceInMachine = new Big(gasPrice);
     gasPriceInMachine = gasPriceInMachine.mul(currentGasPrice);
     let nativeToken = await (global as any).commonFunctions.getTokenByChainId(
