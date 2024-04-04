@@ -108,7 +108,9 @@ export const updateGasPriceEstimations = async (
   let body: any = {};
   if (network) {
     if (network.chainId == 56) {
-      gasPriceForBsc = Number(addBuffer__(gasPriceForBsc, 20));
+      gasPriceForBsc = Number(
+        addBuffer__(gasPriceForBsc, await getPriceBuffer(network.chainId))
+      );
       body = {
         dynamicValues: {
           maxFeePerGas: gasPriceForBsc ? valueFixed(gasPriceForBsc, 2) : 0,
@@ -150,4 +152,9 @@ const valueFixed = (x: any, d: any) => {
   if (!d) return x.toFixed(d); // don't go wrong if no decimal
   x = Math.ceil(x * 100) / 100;
   return x.toFixed(d).replace(/\.?0+$/, "");
+};
+
+const getPriceBuffer = async (chainId: any) => {
+  let data = await db.GasFees.findOne({ chainId: chainId });
+  return data?.priceBuffer ? data?.priceBuffer?.toString() : 0.1;
 };
