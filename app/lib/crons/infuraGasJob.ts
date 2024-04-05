@@ -44,13 +44,15 @@ async function triggerJobs() {
 async function getGasEstimation(network: any) {
   let data = await getInfuraGas(network?.chainId);
   data = data?.high;
-  let maxFeePerGas = data?.suggestedMaxFeePerGas;
-  let maxPriorityFeePerGas = data?.suggestedMaxPriorityFeePerGas;
-  let gasPriceForBsc = data?.gasPrice;
-  await updateGasPriceEstimations(
-    network,
-    maxFeePerGas,
-    maxPriorityFeePerGas,
-    gasPriceForBsc
-  );
+  if (data) {
+    let maxFeePerGas = data?.suggestedMaxFeePerGas;
+    let maxPriorityFeePerGas = data?.suggestedMaxPriorityFeePerGas;
+    let gasPriceForBsc = data?.gasPrice;
+    await updateGasPriceEstimations(
+      network,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      gasPriceForBsc
+    );
+  }
 }
