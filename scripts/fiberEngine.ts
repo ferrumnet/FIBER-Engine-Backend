@@ -322,7 +322,7 @@ module.exports = {
         sourceWalletAddress
       );
 
-      let returnData = {
+      let returnData: any = {
         currency: sourceNetwork.shortName + ":" + sourceTokenAddress,
         from: sourceWalletAddress,
         amount: "0",
