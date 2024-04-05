@@ -48,15 +48,17 @@ async function getGasEstimation(network: any) {
     apiKey
   );
   data = getSpeed(data);
-  let maxFeePerGas = data?.maxFeePerGas;
-  let maxPriorityFeePerGas = data?.maxPriorityFeePerGas;
-  let gasPriceForBsc = data?.gasPrice;
-  await updateGasPriceEstimations(
-    network,
-    maxFeePerGas,
-    maxPriorityFeePerGas,
-    gasPriceForBsc
-  );
+  if (data) {
+    let maxFeePerGas = data?.maxFeePerGas;
+    let maxPriorityFeePerGas = data?.maxPriorityFeePerGas;
+    let gasPriceForBsc = data?.gasPrice;
+    await updateGasPriceEstimations(
+      network,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      gasPriceForBsc
+    );
+  }
 }
 
 function getSpeed(gasEstimation: any) {
