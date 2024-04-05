@@ -78,7 +78,7 @@ export const updateGasPriceEstimations = async (
   gasPriceForBsc: any
 ): Promise<any> => {
   let body: any = {};
-  if (network) {
+  if (network && maxFeePerGas && maxPriorityFeePerGas) {
     if (network.chainId == 56) {
       gasPriceForBsc = Number(
         addBuffer__(gasPriceForBsc, await getPriceBuffer(network.chainId))
