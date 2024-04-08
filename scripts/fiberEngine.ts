@@ -10,7 +10,7 @@ const { BigNumber } = require("ethers");
 import {
   convertIntoAssetTypesObjectForSource,
   convertIntoAssetTypesObjectForTarget,
-} from "../app/lib/middlewares/helpers/assetTypeHelper";
+} from "../app/lib/middlewares/helpers/tokenQuoteAndTypeHelpers/assetTypeHelper";
 import {
   createCudosResponse,
   createEVMResponse,
