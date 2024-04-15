@@ -13,6 +13,7 @@ import {
   destinationOneInchGasEstimation,
   sourceFoundaryGasEstimation,
   sourceOneInchGasEstimation,
+  sourceSameNetworkGasEstimation,
 } from "../forgeHelpers/forgeContractHelper";
 import {
   Contract,
@@ -25,7 +26,11 @@ import {
   getGasPrice,
   isAllowedAggressivePriceForDynamicGasEstimation,
 } from "./gasEstimationHelper";
-import { Swap, SwapOneInch } from "../../../../interfaces/forgeInterface";
+import {
+  Swap,
+  SwapOneInch,
+  SwapSameNetwork,
+} from "../../../../interfaces/forgeInterface";
 import { getWithdrawalDataHashForSwap } from "../../../../lib/middlewares/helpers/signatureHelper";
 import { getValueForSwap } from "../../../../lib/middlewares/helpers/fiberEngineHelper";
 export const gasEstimationValidation = (req: any): any => {
@@ -48,7 +53,8 @@ export const gasEstimationValidation = (req: any): any => {
 
 export const sourceGasEstimation = async (
   req: any,
-  destinationGasPrice: string
+  destinationGasPrice: string,
+  isSameNetworks: boolean
 ): Promise<any> => {
   const FOUNDARY = (global as any).utils.assetType.FOUNDARY;
   const ONE_INCH = (global as any).utils.assetType.ONE_INCH;
@@ -62,7 +68,16 @@ export const sourceGasEstimation = async (
     contractAddress: SOURCE_NETWORK.fiberRouter,
   };
 
-  if (req.query.sourceAssetType == FOUNDARY) {
+  if (isSameNetworks) {
+    gasPrice = await doSameNetworkGasEstimation(
+      contractObj,
+      SOURCE_NETWORK,
+      req,
+      SOURCE_NETWORK.provider,
+      destinationGasPrice,
+      SOURCE_NETWORK.foundryTokenAddress
+    );
+  } else if (req.query.sourceAssetType == FOUNDARY) {
     gasPrice = await doSourceFoundaryGasEstimation(
       contractObj,
       SOURCE_NETWORK,
@@ -298,6 +313,46 @@ export const doSourceOneInchGasEstimation = async (
     oneInchSelector: req.query.sourceOneInchSelector,
   };
   return await sourceOneInchGasEstimation(contractObj, network, obj);
+};
+
+export const doSameNetworkGasEstimation = async (
+  contractObj: Contract,
+  network: any,
+  req: any,
+  provider: any,
+  gasPrice: string,
+  foundryTokenAddress: string
+): Promise<any> => {
+  let amount = await getSourceAmount(
+    req.query.sourceAmount,
+    await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+      req.query.sourceTokenContractAddress,
+      req.query.sourceNetworkChainId
+    ),
+    provider
+  );
+  let obj: SwapSameNetwork = {
+    amountIn: req.query.destinationAmountIn,
+    amountOut: req.query.destinationAmountOut,
+    targetTokenAddress: await (
+      global as any
+    ).commonFunctions.getOneInchTokenAddress(
+      req.query.destinationTokenContractAddress
+    ),
+    destinationWalletAddress: req.query.destinationWalletAddress,
+    destinationOneInchData: req.query.destinationOneInchData,
+    sourceTokenAddress: req.query.sourceTokenContractAddress,
+    sourceWalletAddress: req.query.sourceWalletAddress,
+    value: getValueForSwap(
+      amount,
+      gasPrice,
+      await (global as any).commonFunctions.isNativeToken(
+        req.query.sourceTokenContractAddress
+      )
+    ),
+    oneInchSelector: req.query.destinationOneInchSelector,
+  };
+  return await sourceSameNetworkGasEstimation(contractObj, network, obj);
 };
 
 export const getForgeSignature = async (

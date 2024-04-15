@@ -74,6 +74,7 @@ export const getQouteAndTypeForSameNetworks = async (
     sourceResponse?.amountOutIntoNumber,
     gasEstimationDestinationAmount
   );
+  console.log("destinationResponse", destinationResponse);
 
   return convertResponseForSameNetworksIntoDesire(
     sourceResponse,
@@ -96,7 +97,7 @@ const handleSource = async (
 ) => {
   let assetType;
   let sourceAmountIn: any;
-  let response: any;
+  let response: any = {};
 
   let inputAmountIntoDecimals = common.numberIntoDecimals(
     inputAmount,
@@ -108,22 +109,28 @@ const handleSource = async (
     sourceChainId,
     inputAmountIntoDecimals
   );
-  if (assetType == (global as any).utils.assetType.FOUNDARY) {
-    response = await handleFoundary(inputAmount, sourceTokenDecimals);
-  } else {
-    response = await handleOneInche(
-      sourceChainId,
-      destinationChainId,
-      sourceTokenAddress,
-      destinationTokenAddress,
-      inputAmountIntoDecimals,
-      slippage,
-      destinationTokenDecimals,
-      sourceWallet,
-      destinationWallet
-    );
-  }
+  // if (assetType == (global as any).utils.assetType.FOUNDARY) {
+  //   response = await handleFoundary(inputAmount, sourceTokenDecimals);
+  // } else {
+  //   response = await handleOneInche(
+  //     sourceChainId,
+  //     destinationChainId,
+  //     sourceTokenAddress,
+  //     destinationTokenAddress,
+  //     inputAmountIntoDecimals,
+  //     slippage,
+  //     destinationTokenDecimals,
+  //     sourceWallet,
+  //     destinationWallet
+  //   );
+  // }
+  let amountOutIntoDecimals = await common.numberIntoDecimals(
+    inputAmount,
+    sourceTokenDecimals
+  );
   response.sourceAssetType = assetType;
+  response.amountOutIntoDecimals = amountOutIntoDecimals;
+  response.amountOutIntoNumber = inputAmount;
   response.inputAmount = inputAmount;
   return response;
 };
@@ -148,7 +155,7 @@ const handleDestination = async (
 
   let inputAmountIntoDecimals = common.numberIntoDecimals(
     inputAmount,
-    sourceTokenDecimals
+    destinationTokenDecimals
   );
 
   let amountIn: any = common.numberIntoDecimals__(
@@ -165,21 +172,21 @@ const handleDestination = async (
     amountIn
   );
 
-  if (assetType == (global as any).utils.assetType.FOUNDARY) {
-    response = await handleFoundary(inputAmount, sourceTokenDecimals);
-  } else {
-    response = await handleOneInche(
-      sourceChainId,
-      destinationChainId,
-      sourceTokenAddress,
-      destinationTokenAddress,
-      inputAmountIntoDecimals,
-      slippage,
-      destinationTokenDecimals,
-      sourceWallet,
-      destinationWallet
-    );
-  }
+  // if (assetType == (global as any).utils.assetType.FOUNDARY) {
+  //   response = await handleFoundary(inputAmount, sourceTokenDecimals);
+  // } else {
+  response = await handleOneInche(
+    sourceChainId,
+    destinationChainId,
+    sourceTokenAddress,
+    destinationTokenAddress,
+    inputAmountIntoDecimals,
+    slippage,
+    destinationTokenDecimals,
+    sourceWallet,
+    destinationWallet
+  );
+  // }
   response.destinationAssetType = assetType;
   response.inputAmount = inputAmount;
   return response;
@@ -252,6 +259,7 @@ const handleOneInche = async (
     throw swapIsNotAvailable;
   }
   return {
+    amountInIntoDecimals: inputAmountIntoDecimals,
     amountOutIntoDecimals: amountOutIntoDecimals,
     amountOutIntoNumber: amountOutIntoNumber,
     minAmountOutIntoNumber: minAmountOutIntoNumber,
@@ -316,8 +324,8 @@ const convertResponseForSameNetworksIntoDesire = (
   response.destination.type = dData.destinationAssetType;
   response.destination.amount = dData.amountOutIntoNumber;
   response.destination.minAmount = dData.minAmountOutIntoNumber;
-  response.destination.bridgeAmountIn = dData.amountOutIntoDecimals;
-  // response.destination.bridgeAmountOut = machineDestinationAmountOut;
+  response.destination.bridgeAmountIn = dData.amountInIntoDecimals;
+  response.destination.bridgeAmountOut = dData.amountOutIntoDecimals;
   response.destination.oneInchData = dData?.oneInchData;
 
   console.log("response", response);
