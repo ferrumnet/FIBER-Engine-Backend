@@ -33,18 +33,20 @@ import {
   doOneInchWithdraw,
   getDestinationAmountFromLogs,
   getValueForSwap,
+  doSameNetworkSwap,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
   SwapOneInch,
   WithdrawSigned,
   WithdrawSignedAndSwapOneInch,
+  SwapSameNetwork,
 } from "../app/interfaces/fiberEngineInterface";
-
 import {
   getWithdrawSignedObject,
   getWithdrawSignedAndSwapOneInchObject,
   sendSlackNotification,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
+import { isSameNetworksSwap } from "../app/lib/middlewares/helpers/multiSwapHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -268,7 +270,24 @@ module.exports = {
       const isFoundryAsset = sourceTypeResponse.isFoundryAsset;
       let sourceBridgeAmount;
       let swapResult;
-      if (isFoundryAsset) {
+      const isSameNetworks = isSameNetworksSwap(sourceChainId, targetChainId);
+      if (isSameNetworks) {
+        let obj: SwapSameNetwork = {
+          amountIn: query?.destinationAmountIn,
+          amountOut: query?.destinationAmountOut,
+          targetTokenAddress: await (
+            global as any
+          ).commonFunctions.getOneInchTokenAddress(
+            query?.destinationTokenContractAddress
+          ),
+          destinationWalletAddress: query?.destinationWalletAddress,
+          destinationOneInchData: query?.destinationOneInchData,
+          sourceTokenAddress: query?.sourceTokenContractAddress,
+          sourceWalletAddress: query?.sourceWalletAddress,
+          oneInchSelector: query?.destinationOneInchSelector,
+        };
+        swapResult = await doSameNetworkSwap(obj, fiberRouter);
+      } else if (isFoundryAsset) {
         swapResult = fiberRouter.methods.swap(
           sourceTokenAddress,
           amount,
@@ -339,6 +358,7 @@ module.exports = {
       returnData = { ...returnData, value: value };
       return returnData;
     } catch (error) {
+      console.log("error", error);
       throw { error };
     }
   },

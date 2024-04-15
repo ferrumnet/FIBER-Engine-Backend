@@ -34,6 +34,17 @@ export interface SwapOneInch {
   oneInchSelector: string;
 }
 
+export interface SwapSameNetwork {
+  amountIn: string;
+  amountOut: string;
+  sourceTokenAddress: string;
+  targetTokenAddress: string;
+  destinationWalletAddress: string;
+  destinationOneInchData: string;
+  sourceWalletAddress: string;
+  oneInchSelector: string;
+}
+
 export interface WithdrawOneInchLogs {
   "2": string;
 }

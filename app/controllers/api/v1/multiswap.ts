@@ -46,12 +46,19 @@ module.exports = function (router: any) {
         !req.query.destinationTokenContractAddress ||
         !req.query.destinationNetworkChainId ||
         !req.query.sourceAssetType ||
-        !req.query.destinationAssetType ||
-        !req.query.gasPrice
+        !req.query.destinationAssetType
       ) {
         return res.http401(
-          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType & gasPrice are missing"
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType are missing"
         );
+      }
+      if (
+        req.query.sourceNetworkChainId != req.query.destinationNetworkChainId &&
+        !req.query.gasPrice
+      ) {
+        return res.http401("gasPrice is missing");
+      } else {
+        req.query.gasPrice = "";
       }
       req.query.sourceWalletAddress =
         req.query.sourceWalletAddress.toLowerCase();

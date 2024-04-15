@@ -4,6 +4,7 @@ import {
   WithdrawSigned,
   WithdrawSignedAndSwapOneInch,
   WithdrawOneInchLogs,
+  SwapSameNetwork,
 } from "../../../interfaces/fiberEngineInterface";
 import {
   getGasForWithdraw,
@@ -255,6 +256,48 @@ export const doOneInchSwap = async (
         obj.sourceTokenAddress,
         obj.foundryTokenAddress,
         obj.withdrawalData,
+        obj.oneInchSelector
+      );
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return result;
+};
+
+export const doSameNetworkSwap = async (
+  obj: SwapSameNetwork,
+  fiberRouter: any
+): Promise<any> => {
+  let result;
+  try {
+    console.log(obj);
+    if (
+      await (global as any).commonFunctions.isNativeToken(
+        obj.sourceTokenAddress
+      )
+    ) {
+      result = fiberRouter.methods.swapOnSameNetworkETH(
+        obj.amountOut,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
+        obj.destinationWalletAddress,
+        obj.destinationOneInchData,
+        obj.oneInchSelector
+      );
+    } else {
+      result = fiberRouter.methods.swapOnSameNetwork(
+        obj.amountIn,
+        obj.amountOut,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.sourceTokenAddress
+        ),
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
+        obj.destinationWalletAddress,
+        obj.destinationOneInchData,
         obj.oneInchSelector
       );
     }
