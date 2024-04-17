@@ -65,14 +65,25 @@ export const isAllowedDynamicGasValues = async (
   return item?.isAllowedDynamicGasLimit ? true : false;
 };
 
-export const getGasBuffer = async (chainId: string): Promise<any> => {
+export const getGasBuffer = async (
+  chainId: string,
+  isFromWithdrawal = true
+): Promise<any> => {
   let data = await db.GasFees.findOne({ chainId: chainId });
-  return data?.gasBuffer ? data?.gasBuffer : 10;
+  if (isFromWithdrawal) {
+    return data?.bufferForWithdrawal ? data?.bufferForWithdrawal : 10;
+  } else {
+    return data?.bufferForGasEstimation ? data?.bufferForGasEstimation : 10;
+  }
 };
 
-export const addBuffer = async (amount: any, chainId: string): Promise<any> => {
+export const addBuffer = async (
+  amount: any,
+  chainId: string,
+  isFromWithdrawal: boolean
+): Promise<any> => {
   console.log("beForBufferGasLimit", amount?.toString());
-  let buffer = 100 + (await getGasBuffer(chainId));
+  let buffer = 100 + (await getGasBuffer(chainId, isFromWithdrawal));
   amount = amount.mul(buffer).div(100);
   amount = parseInt(amount?.toString());
   console.log("afterBufferGasLimit", amount?.toString(), "buffer", buffer);
@@ -81,10 +92,11 @@ export const addBuffer = async (amount: any, chainId: string): Promise<any> => {
 
 export const addBuffer_ = async (
   amount: any,
-  chainId: string
+  chainId: string,
+  isFromWithdrawal: boolean
 ): Promise<any> => {
   console.log("beForBufferGasLimit", amount?.toString());
-  let buffer = 100 + (await getGasBuffer(chainId));
+  let buffer = 100 + (await getGasBuffer(chainId, isFromWithdrawal));
   amount = amount.mul(buffer).div(100);
   console.log("afterBufferGasLimit", amount?.toString(), "buffer", buffer);
   return amount;

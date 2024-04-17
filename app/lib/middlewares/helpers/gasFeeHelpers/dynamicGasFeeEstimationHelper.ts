@@ -398,7 +398,7 @@ async function getDestinationGasPrices(
     gasPriceInNative = new Big(gasPriceInNative);
     let usdPrice = await getQuote(nativeToken?.symbol);
     let gasPriceInToUSD = new Big(gasPriceInNative).mul(usdPrice);
-    gasPriceInToUSD = await addBuffer_(gasPriceInToUSD, chainId);
+    gasPriceInToUSD = await addBuffer_(gasPriceInToUSD, chainId, false);
     return {
       gasPrice: gasPriceInNative.toString(),
       gasPriceInUSD: gasPriceInToUSD.toString(),
