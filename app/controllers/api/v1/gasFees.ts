@@ -12,8 +12,8 @@ module.exports = function (router: any) {
     asyncMiddleware(async (req: any, res: any) => {
       let destinationGasPrices;
       const isSameNetworks = isSameNetworksSwap(
-        req?.body?.sourceNetworkChainId,
-        req?.body?.destinationNetworkChainId
+        req?.query?.sourceNetworkChainId,
+        req?.query?.destinationNetworkChainId
       );
       gasEstimationValidation(req);
       if (!isSameNetworks) {
