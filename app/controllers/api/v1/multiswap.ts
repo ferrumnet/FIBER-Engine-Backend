@@ -57,8 +57,6 @@ module.exports = function (router: any) {
         !req.query.gasPrice
       ) {
         return res.http401("gasPrice is missing");
-      } else {
-        req.query.gasPrice = "";
       }
       req.query.sourceWalletAddress =
         req.query.sourceWalletAddress.toLowerCase();
