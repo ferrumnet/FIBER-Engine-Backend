@@ -4,7 +4,11 @@ import {
   WithdrawSigned,
   WithdrawSignedAndSwapOneInch,
 } from "../../../../interfaces/forgeInterface";
-import { Swap, SwapOneInch } from "../../../../interfaces/forgeInterface";
+import {
+  Swap,
+  SwapOneInch,
+  SwapSameNetwork,
+} from "../../../../interfaces/forgeInterface";
 const forgeAbi: any = require("../../../../../config/forge.json");
 const fiberRouterAbi: any = require("../../../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
 
@@ -163,6 +167,64 @@ export const sourceOneInchGasEstimation = async (
         obj.sourceTokenAddress,
         obj.foundryTokenAddress,
         obj.withdrawalData,
+        obj.oneInchSelector,
+        {
+          from: obj.sourceWalletAddress,
+          value: obj.value,
+        }
+      );
+    }
+    return response;
+  } catch (e: any) {
+    console.log(e);
+    if (e?.reason) {
+      throw e?.reason;
+    }
+  }
+};
+
+export const sourceSameNetworkGasEstimation = async (
+  contract: Contract,
+  network: any,
+  obj: SwapSameNetwork
+): Promise<any> => {
+  try {
+    console.log("obj", obj);
+    let response;
+    let fiberRouter = fiberRouterContract(
+      network.provider,
+      contract.contractAddress
+    );
+    if (
+      await (global as any).commonFunctions.isNativeToken(
+        obj.sourceTokenAddress
+      )
+    ) {
+      response = await fiberRouter.estimateGas.swapOnSameNetworkETH(
+        obj.amountOut,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
+        obj.destinationWalletAddress,
+        obj.destinationOneInchData,
+        obj.oneInchSelector,
+        {
+          from: obj.sourceWalletAddress,
+          value: obj.value,
+        }
+      );
+    } else {
+      response = await fiberRouter.estimateGas.swapOnSameNetwork(
+        obj.amountIn,
+        obj.amountOut,
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.sourceTokenAddress
+        ),
+        await (global as any).commonFunctions.getOneInchTokenAddress(
+          obj.targetTokenAddress
+        ),
+        obj.destinationWalletAddress,
+        obj.destinationOneInchData,
         obj.oneInchSelector,
         {
           from: obj.sourceWalletAddress,

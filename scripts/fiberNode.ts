@@ -3,7 +3,7 @@ var { ethers } = require("ethers");
 import {
   getSourceAssetTypes,
   getTargetAssetTypes,
-} from "../app/lib/middlewares/helpers/assetTypeHelper";
+} from "../app/lib/middlewares/helpers/tokenQuoteAndTypeHelpers/assetTypeHelper";
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
 import {

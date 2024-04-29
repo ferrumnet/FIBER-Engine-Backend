@@ -14,6 +14,10 @@ mongoose.Promise = require("bluebird");
 
   await (global as any).networksAxiosHelper.getAllNetworks();
   var mongoString = (global as any).environment.mongoConnectionUrl;
+  let isLocalEnv = (global as any).environment.isLocalEnv;
+  if (isLocalEnv) {
+    mongoString = (global as any).environment.localMongoConnectionUrl;
+  }
   var mongoLogger = function (coll: any, method: any, query: any, doc: any) {
     (global as any).log.debug(
       coll +
