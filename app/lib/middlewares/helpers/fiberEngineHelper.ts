@@ -95,8 +95,9 @@ export const doFoundaryWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
+      dynamicGasPrice = await addBuffer(dynamicGasPrice, targetChainId, true);
     } else if (isAllowedDynamicGas && gasLimit) {
-      dynamicGasPrice = await addBuffer(new Big(gasLimit), targetChainId);
+      dynamicGasPrice = await addBuffer(new Big(gasLimit), targetChainId, true);
     }
     console.log("dynamicGasPrice", dynamicGasPrice);
     result = await targetNetwork.fiberRouterContract
@@ -173,9 +174,9 @@ export const doOneInchWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
-      dynamicGasPrice = await addBuffer(dynamicGasPrice, targetChainId);
+      dynamicGasPrice = await addBuffer(dynamicGasPrice, targetChainId, true);
     } else if (isAllowedDynamicGas && gasLimit) {
-      dynamicGasPrice = await addBuffer(new Big(gasLimit), targetChainId);
+      dynamicGasPrice = await addBuffer(new Big(gasLimit), targetChainId, true);
     }
     console.log("dynamicGasPrice", dynamicGasPrice);
     result = await targetNetwork.fiberRouterContract
