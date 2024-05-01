@@ -3,7 +3,7 @@ var { ethers } = require("ethers");
 import {
   getSourceAssetTypes,
   getTargetAssetTypes,
-} from "../app/lib/middlewares/helpers/assetTypeHelper";
+} from "../app/lib/middlewares/helpers/tokenQuoteAndTypeHelpers/assetTypeHelper";
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
 import {
@@ -13,6 +13,11 @@ import {
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 import { swapIsNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
 import { getSourceAmountOut } from "../app/lib/middlewares/helpers/fiberNodeHelper";
+import {
+  removeSelector,
+  getSelector,
+} from "../app/lib/middlewares/helpers/oneInchDecoderHelper";
+import { isValidOneInchSelector } from "../app/lib/middlewares/helpers/configurationHelper";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -124,6 +129,12 @@ module.exports = {
         }
         if (response && response.data) {
           sourceOneInchData = response.data;
+        }
+        if (
+          sourceOneInchData &&
+          !(await isValidOneInchSelector(getSelector(sourceOneInchData)))
+        ) {
+          throw swapIsNotAvailable;
         }
       }
     }
@@ -257,6 +268,12 @@ module.exports = {
       );
       if (!isValidLiquidityAvailable) {
         throw IN_SUFFICIENT_LIQUIDITY_ERROR;
+      }
+      if (
+        destinationOneInchData &&
+        !(await isValidOneInchSelector(getSelector(destinationOneInchData)))
+      ) {
+        throw swapIsNotAvailable;
       }
     } else {
       let isValidLiquidityAvailable = await isLiquidityAvailableForCudos(

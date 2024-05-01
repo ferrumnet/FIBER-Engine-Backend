@@ -11,6 +11,14 @@ var schema = mongoose.Schema(
     bufferForGasEstimation: { type: Number, default: 0 },
     bufferForWithdrawal: { type: Number, default: 0 },
     isAllowedDynamicGasLimit: { type: Boolean, default: false },
+    isAllowedSourceAggressivePriceForDynamicGas: {
+      type: Boolean,
+      default: false,
+    },
+    isAllowedDestinationAggressivePriceForDynamicGas: {
+      type: Boolean,
+      default: false,
+    },
     chainId: { type: String, default: "" },
     dynamicValues: {
       maxFeePerGas: { type: String, default: "" },

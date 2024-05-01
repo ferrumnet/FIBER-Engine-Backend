@@ -22,6 +22,7 @@ export interface WithdrawSignedAndSwapOneInch {
   salt: string;
   signatureExpiry: number;
   signature: string;
+  oneInchSelector: string;
 }
 
 export interface Swap {
@@ -48,6 +49,19 @@ export interface SwapOneInch {
   gasPrice: string;
   sourceWalletAddress: string;
   value: string;
+  oneInchSelector: string;
+}
+
+export interface SwapSameNetwork {
+  amountIn: string;
+  amountOut: string;
+  sourceTokenAddress: string;
+  targetTokenAddress: string;
+  destinationWalletAddress: string;
+  destinationOneInchData: string;
+  sourceWalletAddress: string;
+  value: string;
+  oneInchSelector: string;
 }
 
 export interface DestinationGasEstimationResponse {

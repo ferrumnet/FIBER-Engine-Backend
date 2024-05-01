@@ -15,6 +15,20 @@ var schema = mongoose.Schema(
         oneInchAddress: { type: String, default: "" },
       },
     ],
+    oneInchSelector: [
+      {
+        type: { type: String, default: "0" },
+        hash: { type: String, default: "" },
+      },
+    ],
+    gasNetworks: [
+      {
+        name: { type: String, default: "" },
+        chainId: { type: String, default: "" },
+        shortName: { type: String, default: "" },
+        provider: { type: String, default: "owlracle" },
+      },
+    ],
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: new Date() },
     updatedAt: { type: Date, default: new Date() },
