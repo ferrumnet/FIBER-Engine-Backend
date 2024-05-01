@@ -5,6 +5,11 @@ export interface WithdrawSigned {
   salt: string;
   signatureExpiry: number;
   signature: string;
+  targetNetwork: any;
+  targetSigner: any;
+  targetChainId: string;
+  swapTransactionHash: string;
+  gasLimit: string;
 }
 
 export interface WithdrawSignedAndSwapOneInch {
@@ -18,6 +23,11 @@ export interface WithdrawSignedAndSwapOneInch {
   signatureExpiry: number;
   signature: string;
   oneInchSelector: string;
+  targetNetwork: any;
+  targetSigner: any;
+  targetChainId: string;
+  swapTransactionHash: string;
+  gasLimit: string;
 }
 
 export interface SwapOneInch {

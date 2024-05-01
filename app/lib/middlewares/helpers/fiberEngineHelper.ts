@@ -22,7 +22,12 @@ export const getWithdrawSignedObject = (
   destinationAmountIn: string,
   salt: string,
   signatureExpiry: number,
-  signature: string
+  signature: string,
+  targetNetwork: any,
+  targetSigner: any,
+  targetChainId: string,
+  swapTransactionHash: string,
+  gasLimit: string
 ): WithdrawSigned => {
   let object: WithdrawSigned = {
     targetTokenAddress: targetTokenAddress,
@@ -31,6 +36,11 @@ export const getWithdrawSignedObject = (
     salt: salt,
     signatureExpiry: signatureExpiry,
     signature: signature,
+    targetNetwork: targetNetwork,
+    targetSigner: targetSigner,
+    targetChainId: targetChainId,
+    swapTransactionHash: swapTransactionHash,
+    gasLimit: gasLimit,
   };
   return object;
 };
@@ -45,7 +55,12 @@ export const getWithdrawSignedAndSwapOneInchObject = (
   salt: string,
   signatureExpiry: number,
   signature: string,
-  destinationOneInchSelector: string
+  destinationOneInchSelector: string,
+  targetNetwork: any,
+  targetSigner: any,
+  targetChainId: string,
+  swapTransactionHash: string,
+  gasLimit: string
 ): WithdrawSignedAndSwapOneInch => {
   let object: WithdrawSignedAndSwapOneInch = {
     destinationWalletAddress: destinationWalletAddress,
@@ -58,33 +73,36 @@ export const getWithdrawSignedAndSwapOneInchObject = (
     signatureExpiry: signatureExpiry,
     signature: signature,
     oneInchSelector: destinationOneInchSelector,
+    targetNetwork: targetNetwork,
+    targetSigner: targetSigner,
+    targetChainId: targetChainId,
+    swapTransactionHash: swapTransactionHash,
+    gasLimit: gasLimit,
   };
   return object;
 };
 
 export const doFoundaryWithdraw = async (
   obj: WithdrawSigned,
-  targetNetwork: any,
-  targetSigner: any,
-  targetChainId: any,
-  swapTransactionHash: string,
-  gasLimit: string,
+  extraBuffer: number,
   count = 0
 ): Promise<any> => {
-  let result;
+  let result: any;
   let dynamicGasPrice: any;
   try {
-    let isAllowedDynamicGas = await isAllowedDynamicGasValues(targetChainId);
+    let isAllowedDynamicGas = await isAllowedDynamicGasValues(
+      obj.targetChainId
+    );
     if (count > 0) {
-      gasLimit = "";
+      obj.gasLimit = "";
     }
     if (
       isAllowedDynamicGas &&
       count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES &&
-      !gasLimit
+      !obj.gasLimit
     ) {
-      dynamicGasPrice = await targetNetwork.fiberRouterContract
-        .connect(targetSigner)
+      dynamicGasPrice = await obj.targetNetwork.fiberRouterContract
+        .connect(obj.targetSigner)
         .estimateGas.withdrawSigned(
           await (global as any).commonFunctions.getOneInchTokenAddress(
             obj.targetTokenAddress
@@ -95,13 +113,23 @@ export const doFoundaryWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
-      dynamicGasPrice = await addBuffer(dynamicGasPrice, targetChainId, true);
-    } else if (isAllowedDynamicGas && gasLimit) {
-      dynamicGasPrice = await addBuffer(new Big(gasLimit), targetChainId, true);
+      dynamicGasPrice = await addBuffer(
+        dynamicGasPrice,
+        obj.targetChainId,
+        true,
+        extraBuffer
+      );
+    } else if (isAllowedDynamicGas && obj.gasLimit) {
+      dynamicGasPrice = await addBuffer(
+        new Big(obj.gasLimit),
+        obj.targetChainId,
+        true,
+        extraBuffer
+      );
     }
     console.log("dynamicGasPrice", dynamicGasPrice);
-    result = await targetNetwork.fiberRouterContract
-      .connect(targetSigner)
+    result = await obj.targetNetwork.fiberRouterContract
+      .connect(obj.targetSigner)
       .withdrawSigned(
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
@@ -111,55 +139,46 @@ export const doFoundaryWithdraw = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
-        await getGasForWithdraw(targetChainId, dynamicGasPrice)
+        await getGasForWithdraw(obj.targetChainId, dynamicGasPrice)
       );
   } catch (e) {
     console.log(e);
     sendSlackNotification(
-      swapTransactionHash,
+      obj.swapTransactionHash,
       e,
-      getGasLimitTagForSlackNotification(dynamicGasPrice, gasLimit)
+      getGasLimitTagForSlackNotification(dynamicGasPrice, obj.gasLimit)
     );
     await delay();
     count = count + 1;
     if (count < MAX_WITHDRAW_TRIES) {
-      result = await doFoundaryWithdraw(
-        obj,
-        targetNetwork,
-        targetSigner,
-        targetChainId,
-        swapTransactionHash,
-        gasLimit,
-        count
-      );
+      result = await doFoundaryWithdraw(obj, count);
     }
   }
+  result.dynamicGasPrice = dynamicGasPrice;
   return result;
 };
 
 export const doOneInchWithdraw = async (
   obj: WithdrawSignedAndSwapOneInch,
-  targetNetwork: any,
-  targetSigner: any,
-  targetChainId: any,
-  swapTransactionHash: string,
-  gasLimit: string,
+  extraBuffer: number,
   count = 0
 ): Promise<any> => {
-  let result;
+  let result: any;
   let dynamicGasPrice: any;
   try {
-    let isAllowedDynamicGas = await isAllowedDynamicGasValues(targetChainId);
+    let isAllowedDynamicGas = await isAllowedDynamicGasValues(
+      obj.targetChainId
+    );
     if (count > 0) {
-      gasLimit = "";
+      obj.gasLimit = "";
     }
     if (
       isAllowedDynamicGas &&
       count < MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES &&
-      !gasLimit
+      !obj.gasLimit
     ) {
-      dynamicGasPrice = await targetNetwork.fiberRouterContract
-        .connect(targetSigner)
+      dynamicGasPrice = await obj.targetNetwork.fiberRouterContract
+        .connect(obj.targetSigner)
         .estimateGas.withdrawSignedAndSwapOneInch(
           obj.destinationWalletAddress,
           obj.destinationAmountIn,
@@ -174,13 +193,23 @@ export const doOneInchWithdraw = async (
           obj.signatureExpiry,
           obj.signature
         );
-      dynamicGasPrice = await addBuffer(dynamicGasPrice, targetChainId, true);
-    } else if (isAllowedDynamicGas && gasLimit) {
-      dynamicGasPrice = await addBuffer(new Big(gasLimit), targetChainId, true);
+      dynamicGasPrice = await addBuffer(
+        dynamicGasPrice,
+        obj.targetChainId,
+        true,
+        extraBuffer
+      );
+    } else if (isAllowedDynamicGas && obj.gasLimit) {
+      dynamicGasPrice = await addBuffer(
+        new Big(obj.gasLimit),
+        obj.targetChainId,
+        true,
+        extraBuffer
+      );
     }
     console.log("dynamicGasPrice", dynamicGasPrice);
-    result = await targetNetwork.fiberRouterContract
-      .connect(targetSigner)
+    result = await obj.targetNetwork.fiberRouterContract
+      .connect(obj.targetSigner)
       .withdrawSignedAndSwapOneInch(
         obj.destinationWalletAddress,
         obj.destinationAmountIn,
@@ -194,29 +223,22 @@ export const doOneInchWithdraw = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
-        await getGasForWithdraw(targetChainId, dynamicGasPrice)
+        await getGasForWithdraw(obj.targetChainId, dynamicGasPrice)
       );
   } catch (e) {
     console.log(e);
     sendSlackNotification(
-      swapTransactionHash,
+      obj.swapTransactionHash,
       e,
-      getGasLimitTagForSlackNotification(dynamicGasPrice, gasLimit)
+      getGasLimitTagForSlackNotification(dynamicGasPrice, obj.gasLimit)
     );
     await delay();
     count = count + 1;
     if (count < MAX_WITHDRAW_TRIES) {
-      result = await doOneInchWithdraw(
-        obj,
-        targetNetwork,
-        targetSigner,
-        targetChainId,
-        swapTransactionHash,
-        gasLimit,
-        count
-      );
+      result = await doOneInchWithdraw(obj, count);
     }
   }
+  result.dynamicGasPrice = dynamicGasPrice;
   return result;
 };
 
@@ -367,6 +389,28 @@ export const getValueForSwap = (
   } catch (e) {
     console.log(e);
   }
+};
+
+export const isOutOfGasError = async (
+  error: any,
+  totalGas: any
+): Promise<Boolean> => {
+  try {
+    const gasUsed = error?.receipt?.gasUsed?.toString();
+    if (gasUsed) {
+      console.log("gas used:", gasUsed, "totalGas:", totalGas);
+      let percentage: any = (100 * Number(gasUsed)) / Number(totalGas);
+      percentage = percentage.toFixed(2);
+      console.log(percentage, Number(percentage));
+      if (Number(percentage) > 98) {
+        console.log("isOutOfGasError: true");
+        return true;
+      }
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return false;
 };
 
 const getGasLimitTagForSlackNotification = (
