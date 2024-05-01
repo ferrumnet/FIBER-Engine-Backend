@@ -34,6 +34,7 @@ import {
   getDestinationAmountFromLogs,
   getValueForSwap,
   doSameNetworkSwap,
+  isOutOfGasError,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
   SwapOneInch,
@@ -156,19 +157,19 @@ module.exports = {
         String(signatureResponse.amount),
         signatureResponse.salt,
         body.signatureExpiry,
-        String(signatureResponse.signature)
-      );
-      const swapResult = await doFoundaryWithdraw(
-        obj,
+        String(signatureResponse.signature),
         targetNetwork,
         targetSigner,
         targetChainId,
         swapTransactionHash,
         body?.gasLimit
       );
+      const swapResult = await doFoundaryWithdraw(obj, 0);
       const receipt = await this.callEVMWithdrawAndGetReceipt(
         swapResult,
-        swapTransactionHash
+        swapTransactionHash,
+        true,
+        obj
       );
       destinationAmount = (
         signatureResponse.amount /
@@ -190,19 +191,19 @@ module.exports = {
           signatureResponse.salt,
           body.signatureExpiry,
           String(signatureResponse.signature),
-          body.destinationOneInchSelector
+          body.destinationOneInchSelector,
+          targetNetwork,
+          targetSigner,
+          targetChainId,
+          swapTransactionHash,
+          body?.gasLimit
         );
-      const swapResult = await doOneInchWithdraw(
-        obj,
-        targetNetwork,
-        targetSigner,
-        targetChainId,
-        swapTransactionHash,
-        body?.gasLimit
-      );
+      const swapResult = await doOneInchWithdraw(obj, 0);
       const receipt = await this.callEVMWithdrawAndGetReceipt(
         swapResult,
-        swapTransactionHash
+        swapTransactionHash,
+        false,
+        obj
       );
       let destinationAmountOut = getDestinationAmountFromLogs(
         receipt,
@@ -365,14 +366,34 @@ module.exports = {
 
   callEVMWithdrawAndGetReceipt: async function (
     data: any,
-    swapTransactionHash: string
+    swapTransactionHash: string,
+    isFoundary: boolean,
+    objForWithdraw: any,
+    count = 0
   ) {
     let receipt: any = { status: 0, responseMessage: "" };
     try {
       receipt = await data?.wait();
-    } catch (e) {
+    } catch (e: any) {
       receipt.responseMessage = e;
       sendSlackNotification(swapTransactionHash, e, "Not available");
+      if ((await isOutOfGasError(e, data.dynamicGasPrice)) && count < 3) {
+        count = count + 1;
+        console.log("count", count, "extraBuffer:", count * 100);
+        let result;
+        if (isFoundary) {
+          result = await doFoundaryWithdraw(objForWithdraw, count * 100);
+        } else {
+          result = await doOneInchWithdraw(objForWithdraw, count * 100);
+        }
+        receipt = await this.callEVMWithdrawAndGetReceipt(
+          result,
+          swapTransactionHash,
+          isFoundary,
+          objForWithdraw,
+          count
+        );
+      }
     }
     return receipt;
   },
