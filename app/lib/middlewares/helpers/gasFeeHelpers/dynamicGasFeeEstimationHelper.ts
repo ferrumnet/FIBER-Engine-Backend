@@ -215,6 +215,8 @@ export const doDestinationOneInchGasEstimation = async (
     targetFoundryTokenAddress: targetNetwork.foundryTokenAddress,
     destinationOneInchData: req.query.destinationOneInchData,
     oneInchSelector: req.query.destinationOneInchSelector,
+    aggregateRouterContractAddress:
+      targetNetwork.aggregateRouterContractAddress,
   };
   return await destinationOneInchGasEstimation(contractObj, network, obj);
 };
@@ -311,6 +313,7 @@ export const doSourceOneInchGasEstimation = async (
       )
     ),
     oneInchSelector: req.query.sourceOneInchSelector,
+    aggregateRouterContractAddress: network.aggregateRouterContractAddress,
   };
   return await sourceOneInchGasEstimation(contractObj, network, obj);
 };
@@ -351,6 +354,7 @@ export const doSameNetworkGasEstimation = async (
       )
     ),
     oneInchSelector: req.query.destinationOneInchSelector,
+    aggregateRouterContractAddress: network.aggregateRouterContractAddress,
   };
   return await sourceSameNetworkGasEstimation(contractObj, network, obj);
 };
@@ -377,7 +381,8 @@ export const getForgeSignature = async (
     targetNetwork.foundryTokenAddress,
     req.query.destinationOneInchData,
     expiry,
-    web3
+    web3,
+    targetNetwork.aggregateRouterContractAddress
   );
   recoverAddress(SIGNATURE.signature, SIGNATURE.hash);
   return SIGNATURE;

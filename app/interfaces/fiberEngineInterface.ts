@@ -28,6 +28,7 @@ export interface WithdrawSignedAndSwapOneInch {
   targetChainId: string;
   swapTransactionHash: string;
   gasLimit: string;
+  aggregateRouterContractAddress: string;
 }
 
 export interface SwapOneInch {
@@ -42,6 +43,7 @@ export interface SwapOneInch {
   withdrawalData: string;
   gasPrice: string;
   oneInchSelector: string;
+  aggregateRouterContractAddress: string;
 }
 
 export interface SwapSameNetwork {
@@ -53,6 +55,7 @@ export interface SwapSameNetwork {
   destinationOneInchData: string;
   sourceWalletAddress: string;
   oneInchSelector: string;
+  aggregateRouterContractAddress: string;
 }
 
 export interface WithdrawOneInchLogs {

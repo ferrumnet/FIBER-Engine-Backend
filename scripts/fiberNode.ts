@@ -130,12 +130,6 @@ module.exports = {
         if (response && response.data) {
           sourceOneInchData = response.data;
         }
-        if (
-          sourceOneInchData &&
-          !(await isValidOneInchSelector(getSelector(sourceOneInchData)))
-        ) {
-          throw swapIsNotAvailable;
-        }
       }
     }
 
@@ -268,12 +262,6 @@ module.exports = {
       );
       if (!isValidLiquidityAvailable) {
         throw IN_SUFFICIENT_LIQUIDITY_ERROR;
-      }
-      if (
-        destinationOneInchData &&
-        !(await isValidOneInchSelector(getSelector(destinationOneInchData)))
-      ) {
-        throw swapIsNotAvailable;
       }
     } else {
       let isValidLiquidityAvailable = await isLiquidityAvailableForCudos(
