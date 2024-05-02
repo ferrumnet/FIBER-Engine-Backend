@@ -286,6 +286,8 @@ module.exports = {
           sourceTokenAddress: query?.sourceTokenContractAddress,
           sourceWalletAddress: query?.sourceWalletAddress,
           oneInchSelector: query?.destinationOneInchSelector,
+          aggregateRouterContractAddress:
+            sourceNetwork.aggregateRouterContractAddress,
         };
         swapResult = await doSameNetworkSwap(obj, fiberRouter);
       } else if (isFoundryAsset) {
@@ -304,7 +306,8 @@ module.exports = {
             query?.destinationAmountOut,
             query?.sourceAssetType,
             query?.destinationAssetType
-          )
+          ),
+          false
         );
         sourceBridgeAmount = amount;
       } else {
@@ -329,6 +332,8 @@ module.exports = {
           withdrawalData: withdrawalData,
           gasPrice: query?.gasPrice,
           oneInchSelector: query?.sourceOneInchSelector,
+          aggregateRouterContractAddress:
+            sourceNetwork.aggregateRouterContractAddress,
         };
         swapResult = await doOneInchSwap(obj, fiberRouter);
       }

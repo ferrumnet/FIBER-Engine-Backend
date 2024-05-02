@@ -23,6 +23,7 @@ export interface WithdrawSignedAndSwapOneInch {
   signatureExpiry: number;
   signature: string;
   oneInchSelector: string;
+  aggregateRouterContractAddress: string;
 }
 
 export interface Swap {
@@ -50,6 +51,7 @@ export interface SwapOneInch {
   sourceWalletAddress: string;
   value: string;
   oneInchSelector: string;
+  aggregateRouterContractAddress: string;
 }
 
 export interface SwapSameNetwork {
@@ -62,6 +64,7 @@ export interface SwapSameNetwork {
   sourceWalletAddress: string;
   value: string;
   oneInchSelector: string;
+  aggregateRouterContractAddress: string;
 }
 
 export interface DestinationGasEstimationResponse {

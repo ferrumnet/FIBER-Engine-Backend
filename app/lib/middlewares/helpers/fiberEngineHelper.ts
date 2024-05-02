@@ -78,6 +78,8 @@ export const getWithdrawSignedAndSwapOneInchObject = (
     targetChainId: targetChainId,
     swapTransactionHash: swapTransactionHash,
     gasLimit: gasLimit,
+    aggregateRouterContractAddress:
+      targetNetwork.aggregateRouterContractAddress,
   };
   return object;
 };
@@ -111,7 +113,8 @@ export const doFoundaryWithdraw = async (
           obj.destinationAmountIn,
           obj.salt,
           obj.signatureExpiry,
-          obj.signature
+          obj.signature,
+          false
         );
       dynamicGasPrice = await addBuffer(
         dynamicGasPrice,
@@ -139,6 +142,7 @@ export const doFoundaryWithdraw = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
+        false,
         await getGasForWithdraw(obj.targetChainId, dynamicGasPrice)
       );
   } catch (e) {
@@ -179,7 +183,7 @@ export const doOneInchWithdraw = async (
     ) {
       dynamicGasPrice = await obj.targetNetwork.fiberRouterContract
         .connect(obj.targetSigner)
-        .estimateGas.withdrawSignedAndSwapOneInch(
+        .estimateGas.withdrawSignedAndSwapRouter(
           obj.destinationWalletAddress,
           obj.destinationAmountIn,
           obj.destinationAmountOut,
@@ -187,11 +191,12 @@ export const doOneInchWithdraw = async (
           await (global as any).commonFunctions.getOneInchTokenAddress(
             obj.targetTokenAddress
           ),
+          obj.aggregateRouterContractAddress,
           obj.destinationOneInchData,
-          obj.oneInchSelector,
           obj.salt,
           obj.signatureExpiry,
-          obj.signature
+          obj.signature,
+          false
         );
       dynamicGasPrice = await addBuffer(
         dynamicGasPrice,
@@ -210,7 +215,7 @@ export const doOneInchWithdraw = async (
     console.log("dynamicGasPrice", dynamicGasPrice);
     result = await obj.targetNetwork.fiberRouterContract
       .connect(obj.targetSigner)
-      .withdrawSignedAndSwapOneInch(
+      .withdrawSignedAndSwapRouter(
         obj.destinationWalletAddress,
         obj.destinationAmountIn,
         obj.destinationAmountOut,
@@ -218,11 +223,12 @@ export const doOneInchWithdraw = async (
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
+        obj.aggregateRouterContractAddress,
         obj.destinationOneInchData,
-        obj.oneInchSelector,
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
+        false,
         await getGasForWithdraw(obj.targetChainId, dynamicGasPrice)
       );
   } catch (e) {
@@ -253,33 +259,35 @@ export const doOneInchSwap = async (
         obj.sourceTokenAddress
       )
     ) {
-      result = fiberRouter.methods.swapAndCrossOneInchETH(
+      result = fiberRouter.methods.swapAndCrossRouterETH(
         obj.amountOut,
+        obj.foundryTokenAddress,
+        obj.gasPrice,
+        obj.aggregateRouterContractAddress,
+        obj.sourceOneInchData,
         obj.targetChainId,
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
-        obj.sourceOneInchData,
-        obj.foundryTokenAddress,
         obj.withdrawalData,
-        obj.gasPrice,
-        obj.oneInchSelector
+        false
       );
     } else {
-      result = fiberRouter.methods.swapAndCrossOneInch(
+      result = fiberRouter.methods.swapAndCrossRouter(
         obj.amountIn,
         obj.amountOut,
+        obj.sourceTokenAddress,
+        obj.foundryTokenAddress,
+        obj.aggregateRouterContractAddress,
+        obj.sourceOneInchData,
         obj.targetChainId,
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
-        obj.sourceOneInchData,
-        obj.sourceTokenAddress,
-        obj.foundryTokenAddress,
         obj.withdrawalData,
-        obj.oneInchSelector
+        false
       );
     }
   } catch (e) {
@@ -306,8 +314,8 @@ export const doSameNetworkSwap = async (
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
-        obj.destinationOneInchData,
-        obj.oneInchSelector
+        obj.aggregateRouterContractAddress,
+        obj.destinationOneInchData
       );
     } else {
       result = fiberRouter.methods.swapOnSameNetwork(
@@ -320,8 +328,8 @@ export const doSameNetworkSwap = async (
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
-        obj.destinationOneInchData,
-        obj.oneInchSelector
+        obj.aggregateRouterContractAddress,
+        obj.destinationOneInchData
       );
     }
   } catch (e) {

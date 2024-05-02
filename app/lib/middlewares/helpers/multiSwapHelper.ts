@@ -202,11 +202,7 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
     sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
     sourceTokenCategorizedInfo.sourceBridgeAmount = sourceBridgeAmount;
-    sourceTokenCategorizedInfo.sourceOneInchData =
-      removeSelector(sourceOneInchData);
-    sourceTokenCategorizedInfo.sourceOneInchSelector = await getOneInchSelector(
-      getSelector(sourceOneInchData)
-    );
+    sourceTokenCategorizedInfo.sourceOneInchData = sourceOneInchData;
 
     let destinationTokenCategorizedInfo: any = {};
     destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
@@ -218,11 +214,8 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
       ?.destination?.bridgeAmountOut
       ? categorizedInfo?.destination?.bridgeAmountOut
       : "";
-    destinationTokenCategorizedInfo.destinationOneInchData = removeSelector(
-      destinationOneInchData
-    );
-    destinationTokenCategorizedInfo.destinationOneInchSelector =
-      await getOneInchSelector(getSelector(destinationOneInchData));
+    destinationTokenCategorizedInfo.destinationOneInchData =
+      destinationOneInchData;
     data.sourceSlippage = await getSlippage(req.query.sourceSlippage);
     data.destinationSlippage = await getSlippage(req.query.destinationSlippage);
 

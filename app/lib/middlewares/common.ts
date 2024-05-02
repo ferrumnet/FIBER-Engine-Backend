@@ -162,6 +162,8 @@ module.exports = {
                 this.getFundManagerContract(multiswapNetworkFIBERInformation);
               multiswapNetworkFIBERInformation.fiberRouterContract =
                 this.getFiberRouterContract(multiswapNetworkFIBERInformation);
+              multiswapNetworkFIBERInformation.aggregateRouterContractAddress =
+                multiswapNetworkFIBERInformation.aggregateRouterContractAddress;
             } else {
               multiswapNetworkFIBERInformation.decimals = 18;
             }
