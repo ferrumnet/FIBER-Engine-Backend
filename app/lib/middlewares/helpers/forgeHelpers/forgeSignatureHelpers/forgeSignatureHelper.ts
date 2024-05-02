@@ -116,7 +116,7 @@ export const produceOneInchHash = (
   console.log("i am 1Inch");
   const methodHash = Web3.utils.keccak256(
     Web3.utils.utf8ToHex(
-      "WithdrawSignedOneInch(address to,uint256 amountIn,uint256 amountOut,address foundryToken,address targetToken,bytes oneInchData,bytes32 salt,uint256 expiry)"
+      "withdrawSignedAndSwapRouter(address to,uint256 amountIn,uint256 minAmountOut,address foundryToken,address targetToken,address router,bytes32 routerCalldata,bytes32 salt,uint256 expiry)"
     )
   );
   const params = [

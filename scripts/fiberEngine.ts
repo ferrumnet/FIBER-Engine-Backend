@@ -36,14 +36,14 @@ import {
   doSameNetworkSwap,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
-  SwapOneInch,
+  SwapRouter,
   WithdrawSigned,
-  WithdrawSignedAndSwapOneInch,
+  WithdrawSignedAndSwapRouter,
   SwapSameNetwork,
 } from "../app/interfaces/fiberEngineInterface";
 import {
   getWithdrawSignedObject,
-  getWithdrawSignedAndSwapOneInchObject,
+  getWithdrawSignedAndSwapRouterObject,
   sendSlackNotification,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import { isSameNetworksSwap } from "../app/lib/middlewares/helpers/multiSwapHelper";
@@ -179,18 +179,19 @@ module.exports = {
     } else {
       // 1Inch implementation
       let signatureResponse: any = getSignature(body);
-      let obj: WithdrawSignedAndSwapOneInch =
-        getWithdrawSignedAndSwapOneInchObject(
+      let obj: WithdrawSignedAndSwapRouter =
+        getWithdrawSignedAndSwapRouterObject(
           destinationWalletAddress,
           body?.destinationAmountIn,
           body?.destinationAmountOut,
           targetNetwork?.foundryTokenAddress,
           targetTokenAddress,
-          body.destinationOneInchData,
+          body.destinationAggregatorRouterAddress,
+          body.destinationAggregatorRouterCalldata,
           signatureResponse.salt,
           body.signatureExpiry,
           String(signatureResponse.signature),
-          body.destinationOneInchSelector
+          body.cctpType
         );
       const swapResult = await doOneInchWithdraw(
         obj,
@@ -316,7 +317,7 @@ module.exports = {
           query?.sourceAssetType,
           query?.destinationAssetType
         );
-        let obj: SwapOneInch = {
+        let obj: SwapRouter = {
           amountIn: amount,
           amountOut: query?.sourceBridgeAmount,
           targetChainId: targetChainId,

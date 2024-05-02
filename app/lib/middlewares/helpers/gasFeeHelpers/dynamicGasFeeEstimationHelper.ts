@@ -18,7 +18,7 @@ import {
 import {
   Contract,
   WithdrawSigned,
-  WithdrawSignedAndSwapOneInch,
+  WithdrawSignedAndSwapRouter,
 } from "../../../../interfaces/forgeInterface";
 import { getQuote } from "../../../httpCalls/coinMarketCapAxiosHelper";
 import {
@@ -28,7 +28,7 @@ import {
 } from "./gasEstimationHelper";
 import {
   Swap,
-  SwapOneInch,
+  SwapRouter,
   SwapSameNetwork,
 } from "../../../../interfaces/forgeInterface";
 import { getWithdrawalDataHashForSwap } from "../../../../lib/middlewares/helpers/signatureHelper";
@@ -200,7 +200,7 @@ export const doDestinationOneInchGasEstimation = async (
   signature: string,
   targetNetwork: any
 ): Promise<any> => {
-  let obj: WithdrawSignedAndSwapOneInch = {
+  let obj: WithdrawSignedAndSwapRouter = {
     targetTokenAddress: await (
       global as any
     ).commonFunctions.getOneInchTokenAddress(
@@ -213,8 +213,9 @@ export const doDestinationOneInchGasEstimation = async (
     signature: signature,
     destinationAmountOut: req.query.destinationAmountOut,
     targetFoundryTokenAddress: targetNetwork.foundryTokenAddress,
-    destinationOneInchData: req.query.destinationOneInchData,
-    oneInchSelector: req.query.destinationOneInchSelector,
+    destinationAggregatorRouterAddress: req.query.destinationAggregatorRouterAddress,
+    destinationAggregatorRouterCalldata: req.query.destinationAggregatorRouterCalldata,
+    cctpType: req.query.cctpType,
   };
   return await destinationOneInchGasEstimation(contractObj, network, obj);
 };
@@ -280,9 +281,13 @@ export const doSourceOneInchGasEstimation = async (
     ),
     provider
   );
-  let obj: SwapOneInch = {
+  let obj: SwapRouter = {
     amountIn: amount,
-    amountOut: req.query.sourceAmountOut,
+    minAmountOut: req.query.sourceAmountOut,
+    sourceTokenAddress: req.query.sourceTokenContractAddress,
+    foundryTokenAddress: foundryTokenAddress,
+    sourceAggregatorRouterAddress: req.query.sourceAggregatorRouterAddress,
+    sourceAggregatorRouterCalldata: req.query.sourceAggregatorRouterCalldata,
     targetChainId: req.query.destinationNetworkChainId,
     targetTokenAddress: await (
       global as any
@@ -290,9 +295,6 @@ export const doSourceOneInchGasEstimation = async (
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
-    sourceOneInchData: req.query.sourceOneInchData,
-    sourceTokenAddress: req.query.sourceTokenContractAddress,
-    foundryTokenAddress: foundryTokenAddress,
     withdrawalData: getWithdrawalDataHashForSwap(
       req.query?.sourceOneInchData,
       req.query?.destinationOneInchData,
@@ -301,6 +303,7 @@ export const doSourceOneInchGasEstimation = async (
       req.query?.sourceAssetType,
       req.query?.destinationAssetType
     ),
+    cctpType: req.query.cctpType,
     sourceWalletAddress: req.query.sourceWalletAddress,
     gasPrice: gasPrice,
     value: getValueForSwap(
@@ -309,8 +312,7 @@ export const doSourceOneInchGasEstimation = async (
       await (global as any).commonFunctions.isNativeToken(
         req.query.sourceTokenContractAddress
       )
-    ),
-    oneInchSelector: req.query.sourceOneInchSelector,
+    )
   };
   return await sourceOneInchGasEstimation(contractObj, network, obj);
 };

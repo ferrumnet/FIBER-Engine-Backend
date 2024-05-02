@@ -12,17 +12,18 @@ export interface WithdrawSigned {
   signature: string;
 }
 
-export interface WithdrawSignedAndSwapOneInch {
+export interface WithdrawSignedAndSwapRouter {
   destinationWalletAddress: string;
   destinationAmountIn: string;
   destinationAmountOut: string;
   targetFoundryTokenAddress: string;
   targetTokenAddress: string;
-  destinationOneInchData: string;
+  destinationAggregatorRouterAddress: string;
+  destinationAggregatorRouterCalldata: string;
   salt: string;
   signatureExpiry: number;
   signature: string;
-  oneInchSelector: string;
+  cctpType: boolean;
 }
 
 export interface Swap {
@@ -36,20 +37,21 @@ export interface Swap {
   value: string;
 }
 
-export interface SwapOneInch {
+export interface SwapRouter {
   amountIn: string;
-  amountOut: string;
+  minAmountOut: string;
+  sourceTokenAddress: string;
+  foundryTokenAddress: string;
+  sourceAggregatorRouterAddress: string;
+  sourceAggregatorRouterCalldata: string;
   targetChainId: string;
   targetTokenAddress: string;
   destinationWalletAddress: string;
-  sourceOneInchData: string;
-  sourceTokenAddress: string;
-  foundryTokenAddress: string;
   withdrawalData: string;
+  cctpType: boolean;
   gasPrice: string;
   sourceWalletAddress: string;
   value: string;
-  oneInchSelector: string;
 }
 
 export interface SwapSameNetwork {

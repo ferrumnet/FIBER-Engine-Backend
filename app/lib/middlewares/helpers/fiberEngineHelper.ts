@@ -1,8 +1,8 @@
 const { Big } = require("big.js");
 import {
-  SwapOneInch,
+  SwapRouter,
   WithdrawSigned,
-  WithdrawSignedAndSwapOneInch,
+  WithdrawSignedAndSwapRouter,
   WithdrawOneInchLogs,
   SwapSameNetwork,
 } from "../../../interfaces/fiberEngineInterface";
@@ -35,29 +35,31 @@ export const getWithdrawSignedObject = (
   return object;
 };
 
-export const getWithdrawSignedAndSwapOneInchObject = (
+export const getWithdrawSignedAndSwapRouterObject = (
   destinationWalletAddress: string,
   destinationAmountIn: string,
   destinationAmountOut: string,
   targetFoundryTokenAddress: string,
   targetTokenAddress: string,
-  destinationOneInchData: string,
+  destinationAggregatorRouterAddress: string,
+  destinationAggregatorRouterCalldata: string,
   salt: string,
   signatureExpiry: number,
   signature: string,
-  destinationOneInchSelector: string
-): WithdrawSignedAndSwapOneInch => {
-  let object: WithdrawSignedAndSwapOneInch = {
+  cctpType: boolean
+): WithdrawSignedAndSwapRouter => {
+  let object: WithdrawSignedAndSwapRouter = {
     destinationWalletAddress: destinationWalletAddress,
     destinationAmountIn: destinationAmountIn,
     destinationAmountOut: destinationAmountOut,
     targetFoundryTokenAddress: targetFoundryTokenAddress,
     targetTokenAddress: targetTokenAddress,
-    destinationOneInchData: destinationOneInchData,
+    destinationAggregatorRouterAddress: destinationAggregatorRouterAddress,
+    destinationAggregatorRouterCalldata: destinationAggregatorRouterCalldata,
     salt: salt,
     signatureExpiry: signatureExpiry,
     signature: signature,
-    oneInchSelector: destinationOneInchSelector,
+    cctpType: cctpType,
   };
   return object;
 };
@@ -138,7 +140,7 @@ export const doFoundaryWithdraw = async (
 };
 
 export const doOneInchWithdraw = async (
-  obj: WithdrawSignedAndSwapOneInch,
+  obj: WithdrawSignedAndSwapRouter,
   targetNetwork: any,
   targetSigner: any,
   targetChainId: any,
@@ -160,7 +162,7 @@ export const doOneInchWithdraw = async (
     ) {
       dynamicGasPrice = await targetNetwork.fiberRouterContract
         .connect(targetSigner)
-        .estimateGas.withdrawSignedAndSwapOneInch(
+        .estimateGas.withdrawSignedAndSwapRouter(
           obj.destinationWalletAddress,
           obj.destinationAmountIn,
           obj.destinationAmountOut,
@@ -168,11 +170,12 @@ export const doOneInchWithdraw = async (
           await (global as any).commonFunctions.getOneInchTokenAddress(
             obj.targetTokenAddress
           ),
-          obj.destinationOneInchData,
-          obj.oneInchSelector,
+          obj.destinationAggregatorRouterAddress,
+          obj.destinationAggregatorRouterCalldata,
           obj.salt,
           obj.signatureExpiry,
-          obj.signature
+          obj.signature,
+          obj.cctpType
         );
       dynamicGasPrice = await addBuffer(dynamicGasPrice, targetChainId, true);
     } else if (isAllowedDynamicGas && gasLimit) {
@@ -181,7 +184,7 @@ export const doOneInchWithdraw = async (
     console.log("dynamicGasPrice", dynamicGasPrice);
     result = await targetNetwork.fiberRouterContract
       .connect(targetSigner)
-      .withdrawSignedAndSwapOneInch(
+      .withdrawSignedAndSwapRouter(
         obj.destinationWalletAddress,
         obj.destinationAmountIn,
         obj.destinationAmountOut,
@@ -189,11 +192,12 @@ export const doOneInchWithdraw = async (
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
-        obj.destinationOneInchData,
-        obj.oneInchSelector,
+        obj.destinationAggregatorRouterAddress,
+          obj.destinationAggregatorRouterCalldata,
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
+        obj.cctpType,
         await getGasForWithdraw(targetChainId, dynamicGasPrice)
       );
   } catch (e) {
@@ -221,7 +225,7 @@ export const doOneInchWithdraw = async (
 };
 
 export const doOneInchSwap = async (
-  obj: SwapOneInch,
+  obj: SwapRouter,
   fiberRouter: any
 ): Promise<any> => {
   let result;
@@ -231,33 +235,35 @@ export const doOneInchSwap = async (
         obj.sourceTokenAddress
       )
     ) {
-      result = fiberRouter.methods.swapAndCrossOneInchETH(
-        obj.amountOut,
+      result = fiberRouter.methods.swapAndCrossRouterETH(
+        obj.minAmountOut,
+        obj.foundryTokenAddress,
+        obj.gasPrice,
+        obj.aggregatorRouterAddress,
+        obj.aggregatorRouterCalldata,
         obj.targetChainId,
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
-        obj.sourceOneInchData,
-        obj.foundryTokenAddress,
         obj.withdrawalData,
-        obj.gasPrice,
-        obj.oneInchSelector
+        obj.cctpType
       );
     } else {
-      result = fiberRouter.methods.swapAndCrossOneInch(
+      result = fiberRouter.methods.swapAndCrossRouter(
         obj.amountIn,
-        obj.amountOut,
+        obj.minAmountOut,
+        obj.sourceTokenAddress,
+        obj.foundryTokenAddress,
+        obj.aggregatorRouterAddress,
+        obj.aggregatorRouterCalldata,
         obj.targetChainId,
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
-        obj.sourceOneInchData,
-        obj.sourceTokenAddress,
-        obj.foundryTokenAddress,
         obj.withdrawalData,
-        obj.oneInchSelector
+        obj.cctpType
       );
     }
   } catch (e) {

@@ -2,11 +2,11 @@ var { ethers } = require("ethers");
 import {
   Contract,
   WithdrawSigned,
-  WithdrawSignedAndSwapOneInch,
+  WithdrawSignedAndSwapRouter,
 } from "../../../../interfaces/forgeInterface";
 import {
   Swap,
-  SwapOneInch,
+  SwapRouter,
   SwapSameNetwork,
 } from "../../../../interfaces/forgeInterface";
 const forgeAbi: any = require("../../../../../config/forge.json");
@@ -60,13 +60,13 @@ export const destinationFoundaryGasEstimation = async (
 export const destinationOneInchGasEstimation = async (
   contract: Contract,
   network: any,
-  obj: WithdrawSignedAndSwapOneInch
+  obj: WithdrawSignedAndSwapRouter
 ): Promise<any> => {
   try {
     let forge = forgeContract(network.provider, contract.contractAddress);
     let response = await forge
       .connect(getSigner(network.provider))
-      .estimateGas.withdrawSignedAndSwapOneInchForGasEstimation(
+      .estimateGas.withdrawSignedAndSwapRouterForGasEstimation(
         obj.destinationWalletAddress,
         obj.destinationAmountIn,
         obj.destinationAmountOut,
@@ -74,11 +74,12 @@ export const destinationOneInchGasEstimation = async (
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
-        obj.destinationOneInchData,
-        obj.oneInchSelector,
+        obj.destinationAggregatorRouterAddress,
+        obj.destinationAggregatorRouterCalldata,
         obj.salt,
         obj.signatureExpiry,
-        obj.signature
+        obj.signature,
+        obj.cctpType
       );
     return response;
   } catch (e: any) {
@@ -123,7 +124,7 @@ export const sourceFoundaryGasEstimation = async (
 export const sourceOneInchGasEstimation = async (
   contract: Contract,
   network: any,
-  obj: SwapOneInch
+  obj: SwapRouter
 ): Promise<any> => {
   try {
     console.log("obj", obj);
@@ -137,37 +138,39 @@ export const sourceOneInchGasEstimation = async (
         obj.sourceTokenAddress
       )
     ) {
-      response = await fiberRouter.estimateGas.swapAndCrossOneInchETH(
-        obj.amountOut,
+      response = await fiberRouter.estimateGas.swapAndCrossRouterETH(
+        obj.minAmountOut,
+        obj.foundryTokenAddress,
+        obj.gasPrice,
+        obj.sourceAggregatorRouterAddress,
+        obj.sourceAggregatorRouterCalldata,
         obj.targetChainId,
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
-        obj.sourceOneInchData,
-        obj.foundryTokenAddress,
         obj.withdrawalData,
-        obj.gasPrice,
-        obj.oneInchSelector,
+        obj.cctpType,
         {
           from: obj.sourceWalletAddress,
           value: obj.value,
         }
       );
     } else {
-      response = await fiberRouter.estimateGas.swapAndCrossOneInch(
+      response = await fiberRouter.estimateGas.swapAndCrossRouter(
         obj.amountIn,
-        obj.amountOut,
+        obj.minAmountOut,
+        obj.sourceTokenAddress,
+        obj.foundryTokenAddress,
+        obj.sourceAggregatorRouterAddress,
+        obj.sourceAggregatorRouterCalldata,
         obj.targetChainId,
         await (global as any).commonFunctions.getOneInchTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
-        obj.sourceOneInchData,
-        obj.sourceTokenAddress,
-        obj.foundryTokenAddress,
         obj.withdrawalData,
-        obj.oneInchSelector,
+        obj.cctpType,
         {
           from: obj.sourceWalletAddress,
           value: obj.value,
