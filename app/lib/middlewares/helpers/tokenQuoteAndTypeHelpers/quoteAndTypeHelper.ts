@@ -5,12 +5,11 @@ import {
   getTargetAssetTypes,
 } from "../../helpers/tokenQuoteAndTypeHelpers/assetTypeHelper";
 import { OneInchSwap } from "../../../httpCalls/oneInchAxiosHelper";
-import { isValidOneInchSelector } from "../../helpers/configurationHelper";
+import { DEFAULT_SLIPPAGE } from "../../helpers/configurationHelper";
 import {
   removeSelector,
   getSelector,
 } from "../../helpers/oneInchDecoderHelper";
-import { swapIsNotAvailable } from "../../helpers/stringHelper";
 import { getSourceAmountOut } from "../../helpers/fiberNodeHelper";
 
 let common = (global as any).commonFunctions;
@@ -74,7 +73,6 @@ export const getQouteAndTypeForSameNetworks = async (
     sourceResponse?.amountOutIntoNumber,
     gasEstimationDestinationAmount
   );
-  console.log("destinationResponse", destinationResponse);
 
   return convertResponseForSameNetworksIntoDesire(
     sourceResponse,
@@ -155,15 +153,14 @@ const handleDestination = async (
 
   let inputAmountIntoDecimals = common.numberIntoDecimals(
     inputAmount,
-    destinationTokenDecimals
+    sourceTokenDecimals
   );
-
   let amountIn: any = common.numberIntoDecimals__(
     getSourceAmountOut(
       gasEstimationDestinationAmount,
       sourceAmountOutIntoNumber
     ),
-    destinationTokenDecimals
+    sourceTokenDecimals
   );
   assetType = await getTokenType(
     destinationNetwork,
@@ -225,10 +222,7 @@ const handleOneInche = async (
       sourceTokenAddress,
       sourceChainId
     ),
-    await common.getWrappedNativeTokenAddress(
-      destinationTokenAddress,
-      destinationChainId
-    ),
+    await common.getOneInchTokenAddress(destinationTokenAddress),
     inputAmountIntoDecimals,
     sourceWallet,
     destinationeWallet,
@@ -251,12 +245,6 @@ const handleOneInche = async (
       destinationTokenDecimals
     );
     oneInchData = response.data;
-  }
-  if (
-    oneInchData &&
-    !(await isValidOneInchSelector(getSelector(oneInchData)))
-  ) {
-    throw swapIsNotAvailable;
   }
   return {
     amountInIntoDecimals: inputAmountIntoDecimals,
@@ -328,14 +316,17 @@ const convertResponseForSameNetworksIntoDesire = (
   response.destination.bridgeAmountOut = dData.amountOutIntoDecimals;
   response.destination.oneInchData = dData?.oneInchData;
 
-  console.log("response", response);
   return response;
 };
 
 const getHighestSlippage = (sSlippage: string, dSlippage: any) => {
-  if (Number(sSlippage) > Number(dSlippage)) {
-    return sSlippage;
+  if (sSlippage && dSlippage) {
+    if (Number(sSlippage) > Number(dSlippage)) {
+      return sSlippage;
+    } else {
+      return dSlippage;
+    }
   } else {
-    return dSlippage;
+    return DEFAULT_SLIPPAGE;
   }
 };

@@ -351,7 +351,8 @@ export const doSameNetworkGasEstimation = async (
       gasPrice,
       await (global as any).commonFunctions.isNativeToken(
         req.query.sourceTokenContractAddress
-      )
+      ),
+      true
     ),
     oneInchSelector: req.query.destinationOneInchSelector,
     aggregateRouterContractAddress: network.aggregateRouterContractAddress,

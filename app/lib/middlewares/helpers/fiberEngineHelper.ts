@@ -374,7 +374,8 @@ export const sendSlackNotification = async (
 export const getValueForSwap = (
   amount: any,
   gasPrice: any,
-  isNative: boolean
+  isNative: boolean,
+  isSameNetwork = false
 ) => {
   try {
     console.log(
@@ -385,7 +386,9 @@ export const getValueForSwap = (
       "isNative:",
       isNative
     );
-    if (isNative) {
+    if (isNative && isSameNetwork) {
+      return amount;
+    } else if (isNative) {
       amount = new Big(amount);
       gasPrice = new Big(gasPrice);
       let value = amount.add(gasPrice);
