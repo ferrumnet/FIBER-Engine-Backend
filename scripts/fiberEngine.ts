@@ -359,7 +359,8 @@ module.exports = {
       let value = getValueForSwap(
         amount,
         query?.gasPrice,
-        await (global as any).commonFunctions.isNativeToken(sourceTokenAddress)
+        await (global as any).commonFunctions.isNativeToken(sourceTokenAddress),
+        isSameNetworks
       );
       returnData = { ...returnData, value: value };
       return returnData;

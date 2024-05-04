@@ -58,6 +58,11 @@ module.exports = function (router: any) {
       ) {
         return res.http401("gasPrice is missing");
       }
+      if (
+        req.query.sourceNetworkChainId == req.query.destinationNetworkChainId
+      ) {
+        req.query.gasPrice = "";
+      }
       req.query.sourceWalletAddress =
         req.query.sourceWalletAddress.toLowerCase();
 

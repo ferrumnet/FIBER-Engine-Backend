@@ -233,7 +233,6 @@ export const sourceSameNetworkGasEstimation = async (
         obj.destinationOneInchData,
         {
           from: obj.sourceWalletAddress,
-          value: obj.value,
         }
       );
     }

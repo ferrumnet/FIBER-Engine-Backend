@@ -1,12 +1,13 @@
 export const OWLRACLE_PROVIDER_TAG = "owlracle";
 export const INFURA_PROVIDER_TAG = "infura";
+export const DEFAULT_SLIPPAGE = "2";
 
 export const getSlippage = async (slippage = ""): Promise<any> => {
   if (slippage) {
     return slippage;
   }
   let data = await db.Configurations.findOne();
-  return data?.slippage ? data?.slippage?.toString() : "2";
+  return data?.slippage ? data?.slippage?.toString() : DEFAULT_SLIPPAGE;
 };
 
 export const getNativeTokens = async (): Promise<any> => {
