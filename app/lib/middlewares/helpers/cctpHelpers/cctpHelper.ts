@@ -1,5 +1,5 @@
 import { getCCTPAttestation } from "../../../httpCalls/cctpAxiosHelper";
-const THRESHOLD = 6;
+const THRESHOLD = 360;
 
 export const getIsCCTP = (isCCTPType: any): boolean => {
   try {

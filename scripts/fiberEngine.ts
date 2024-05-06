@@ -117,7 +117,7 @@ module.exports = {
       targetNetwork.provider,
       body.destinationAmountIn
     );
-    if (!isValidLiquidityAvailable) {
+    if (!isValidLiquidityAvailable && !getIsCCTP(body?.isCCTP)) {
       sendSlackNotification(
         swapTransactionHash,
         "Error: " + IN_SUFFICIENT_LIQUIDITY_ERROR,
@@ -323,8 +323,7 @@ module.exports = {
             query?.sourceAssetType,
             query?.destinationAssetType
           ),
-          // isCCTP: getIsCCTP(query?.isCCTP),
-          true
+          getIsCCTP(query?.isCCTP)
         );
         sourceBridgeAmount = amount;
       } else {
