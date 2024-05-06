@@ -1,4 +1,5 @@
 import { getCCTPAttestation } from "../../../httpCalls/cctpAxiosHelper";
+const THRESHOLD = 6;
 
 export const getIsCCTP = (isCCTPType: any): boolean => {
   try {
@@ -22,23 +23,25 @@ export const getForgeFundManager = (isCCTP: boolean, network: any): string => {
   }
 };
 
-export const getAttestation = async (mesgHash: string): Promise<string> => {
+export const getAttestation = async (
+  mesgHash: string,
+  recursionCount = 0
+): Promise<string> => {
   console.log("mesgHash", mesgHash);
   let attestation = "";
   if (mesgHash) {
     let response = await getCCTPAttestation(mesgHash);
     console.log("response", response);
     let status = response?.status;
-    if (status == "failed") {
-      attestation = "";
-    } else if (status == "complete") {
+    if (status == "complete") {
       attestation = response.attestation;
-    } else if (status != "complete" && status != "failed") {
+    } else if (recursionCount < THRESHOLD) {
       await delay();
-      attestation = await getAttestation(mesgHash);
+      recursionCount = recursionCount + 1;
+      attestation = await getAttestation(mesgHash, recursionCount);
     }
   }
   return attestation;
 };
 
-const delay = () => new Promise((res) => setTimeout(res, 60000));
+const delay = () => new Promise((res) => setTimeout(res, 10000));
