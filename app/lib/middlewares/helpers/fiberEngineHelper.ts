@@ -13,8 +13,12 @@ import {
 } from "../../middlewares/helpers/gasFeeHelpers/gasEstimationHelper";
 import { getLogsFromTransactionReceipt } from "../../middlewares/helpers/web3Helpers/web3Helper";
 import { postAlertIntoChannel } from "../../httpCalls/slackAxiosHelper";
-const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;
-const MAX_WITHDRAW_TRIES = 10;
+import { getAttestation } from "../../middlewares/helpers/cctpHelpers/cctpHelper";
+import { messageTransmitter } from "../../middlewares/helpers/cctpHelpers/cctpContractHelper";
+import { Contract } from "../../../interfaces/forgeInterface";
+
+const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 1;
+const MAX_WITHDRAW_TRIES = 2;
 
 export const getWithdrawSignedObject = (
   targetTokenAddress: string,
@@ -27,7 +31,8 @@ export const getWithdrawSignedObject = (
   targetSigner: any,
   targetChainId: string,
   swapTransactionHash: string,
-  gasLimit: string
+  gasLimit: string,
+  isCCTP: boolean
 ): WithdrawSigned => {
   let object: WithdrawSigned = {
     targetTokenAddress: targetTokenAddress,
@@ -41,6 +46,7 @@ export const getWithdrawSignedObject = (
     targetChainId: targetChainId,
     swapTransactionHash: swapTransactionHash,
     gasLimit: gasLimit,
+    isCCTP: isCCTP,
   };
   return object;
 };
@@ -60,7 +66,8 @@ export const getWithdrawSignedAndSwapOneInchObject = (
   targetSigner: any,
   targetChainId: string,
   swapTransactionHash: string,
-  gasLimit: string
+  gasLimit: string,
+  isCCTP: boolean
 ): WithdrawSignedAndSwapOneInch => {
   let object: WithdrawSignedAndSwapOneInch = {
     destinationWalletAddress: destinationWalletAddress,
@@ -80,6 +87,7 @@ export const getWithdrawSignedAndSwapOneInchObject = (
     gasLimit: gasLimit,
     aggregateRouterContractAddress:
       targetNetwork.aggregateRouterContractAddress,
+    isCCTP: isCCTP,
   };
   return object;
 };
@@ -114,7 +122,7 @@ export const doFoundaryWithdraw = async (
           obj.salt,
           obj.signatureExpiry,
           obj.signature,
-          false
+          obj.isCCTP
         );
       dynamicGasPrice = await addBuffer(
         dynamicGasPrice,
@@ -142,7 +150,7 @@ export const doFoundaryWithdraw = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
-        false,
+        obj.isCCTP,
         await getGasForWithdraw(obj.targetChainId, dynamicGasPrice)
       );
   } catch (e) {
@@ -155,7 +163,7 @@ export const doFoundaryWithdraw = async (
     await delay();
     count = count + 1;
     if (count < MAX_WITHDRAW_TRIES) {
-      result = await doFoundaryWithdraw(obj, count);
+      result = await doFoundaryWithdraw(obj, extraBuffer, count);
     }
   }
   result.dynamicGasPrice = dynamicGasPrice;
@@ -196,7 +204,7 @@ export const doOneInchWithdraw = async (
           obj.salt,
           obj.signatureExpiry,
           obj.signature,
-          false
+          obj.isCCTP
         );
       dynamicGasPrice = await addBuffer(
         dynamicGasPrice,
@@ -228,7 +236,7 @@ export const doOneInchWithdraw = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
-        false,
+        obj.isCCTP,
         await getGasForWithdraw(obj.targetChainId, dynamicGasPrice)
       );
   } catch (e) {
@@ -241,7 +249,7 @@ export const doOneInchWithdraw = async (
     await delay();
     count = count + 1;
     if (count < MAX_WITHDRAW_TRIES) {
-      result = await doOneInchWithdraw(obj, count);
+      result = await doOneInchWithdraw(obj, extraBuffer, count);
     }
   }
   result.dynamicGasPrice = dynamicGasPrice;
@@ -254,6 +262,8 @@ export const doOneInchSwap = async (
 ): Promise<any> => {
   let result;
   try {
+    console.log("i am here 1.1");
+    console.log("obj", obj);
     if (
       await (global as any).commonFunctions.isNativeToken(
         obj.sourceTokenAddress
@@ -271,7 +281,7 @@ export const doOneInchSwap = async (
         ),
         obj.destinationWalletAddress,
         obj.withdrawalData,
-        false
+        obj.isCCTP
       );
     } else {
       result = fiberRouter.methods.swapAndCrossRouter(
@@ -287,7 +297,7 @@ export const doOneInchSwap = async (
         ),
         obj.destinationWalletAddress,
         obj.withdrawalData,
-        false
+        obj.isCCTP
       );
     }
   } catch (e) {
@@ -422,6 +432,37 @@ export const isOutOfGasError = async (
     console.log(e);
   }
   return false;
+};
+
+export const doCCTPFlow = async (
+  network: any,
+  messageBytes: string,
+  messageHash: string,
+  isCCTP: boolean
+) => {
+  console.log(
+    "isCCTP",
+    isCCTP,
+    "network.rpcUrl",
+    network.rpcUrl,
+    "chainId",
+    network.chainId
+  );
+  if (!isCCTP) {
+    return;
+  }
+  let contract: Contract = {
+    rpcUrl: network.rpcUrl,
+    contractAddress: network.cctpmessageTransmitterAddress,
+  };
+  let attestationSignature = await getAttestation(messageHash);
+  console.log("attestationSignature:", attestationSignature);
+  await messageTransmitter(
+    contract,
+    network,
+    messageBytes,
+    attestationSignature
+  );
 };
 
 const getGasLimitTagForSlackNotification = (

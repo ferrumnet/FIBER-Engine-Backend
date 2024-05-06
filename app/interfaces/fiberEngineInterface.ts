@@ -10,6 +10,7 @@ export interface WithdrawSigned {
   targetChainId: string;
   swapTransactionHash: string;
   gasLimit: string;
+  isCCTP: boolean;
 }
 
 export interface WithdrawSignedAndSwapOneInch {
@@ -29,6 +30,7 @@ export interface WithdrawSignedAndSwapOneInch {
   swapTransactionHash: string;
   gasLimit: string;
   aggregateRouterContractAddress: string;
+  isCCTP: boolean;
 }
 
 export interface SwapOneInch {
@@ -44,6 +46,7 @@ export interface SwapOneInch {
   gasPrice: string;
   oneInchSelector: string;
   aggregateRouterContractAddress: string;
+  isCCTP: boolean;
 }
 
 export interface SwapSameNetwork {

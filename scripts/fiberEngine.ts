@@ -35,6 +35,7 @@ import {
   getValueForSwap,
   doSameNetworkSwap,
   isOutOfGasError,
+  doCCTPFlow,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
   SwapOneInch,
@@ -48,6 +49,7 @@ import {
   sendSlackNotification,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import { isSameNetworksSwap } from "../app/lib/middlewares/helpers/multiSwapHelper";
+import { getIsCCTP } from "../app/lib/middlewares/helpers/cctpHelpers/cctpHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -162,7 +164,14 @@ module.exports = {
         targetSigner,
         targetChainId,
         swapTransactionHash,
-        body?.gasLimit
+        body?.gasLimit,
+        getIsCCTP(body?.isCCTP)
+      );
+      await doCCTPFlow(
+        targetNetwork,
+        body?.cctpMessageBytes,
+        body?.cctpMessageHash,
+        getIsCCTP(body?.isCCTP)
       );
       const swapResult = await doFoundaryWithdraw(obj, 0);
       const receipt = await this.callEVMWithdrawAndGetReceipt(
@@ -196,8 +205,15 @@ module.exports = {
           targetSigner,
           targetChainId,
           swapTransactionHash,
-          body?.gasLimit
+          body?.gasLimit,
+          getIsCCTP(body?.isCCTP)
         );
+      await doCCTPFlow(
+        targetNetwork,
+        body?.cctpMessageBytes,
+        body?.cctpMessageHash,
+        getIsCCTP(body?.isCCTP)
+      );
       const swapResult = await doOneInchWithdraw(obj, 0);
       const receipt = await this.callEVMWithdrawAndGetReceipt(
         swapResult,
@@ -307,7 +323,8 @@ module.exports = {
             query?.sourceAssetType,
             query?.destinationAssetType
           ),
-          false
+          // isCCTP: getIsCCTP(query?.isCCTP),
+          true
         );
         sourceBridgeAmount = amount;
       } else {
@@ -334,6 +351,7 @@ module.exports = {
           oneInchSelector: query?.sourceOneInchSelector,
           aggregateRouterContractAddress:
             sourceNetwork.aggregateRouterContractAddress,
+          isCCTP: getIsCCTP(query?.isCCTP),
         };
         swapResult = await doOneInchSwap(obj, fiberRouter);
       }

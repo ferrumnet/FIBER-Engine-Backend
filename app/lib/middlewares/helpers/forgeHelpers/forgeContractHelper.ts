@@ -47,7 +47,7 @@ export const destinationFoundaryGasEstimation = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
-        false
+        obj.isCCTP
       );
     return response;
   } catch (e: any) {
@@ -80,7 +80,7 @@ export const destinationOneInchGasEstimation = async (
         obj.salt,
         obj.signatureExpiry,
         obj.signature,
-        false
+        obj.isCCTP
       );
     return response;
   } catch (e: any) {
@@ -108,7 +108,7 @@ export const sourceFoundaryGasEstimation = async (
       obj.targetTokenAddress,
       obj.destinationWalletAddress,
       obj.withdrawalData,
-      false,
+      obj.isCCTP,
       {
         from: obj.sourceWalletAddress,
         value: obj.value,
@@ -152,7 +152,7 @@ export const sourceOneInchGasEstimation = async (
         ),
         obj.destinationWalletAddress,
         obj.withdrawalData,
-        false,
+        obj.isCCTP,
         {
           from: obj.sourceWalletAddress,
           value: obj.value,
@@ -172,7 +172,7 @@ export const sourceOneInchGasEstimation = async (
         ),
         obj.destinationWalletAddress,
         obj.withdrawalData,
-        false,
+        obj.isCCTP,
         {
           from: obj.sourceWalletAddress,
           value: obj.value,

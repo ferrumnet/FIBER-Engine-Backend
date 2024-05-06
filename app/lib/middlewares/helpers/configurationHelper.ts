@@ -64,3 +64,16 @@ export const getGasNetworks = async (provider: string) => {
   }
   return networks;
 };
+
+export const isCCTPNetwork = async (chainId: string): Promise<boolean> => {
+  let filter: any = {
+    "allowedNetworksForCCTP.chainId": {
+      $eq: chainId,
+    },
+  };
+  let count = await db.Configurations.countDocuments(filter);
+  if (count > 0) {
+    return true;
+  }
+  return false;
+};

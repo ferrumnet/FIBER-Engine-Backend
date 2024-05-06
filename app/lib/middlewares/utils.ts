@@ -18,7 +18,7 @@ declare const db: any,
 module.exports = function () {
   const utils: any = {};
   utils.IS_LOCAL_ENV = true;
-  utils.CONTRACT_NAME = "FUND_MANAGER";
+  utils.CONTRACT_NAME = "CCTP_FUND_MANAGER";
   utils.CONTRACT_VERSION = "000.004";
   utils.cFRMTokenAddress = "0xe685d3cc0be48bd59082ede30c3b64cbfc0326e2";
   utils.arbitrumChainID = 42161;
