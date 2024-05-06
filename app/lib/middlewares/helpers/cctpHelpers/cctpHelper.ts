@@ -10,7 +10,7 @@ export const getIsCCTP = (isCCTPType: any): boolean => {
   } catch (e) {
     console.log(e);
   }
-  return true;
+  return false;
 };
 
 export const getForgeFundManager = (isCCTP: boolean, network: any): string => {
