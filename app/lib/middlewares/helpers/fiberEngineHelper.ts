@@ -17,8 +17,8 @@ import { getAttestation } from "../../middlewares/helpers/cctpHelpers/cctpHelper
 import { messageTransmitter } from "../../middlewares/helpers/cctpHelpers/cctpContractHelper";
 import { Contract } from "../../../interfaces/forgeInterface";
 
-const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 1;
-const MAX_WITHDRAW_TRIES = 2;
+const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;
+const MAX_WITHDRAW_TRIES = 10;
 
 export const getWithdrawSignedObject = (
   targetTokenAddress: string,
