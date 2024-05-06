@@ -33,6 +33,7 @@ import {
 } from "../../../../interfaces/forgeInterface";
 import { getWithdrawalDataHashForSwap } from "../../../../lib/middlewares/helpers/signatureHelper";
 import { getValueForSwap } from "../../../../lib/middlewares/helpers/fiberEngineHelper";
+import { getIsCCTP, getForgeFundManager } from "../cctpHelpers/cctpHelper";
 export const gasEstimationValidation = (req: any): any => {
   if (
     !req.query.destinationNetworkChainId ||
@@ -187,6 +188,7 @@ export const doDestinationFoundaryGasEstimation = async (
     salt: salt,
     signatureExpiry: expiry,
     signature: signature,
+    isCCTP: getIsCCTP(req.query.isCCTP),
   };
   return await destinationFoundaryGasEstimation(contract, network, obj);
 };
@@ -217,6 +219,7 @@ export const doDestinationOneInchGasEstimation = async (
     oneInchSelector: req.query.destinationOneInchSelector,
     aggregateRouterContractAddress:
       targetNetwork.aggregateRouterContractAddress,
+    isCCTP: getIsCCTP(req.query.isCCTP),
   };
   return await destinationOneInchGasEstimation(contractObj, network, obj);
 };
@@ -262,6 +265,7 @@ export const doSourceFoundaryGasEstimation = async (
         req.query.sourceTokenContractAddress
       )
     ),
+    isCCTP: getIsCCTP(req.query.isCCTP),
   };
   return await sourceFoundaryGasEstimation(contractObj, network, obj);
 };
@@ -314,6 +318,7 @@ export const doSourceOneInchGasEstimation = async (
     ),
     oneInchSelector: req.query.sourceOneInchSelector,
     aggregateRouterContractAddress: network.aggregateRouterContractAddress,
+    isCCTP: getIsCCTP(req.query.isCCTP),
   };
   return await sourceOneInchGasEstimation(contractObj, network, obj);
 };
@@ -374,7 +379,7 @@ export const getForgeSignature = async (
     await (global as any).commonFunctions.getOneInchTokenAddress(
       req.query.destinationTokenContractAddress
     ),
-    targetNetwork.forgeFundManager,
+    getForgeFundManager(getIsCCTP(req.query.isCCTP), targetNetwork),
     salt,
     req.query.destinationAssetType,
     req.query.destinationAmountIn,

@@ -7,8 +7,8 @@ import {
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
 import {
+  checkForCCTP,
   isLiquidityAvailableForEVM,
-  isLiquidityAvailableForCudos,
 } from "../app/lib/middlewares/helpers/liquidityHelper";
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 import { swapIsNotAvailable } from "../app/lib/middlewares/helpers/stringHelper";
@@ -18,6 +18,7 @@ import {
   getSelector,
 } from "../app/lib/middlewares/helpers/oneInchDecoderHelper";
 import { isValidOneInchSelector } from "../app/lib/middlewares/helpers/configurationHelper";
+import { query } from "express";
 
 module.exports = {
   categoriseSwapAssets: async function (
@@ -48,6 +49,7 @@ module.exports = {
     let machineDestinationAmountIn: any;
     let machineDestinationAmountOut: any;
     let targetFoundryTokenAddress;
+    let isCCTP = false;
 
     // source
     if (!sourceNetwork.isNonEVM && !gasEstimationDestinationAmount) {
@@ -247,38 +249,21 @@ module.exports = {
           );
         }
       }
-      console.log("machineDestinationAmountIn", machineDestinationAmountIn);
-      console.log("machineDestinationAmountOut", machineDestinationAmountOut);
-    }
-
-    if (!targetNetwork.isNonEVM) {
-      let isValidLiquidityAvailable = await isLiquidityAvailableForEVM(
+      isCCTP = await checkForCCTP(
         targetNetwork.foundryTokenAddress,
         targetNetwork.fundManager,
         targetNetwork.provider,
         (global as any).utils.convertFromExponentialToDecimal(
           machineDestinationAmountIn
-        )
+        ),
+        targetFoundryTokenDecimal,
+        targetChainId
       );
-      if (!isValidLiquidityAvailable) {
-        throw IN_SUFFICIENT_LIQUIDITY_ERROR;
-      }
-    } else {
-      let isValidLiquidityAvailable = await isLiquidityAvailableForCudos(
-        targetNetwork.foundryTokenAddress,
-        targetNetwork.fundManager,
-        targetNetwork.rpcUrl,
-        (global as any).environment.DESTINATION_CHAIN_PRIV_KEY,
-        (global as any).utils.convertFromExponentialToDecimal(
-          machineDestinationAmountIn
-        )
-      );
-      if (!isValidLiquidityAvailable) {
-        throw IN_SUFFICIENT_LIQUIDITY_ERROR;
-      }
+      console.log("machineDestinationAmountIn", machineDestinationAmountIn);
+      console.log("machineDestinationAmountOut", machineDestinationAmountOut);
     }
 
-    let data: any = { source: {}, destination: {} };
+    let data: any = { source: {}, destination: {}, isCCTP: isCCTP };
     data.source.type = sourceAssetType;
     data.source.amount = inputAmount;
     if (machineSourceAmountOut) {
