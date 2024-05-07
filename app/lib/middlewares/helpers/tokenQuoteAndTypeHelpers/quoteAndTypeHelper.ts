@@ -4,12 +4,8 @@ import {
   getSourceAssetTypes,
   getTargetAssetTypes,
 } from "../../helpers/tokenQuoteAndTypeHelpers/assetTypeHelper";
-import { OneInchSwap } from "../../../httpCalls/oneInchAxiosHelper";
+import { chooseProviderAndGetData } from "../../helpers/tokenQuoteAndTypeHelpers/quoteProvidersHelper";
 import { DEFAULT_SLIPPAGE } from "../../helpers/configurationHelper";
-import {
-  removeSelector,
-  getSelector,
-} from "../../helpers/oneInchDecoderHelper";
 import { getSourceAmountOut } from "../../helpers/fiberNodeHelper";
 
 let common = (global as any).commonFunctions;
@@ -107,21 +103,6 @@ const handleSource = async (
     sourceChainId,
     inputAmountIntoDecimals
   );
-  // if (assetType == (global as any).utils.assetType.FOUNDARY) {
-  //   response = await handleFoundary(inputAmount, sourceTokenDecimals);
-  // } else {
-  //   response = await handleOneInche(
-  //     sourceChainId,
-  //     destinationChainId,
-  //     sourceTokenAddress,
-  //     destinationTokenAddress,
-  //     inputAmountIntoDecimals,
-  //     slippage,
-  //     destinationTokenDecimals,
-  //     sourceWallet,
-  //     destinationWallet
-  //   );
-  // }
   let amountOutIntoDecimals = await common.numberIntoDecimals(
     inputAmount,
     sourceTokenDecimals
@@ -168,22 +149,31 @@ const handleDestination = async (
     destinationChainId,
     amountIn
   );
-
-  // if (assetType == (global as any).utils.assetType.FOUNDARY) {
-  //   response = await handleFoundary(inputAmount, sourceTokenDecimals);
-  // } else {
-  response = await handleOneInche(
+  response = await chooseProviderAndGetData(
     sourceChainId,
-    destinationChainId,
-    sourceTokenAddress,
-    destinationTokenAddress,
+    await common.getWrappedNativeTokenAddress(
+      sourceTokenAddress,
+      sourceChainId
+    ),
+    await common.getNativeTokenAddress(destinationTokenAddress),
     inputAmountIntoDecimals,
     slippage,
-    destinationTokenDecimals,
     sourceWallet,
     destinationWallet
   );
-  // }
+  response.amountOutIntoNumber = common.decimalsIntoNumber(
+    response.amounts,
+    destinationTokenDecimals
+  );
+  response.amountOutIntoDecimals = await common.addSlippageInDecimal(
+    response.amounts,
+    slippage
+  );
+  response.minAmountOutIntoNumber = common.decimalsIntoNumber(
+    response.amounts,
+    destinationTokenDecimals
+  );
+  response.amountInIntoDecimals = inputAmountIntoDecimals;
   response.destinationAssetType = assetType;
   response.inputAmount = inputAmount;
   return response;
@@ -197,61 +187,6 @@ const handleFoundary = async (inputAmount: any, tokenDecimals: any) => {
   return {
     amountOutIntoNumber: inputAmount,
     amountOutIntoDecimals: amountOutIntoDecimals,
-  };
-};
-
-const handleOneInche = async (
-  sourceChainId: string,
-  destinationChainId: string,
-  sourceTokenAddress: string,
-  destinationTokenAddress: string,
-  inputAmountIntoDecimals: any,
-  sourceSlippage: string,
-  destinationTokenDecimals: any,
-  sourceWallet: string,
-  destinationeWallet: string
-) => {
-  let amountOutIntoDecimals;
-  let amountOutIntoNumber;
-  let minAmountOutIntoNumber;
-  let oneInchData;
-
-  let response = await OneInchSwap(
-    sourceChainId,
-    await common.getWrappedNativeTokenAddress(
-      sourceTokenAddress,
-      sourceChainId
-    ),
-    await common.getNativeTokenAddress(destinationTokenAddress),
-    inputAmountIntoDecimals,
-    sourceWallet,
-    destinationeWallet,
-    sourceSlippage
-  );
-  if (response?.responseMessage) {
-    throw response?.responseMessage;
-  }
-  if (response && response.amounts && response.data) {
-    amountOutIntoNumber = common.decimalsIntoNumber(
-      response.amounts,
-      destinationTokenDecimals
-    );
-    amountOutIntoDecimals = await common.addSlippageInDecimal(
-      response.amounts,
-      sourceSlippage
-    );
-    minAmountOutIntoNumber = common.decimalsIntoNumber(
-      response.amounts,
-      destinationTokenDecimals
-    );
-    oneInchData = response.data;
-  }
-  return {
-    amountInIntoDecimals: inputAmountIntoDecimals,
-    amountOutIntoDecimals: amountOutIntoDecimals,
-    amountOutIntoNumber: amountOutIntoNumber,
-    minAmountOutIntoNumber: minAmountOutIntoNumber,
-    oneInchData: oneInchData,
   };
 };
 
@@ -314,7 +249,7 @@ const convertResponseForSameNetworksIntoDesire = (
   response.destination.minAmount = dData.minAmountOutIntoNumber;
   response.destination.bridgeAmountIn = dData.amountInIntoDecimals;
   response.destination.bridgeAmountOut = dData.amountOutIntoDecimals;
-  response.destination.oneInchData = dData?.oneInchData;
+  response.destination.oneInchData = dData?.callData;
 
   return response;
 };

@@ -19,9 +19,10 @@ import {
 } from "../app/lib/middlewares/helpers/oneInchDecoderHelper";
 import { isValidOneInchSelector } from "../app/lib/middlewares/helpers/configurationHelper";
 import { query } from "express";
+import { chooseProviderAndGetData } from "../app/lib/middlewares/helpers/tokenQuoteAndTypeHelpers/quoteProvidersHelper";
 
 module.exports = {
-  categoriseSwapAssets: async function (
+  getQouteAndTypeForCrossNetworks: async function (
     sourceChainId: any,
     sourceTokenAddress: any,
     targetChainId: any,
@@ -82,15 +83,8 @@ module.exports = {
         amount
       );
       const isFoundryAsset = sourceTypeResponse.isFoundryAsset;
-      const isRefineryAsset = sourceTypeResponse.isRefineryAsset;
-      const isIonicAsset = sourceTypeResponse.isIonicAsset;
-      const isOneInchAsset = sourceTypeResponse.isOneInch;
       if (isFoundryAsset) {
         sourceAssetType = (global as any).utils.assetType.FOUNDARY;
-      } else if (isRefineryAsset) {
-        sourceAssetType = (global as any).utils.assetType.REFINERY;
-      } else if (isIonicAsset) {
-        sourceAssetType = (global as any).utils.assetType.IONIC;
       } else {
         sourceAssetType = (global as any).utils.assetType.ONE_INCH;
       }
@@ -98,7 +92,7 @@ module.exports = {
       if (isFoundryAsset) {
         sourceBridgeAmount = inputAmount;
       } else {
-        let response = await OneInchSwap(
+        let response = await chooseProviderAndGetData(
           sourceChainId,
           await (global as any).commonFunctions.getWrappedNativeTokenAddress(
             sourceTokenAddress,
@@ -106,32 +100,22 @@ module.exports = {
           ),
           sourceNetwork?.foundryTokenAddress,
           amount,
+          sourceSlippage,
           sourceNetwork?.fiberRouter,
-          sourceNetwork?.fundManager,
+          sourceNetwork?.fundManager
+        );
+        sourceOneInchData = response.callData;
+        machineSourceAmountOut = response.amounts;
+        machineSourceAmountOut = await (
+          global as any
+        ).commonFunctions.addSlippageInDecimal(
+          machineSourceAmountOut,
           sourceSlippage
         );
-        if (response?.responseMessage) {
-          throw response?.responseMessage;
-        }
-
-        if (response && response.amounts) {
-          machineSourceAmountOut = response.amounts;
-          machineSourceAmountOut = await (
-            global as any
-          ).commonFunctions.addSlippageInDecimal(
-            machineSourceAmountOut,
-            sourceSlippage
-          );
-          sourceBridgeAmount = (
-            global as any
-          ).commonFunctions.decimalsIntoNumber(
-            machineSourceAmountOut,
-            sourceFoundryTokenDecimal
-          );
-        }
-        if (response && response.data) {
-          sourceOneInchData = response.data;
-        }
+        sourceBridgeAmount = (global as any).commonFunctions.decimalsIntoNumber(
+          machineSourceAmountOut,
+          sourceFoundryTokenDecimal
+        );
       }
     }
 
@@ -210,44 +194,37 @@ module.exports = {
           throw swapIsNotAvailable;
         }
         await this.delay(1000);
-        let response = await OneInchSwap(
+        let response = await chooseProviderAndGetData(
           targetChainId,
           targetNetwork?.foundryTokenAddress,
           await (global as any).commonFunctions.getNativeTokenAddress(
             targetTokenAddress
           ),
           machineAmount,
+          destinationSlippage,
           targetNetwork?.fiberRouter,
-          destinationWalletAddress,
+          destinationWalletAddress
+        );
+        destinationOneInchData = response.callData;
+        machineDestinationAmountOut = response.amounts;
+        destinationAmountOut = (
+          global as any
+        ).commonFunctions.decimalsIntoNumber(
+          machineDestinationAmountOut,
+          targetTokenDecimal
+        );
+        machineDestinationAmountOut = await (
+          global as any
+        ).commonFunctions.addSlippageInDecimal(
+          machineDestinationAmountOut,
           destinationSlippage
         );
-        if (response?.responseMessage) {
-          throw response?.responseMessage;
-        }
-        if (response && response.data) {
-          destinationOneInchData = response.data;
-        }
-        if (response && response.amounts) {
-          machineDestinationAmountOut = response.amounts;
-          destinationAmountOut = (
-            global as any
-          ).commonFunctions.decimalsIntoNumber(
-            machineDestinationAmountOut,
-            targetTokenDecimal
-          );
-          machineDestinationAmountOut = await (
-            global as any
-          ).commonFunctions.addSlippageInDecimal(
-            machineDestinationAmountOut,
-            destinationSlippage
-          );
-          minDestinationAmountOut = (
-            global as any
-          ).commonFunctions.decimalsIntoNumber(
-            machineDestinationAmountOut,
-            targetTokenDecimal
-          );
-        }
+        minDestinationAmountOut = (
+          global as any
+        ).commonFunctions.decimalsIntoNumber(
+          machineDestinationAmountOut,
+          targetTokenDecimal
+        );
       }
       isCCTP = await checkForCCTP(
         targetNetwork.foundryTokenAddress,

@@ -37,6 +37,12 @@ var schema = mongoose.Schema(
         chainId: { type: String, default: "" },
       },
     ],
+    allowedNetworksForKyberSwap: [
+      {
+        name: { type: String, default: "" },
+        chainId: { type: String, default: "" },
+      },
+    ],
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: new Date() },
     updatedAt: { type: Date, default: new Date() },

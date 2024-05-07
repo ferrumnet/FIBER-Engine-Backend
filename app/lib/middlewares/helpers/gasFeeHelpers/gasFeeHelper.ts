@@ -7,7 +7,7 @@ const { Big } = require("big.js");
 import {
   createSignedPayment,
   recoverAddress,
-} from "../forgeHelpers/forgeSignatureHelpers/forgeSignatureHelper";
+} from "../forgeHelpers/forgeSignatureHelper";
 import {
   destinationFoundaryGasEstimation,
   destinationOneInchGasEstimation,
@@ -31,8 +31,8 @@ import {
   SwapOneInch,
   SwapSameNetwork,
 } from "../../../../interfaces/forgeInterface";
-import { getWithdrawalDataHashForSwap } from "../../../../lib/middlewares/helpers/signatureHelper";
-import { getValueForSwap } from "../../../../lib/middlewares/helpers/fiberEngineHelper";
+import { getWithdrawalDataHashForSwap } from "../signatureHelper";
+import { getValueForSwap } from "../fiberEngineHelper";
 import { getIsCCTP, getForgeFundManager } from "../cctpHelpers/cctpHelper";
 export const gasEstimationValidation = (req: any): any => {
   if (

@@ -44,7 +44,9 @@ export const getQuoteAndTokenTypeInformation = async function (req: any) {
     );
   } else {
     console.log("i am not same network swap");
-    categorizedInfo = await (global as any).fiberNode.categoriseSwapAssets(
+    categorizedInfo = await (
+      global as any
+    ).fiberNode.getQouteAndTypeForCrossNetworks(
       sourceNetworkChainId,
       sourceTokenContractAddress,
       destinationNetworkChainId,
@@ -171,6 +173,66 @@ export const doWithdraw = async function (req: any, query: any) {
     data
   );
   return data;
+};
+
+export const quotAndTokenValidation = function (req: any) {
+  if (
+    !req.query.sourceWalletAddress ||
+    !req.query.sourceTokenContractAddress ||
+    !req.query.sourceNetworkChainId ||
+    !req.query.sourceAmount ||
+    !req.query.destinationTokenContractAddress ||
+    !req.query.destinationNetworkChainId
+  ) {
+    throw "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing";
+  }
+};
+
+export const swapSignedValidation = function (req: any) {
+  if (
+    !req.query.sourceWalletAddress ||
+    !req.query.sourceTokenContractAddress ||
+    !req.query.sourceNetworkChainId ||
+    !req.query.sourceAmount ||
+    !req.query.destinationTokenContractAddress ||
+    !req.query.destinationNetworkChainId ||
+    !req.query.sourceAssetType ||
+    !req.query.destinationAssetType
+  ) {
+    throw "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType are missing";
+  }
+  if (
+    req.query.sourceNetworkChainId != req.query.destinationNetworkChainId &&
+    !req.query.gasPrice
+  ) {
+    throw "gasPrice is missing";
+  }
+};
+
+export const withdrawSignedValidation = function (req: any) {
+  if (
+    !req.body.sourceWalletAddress ||
+    !req.body.sourceTokenContractAddress ||
+    !req.body.sourceNetworkChainId ||
+    !req.body.sourceAmount ||
+    !req.body.destinationTokenContractAddress ||
+    !req.body.destinationNetworkChainId ||
+    !req.body.salt ||
+    !req.body.hash ||
+    !req.body.signatures ||
+    !req.params.txHash
+  ) {
+    throw (
+      "sourceWalletAddress & sourceTokenContractAddress &" +
+      " sourceNetworkChainId & sourceAmount & destinationTokenContractAddress &" +
+      " destinationNetworkChainId & salt & hash & signatures &" +
+      " swapTransactionHash are missing"
+    );
+  }
+
+  if (req.body.signatures && req.body.signatures.length == 0) {
+    throw "signatures can not be empty";
+  }
 };
 
 const getResponseForQuoteAndTokenTypeInformation = async function (
