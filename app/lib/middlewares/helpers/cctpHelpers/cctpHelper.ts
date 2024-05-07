@@ -1,5 +1,5 @@
 import { getCCTPAttestation } from "../../../httpCalls/cctpAxiosHelper";
-const THRESHOLD = 360;
+import { getCCTPAttestationApiThreshold } from "../configurationHelper";
 
 export const getIsCCTP = (isCCTPType: any): boolean => {
   try {
@@ -35,7 +35,7 @@ export const getAttestation = async (
     let status = response?.status;
     if (status == "complete") {
       attestation = response.attestation;
-    } else if (recursionCount < THRESHOLD) {
+    } else if (recursionCount < (await getCCTPAttestationApiThreshold())) {
       await delay();
       recursionCount = recursionCount + 1;
       attestation = await getAttestation(mesgHash, recursionCount);

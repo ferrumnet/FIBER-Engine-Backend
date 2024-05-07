@@ -1,6 +1,8 @@
 export const OWLRACLE_PROVIDER_TAG = "owlracle";
 export const INFURA_PROVIDER_TAG = "infura";
 export const DEFAULT_SLIPPAGE = "2";
+const CCTP_ATTESTATION_API_THRESHOLD = 360;
+export const CCTP_BALANCE_THRESHOLD = 4;
 
 export const getSlippage = async (slippage = ""): Promise<any> => {
   if (slippage) {
@@ -76,4 +78,18 @@ export const isCCTPNetwork = async (chainId: string): Promise<boolean> => {
     return true;
   }
   return false;
+};
+
+export const getCCTPAttestationApiThreshold = async (): Promise<number> => {
+  let data = await db.Configurations.findOne();
+  return data?.cctpAttestationApiThreshold
+    ? data?.cctpAttestationApiThreshold
+    : CCTP_ATTESTATION_API_THRESHOLD;
+};
+
+export const getCCTPBalanceThreshold = async (): Promise<number> => {
+  let data = await db.Configurations.findOne();
+  return data?.cctpBalanceThreshold
+    ? data?.cctpBalanceThreshold
+    : CCTP_BALANCE_THRESHOLD;
 };

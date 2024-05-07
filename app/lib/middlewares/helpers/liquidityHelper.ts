@@ -2,10 +2,9 @@ var { ethers } = require("ethers");
 var tokenAbi = require("../../../../artifacts/contracts/token/Token.sol/Token.json");
 const cudosBalance = require("../../../../scripts/cudosBalance");
 var { Big } = require("big.js");
-import { isCCTPNetwork } from "./configurationHelper";
+import { getCCTPBalanceThreshold, isCCTPNetwork } from "./configurationHelper";
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "./withdrawResponseHelper";
 
-export const BALANCE_THRESHOLD = "4";
 export const isLiquidityAvailableForEVM = async (
   foundryTokenAddress: string,
   fundManagerAddress: string,
@@ -69,7 +68,7 @@ export const checkForCCTP = async (
     balance = Big(balance);
     amount = Big(amount);
     let threshold: any = (global as any).commonFunctions.numberIntoDecimals__(
-      BALANCE_THRESHOLD,
+      await getCCTPBalanceThreshold(),
       foundaryDecimals
     );
     threshold = Big(threshold);
