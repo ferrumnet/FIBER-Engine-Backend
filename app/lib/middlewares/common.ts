@@ -337,11 +337,11 @@ module.exports = {
     return address;
   },
 
-  getOneInchTokenAddress: async function (address: string): Promise<string> {
+  getNativeTokenAddress: async function (address: string): Promise<string> {
     let tokens: any = await getNativeTokens();
     for (let item of tokens || []) {
       if (item?.address.toLowerCase() == address.toLowerCase()) {
-        return item?.oneInchAddress;
+        return item?.nativeAddress;
       }
     }
     return address;

@@ -294,7 +294,7 @@ module.exports = {
           amountOut: query?.destinationAmountOut,
           targetTokenAddress: await (
             global as any
-          ).commonFunctions.getOneInchTokenAddress(
+          ).commonFunctions.getNativeTokenAddress(
             query?.destinationTokenContractAddress
           ),
           destinationWalletAddress: query?.destinationWalletAddress,
@@ -311,7 +311,7 @@ module.exports = {
           sourceTokenAddress,
           amount,
           targetChainId,
-          await (global as any).commonFunctions.getOneInchTokenAddress(
+          await (global as any).commonFunctions.getNativeTokenAddress(
             targetTokenAddress
           ),
           destinationWalletAddress,

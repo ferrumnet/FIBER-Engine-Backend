@@ -213,7 +213,7 @@ module.exports = {
         let response = await OneInchSwap(
           targetChainId,
           targetNetwork?.foundryTokenAddress,
-          await (global as any).commonFunctions.getOneInchTokenAddress(
+          await (global as any).commonFunctions.getNativeTokenAddress(
             targetTokenAddress
           ),
           machineAmount,

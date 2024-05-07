@@ -180,7 +180,7 @@ export const doDestinationFoundaryGasEstimation = async (
   let obj: WithdrawSigned = {
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -205,7 +205,7 @@ export const doDestinationOneInchGasEstimation = async (
   let obj: WithdrawSignedAndSwapOneInch = {
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -245,7 +245,7 @@ export const doSourceFoundaryGasEstimation = async (
     targetChainId: req.query.destinationNetworkChainId,
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -292,7 +292,7 @@ export const doSourceOneInchGasEstimation = async (
     targetChainId: req.query.destinationNetworkChainId,
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -344,7 +344,7 @@ export const doSameNetworkGasEstimation = async (
     amountOut: req.query.destinationAmountOut,
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -376,7 +376,7 @@ export const getForgeSignature = async (
     req.query.destinationNetworkChainId,
     req.query.destinationWalletAddress, // need to check
     req.query.destinationAmountIn,
-    await (global as any).commonFunctions.getOneInchTokenAddress(
+    await (global as any).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     getForgeFundManager(getIsCCTP(req.query.isCCTP), targetNetwork),

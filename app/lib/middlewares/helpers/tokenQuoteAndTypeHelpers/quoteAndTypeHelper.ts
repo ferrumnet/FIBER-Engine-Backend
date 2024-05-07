@@ -222,7 +222,7 @@ const handleOneInche = async (
       sourceTokenAddress,
       sourceChainId
     ),
-    await common.getOneInchTokenAddress(destinationTokenAddress),
+    await common.getNativeTokenAddress(destinationTokenAddress),
     inputAmountIntoDecimals,
     sourceWallet,
     destinationeWallet,
