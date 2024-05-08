@@ -1,6 +1,6 @@
 var axios = require("axios").default;
 import { getSlippage } from "../../lib/middlewares/helpers/configurationHelper";
-import { genericOneInchError } from "../../lib/middlewares/helpers/stringHelper";
+import { genericProviderError } from "../../lib/middlewares/helpers/stringHelper";
 
 interface Response {
   responseMessage: string;
@@ -41,7 +41,7 @@ export const OneInchSwap = async (
     }
   } catch (error: any) {
     console.log("1Inch error", error);
-    responseMessage = genericOneInchError;
+    responseMessage = genericProviderError;
   }
 
   let response: Response = {

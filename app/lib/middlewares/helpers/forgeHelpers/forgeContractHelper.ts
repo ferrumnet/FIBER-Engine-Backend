@@ -39,7 +39,7 @@ export const destinationFoundaryGasEstimation = async (
     let response = await forge
       .connect(getSigner(network.provider))
       .estimateGas.withdrawSignedForGasEstimation(
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
@@ -72,7 +72,7 @@ export const destinationOneInchGasEstimation = async (
         obj.destinationAmountIn,
         obj.destinationAmountOut,
         obj.targetFoundryTokenAddress,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.aggregateRouterContractAddress,
@@ -147,7 +147,7 @@ export const sourceOneInchGasEstimation = async (
         obj.aggregateRouterContractAddress,
         obj.sourceOneInchData,
         obj.targetChainId,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
@@ -167,7 +167,7 @@ export const sourceOneInchGasEstimation = async (
         obj.aggregateRouterContractAddress,
         obj.sourceOneInchData,
         obj.targetChainId,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
@@ -207,7 +207,7 @@ export const sourceSameNetworkGasEstimation = async (
     ) {
       response = await fiberRouter.estimateGas.swapOnSameNetworkETH(
         obj.amountOut,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
@@ -222,10 +222,10 @@ export const sourceSameNetworkGasEstimation = async (
       response = await fiberRouter.estimateGas.swapOnSameNetwork(
         obj.amountIn,
         obj.amountOut,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.sourceTokenAddress
         ),
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,

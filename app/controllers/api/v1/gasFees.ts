@@ -3,7 +3,7 @@ import {
   gasEstimationValidation,
   destinationGasEstimation,
   sourceGasEstimation,
-} from "../../../lib/middlewares/helpers/gasFeeHelpers/dynamicGasFeeEstimationHelper";
+} from "../../../lib/middlewares/helpers/gasFeeHelpers/gasFeeHelper";
 import { isSameNetworksSwap } from "../../../lib/middlewares/helpers/multiSwapHelper";
 
 module.exports = function (router: any) {

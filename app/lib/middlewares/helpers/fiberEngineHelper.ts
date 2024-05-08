@@ -114,7 +114,7 @@ export const doFoundaryWithdraw = async (
       dynamicGasPrice = await obj.targetNetwork.fiberRouterContract
         .connect(obj.targetSigner)
         .estimateGas.withdrawSigned(
-          await (global as any).commonFunctions.getOneInchTokenAddress(
+          await (global as any).commonFunctions.getNativeTokenAddress(
             obj.targetTokenAddress
           ),
           obj.destinationWalletAddress,
@@ -142,7 +142,7 @@ export const doFoundaryWithdraw = async (
     result = await obj.targetNetwork.fiberRouterContract
       .connect(obj.targetSigner)
       .withdrawSigned(
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
@@ -196,7 +196,7 @@ export const doOneInchWithdraw = async (
           obj.destinationAmountIn,
           obj.destinationAmountOut,
           obj.targetFoundryTokenAddress,
-          await (global as any).commonFunctions.getOneInchTokenAddress(
+          await (global as any).commonFunctions.getNativeTokenAddress(
             obj.targetTokenAddress
           ),
           obj.aggregateRouterContractAddress,
@@ -228,7 +228,7 @@ export const doOneInchWithdraw = async (
         obj.destinationAmountIn,
         obj.destinationAmountOut,
         obj.targetFoundryTokenAddress,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.aggregateRouterContractAddress,
@@ -276,7 +276,7 @@ export const doOneInchSwap = async (
         obj.aggregateRouterContractAddress,
         obj.sourceOneInchData,
         obj.targetChainId,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
@@ -292,7 +292,7 @@ export const doOneInchSwap = async (
         obj.aggregateRouterContractAddress,
         obj.sourceOneInchData,
         obj.targetChainId,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
@@ -320,7 +320,7 @@ export const doSameNetworkSwap = async (
     ) {
       result = fiberRouter.methods.swapOnSameNetworkETH(
         obj.amountOut,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,
@@ -331,10 +331,10 @@ export const doSameNetworkSwap = async (
       result = fiberRouter.methods.swapOnSameNetwork(
         obj.amountIn,
         obj.amountOut,
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.sourceTokenAddress
         ),
-        await (global as any).commonFunctions.getOneInchTokenAddress(
+        await (global as any).commonFunctions.getNativeTokenAddress(
           obj.targetTokenAddress
         ),
         obj.destinationWalletAddress,

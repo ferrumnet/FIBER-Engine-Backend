@@ -93,3 +93,33 @@ export const getCCTPBalanceThreshold = async (): Promise<number> => {
     ? data?.cctpBalanceThreshold
     : CCTP_BALANCE_THRESHOLD;
 };
+
+export const isKyberSwap = async (chainId: string): Promise<boolean> => {
+  let filter: any = {
+    "allowedNetworksForKyberSwap.chainId": {
+      $eq: chainId,
+    },
+  };
+  let count = await db.Configurations.countDocuments(filter);
+  if (count > 0) {
+    return true;
+  }
+  return false;
+};
+
+export const getChainKyberSwap = async (chainId: string): Promise<string> => {
+  let filter: any = {
+    "allowedNetworksForKyberSwap.chainId": {
+      $eq: chainId,
+    },
+  };
+  let data = await db.Configurations.findOne(filter);
+  if (data?.allowedNetworksForKyberSwap?.length > 0) {
+    for (let item of data?.allowedNetworksForKyberSwap) {
+      if (item.chainId == chainId) {
+        return item.name;
+      }
+    }
+  }
+  return "";
+};

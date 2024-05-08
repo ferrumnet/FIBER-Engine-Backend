@@ -14,7 +14,7 @@ var schema = mongoose.Schema(
         symbol: { type: String, default: "" },
         address: { type: String, default: "" },
         wrappedAddress: { type: String, default: "" },
-        oneInchAddress: { type: String, default: "" },
+        nativeAddress: { type: String, default: "" },
       },
     ],
     oneInchSelector: [
@@ -32,6 +32,12 @@ var schema = mongoose.Schema(
       },
     ],
     allowedNetworksForCCTP: [
+      {
+        name: { type: String, default: "" },
+        chainId: { type: String, default: "" },
+      },
+    ],
+    allowedNetworksForKyberSwap: [
       {
         name: { type: String, default: "" },
         chainId: { type: String, default: "" },
