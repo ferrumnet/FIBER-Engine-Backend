@@ -247,14 +247,14 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     minDestinationAmount = categorizedInfo?.destination?.minAmount
       ? categorizedInfo?.destination?.minAmount
       : categorizedInfo?.destination?.amount;
-    let sourceOneInchData = "";
-    let destinationOneInchData = "";
+    let sourceCallData = "";
+    let destinationCallData = "";
     let sourceBridgeAmount = "";
-    if (categorizedInfo?.source?.oneInchData) {
-      sourceOneInchData = categorizedInfo?.source?.oneInchData;
+    if (categorizedInfo?.source?.callData) {
+      sourceCallData = categorizedInfo?.source?.callData;
     }
-    if (categorizedInfo?.destination?.oneInchData) {
-      destinationOneInchData = categorizedInfo?.destination?.oneInchData;
+    if (categorizedInfo?.destination?.callData) {
+      destinationCallData = categorizedInfo?.destination?.callData;
     }
     if (categorizedInfo?.source?.bridgeAmount) {
       sourceBridgeAmount = categorizedInfo?.source?.bridgeAmount;
@@ -264,7 +264,7 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
     sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
     sourceTokenCategorizedInfo.sourceBridgeAmount = sourceBridgeAmount;
-    sourceTokenCategorizedInfo.sourceOneInchData = sourceOneInchData;
+    sourceTokenCategorizedInfo.sourceOneInchData = sourceCallData;
 
     let destinationTokenCategorizedInfo: any = {};
     destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
@@ -277,7 +277,7 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
       ? categorizedInfo?.destination?.bridgeAmountOut
       : "";
     destinationTokenCategorizedInfo.destinationOneInchData =
-      destinationOneInchData;
+      destinationCallData;
     data.sourceSlippage = await getSlippage(req.query.sourceSlippage);
     data.destinationSlippage = await getSlippage(req.query.destinationSlippage);
 

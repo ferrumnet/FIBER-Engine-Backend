@@ -42,8 +42,8 @@ module.exports = {
     let targetAssetType;
     let sourceAssetType;
     let sourceBridgeAmount: any;
-    let sourceOneInchData;
-    let destinationOneInchData;
+    let sourceCallData;
+    let destinationCallData;
     let destinationAmountOut;
     let minDestinationAmountOut;
     let machineSourceAmountOut: any;
@@ -92,7 +92,7 @@ module.exports = {
       if (isFoundryAsset) {
         sourceBridgeAmount = inputAmount;
       } else {
-        let response = await chooseProviderAndGetData(
+        let response: any = await chooseProviderAndGetData(
           sourceChainId,
           await (global as any).commonFunctions.getWrappedNativeTokenAddress(
             sourceTokenAddress,
@@ -104,7 +104,7 @@ module.exports = {
           sourceNetwork?.fiberRouter,
           sourceNetwork?.fundManager
         );
-        sourceOneInchData = response.callData;
+        sourceCallData = response.callData;
         machineSourceAmountOut = response.amounts;
         machineSourceAmountOut = await (
           global as any
@@ -193,8 +193,7 @@ module.exports = {
         if (machineAmount <= 0) {
           throw swapIsNotAvailable;
         }
-        await this.delay(1000);
-        let response = await chooseProviderAndGetData(
+        let response: any = await chooseProviderAndGetData(
           targetChainId,
           targetNetwork?.foundryTokenAddress,
           await (global as any).commonFunctions.getNativeTokenAddress(
@@ -205,7 +204,7 @@ module.exports = {
           targetNetwork?.fiberRouter,
           destinationWalletAddress
         );
-        destinationOneInchData = response.callData;
+        destinationCallData = response.callData;
         machineDestinationAmountOut = response.amounts;
         destinationAmountOut = (
           global as any
@@ -246,20 +245,14 @@ module.exports = {
     if (machineSourceAmountOut) {
       data.source.bridgeAmount = machineSourceAmountOut;
     }
-    data.source.oneInchData = sourceOneInchData;
+    data.source.callData = sourceCallData;
 
     data.destination.type = targetAssetType;
     data.destination.amount = destinationAmountOut;
     data.destination.minAmount = minDestinationAmountOut;
     data.destination.bridgeAmountIn = machineDestinationAmountIn;
     data.destination.bridgeAmountOut = machineDestinationAmountOut;
-    data.destination.oneInchData = destinationOneInchData;
+    data.destination.callData = destinationCallData;
     return data;
-  },
-
-  delay: function (ms: any) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
   },
 };
