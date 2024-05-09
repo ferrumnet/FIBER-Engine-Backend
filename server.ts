@@ -41,6 +41,7 @@ mongoose.Promise = require("bluebird");
       (global as any).getAllNetworkJob();
       (global as any).owlracleGasJob();
       (global as any).infuraGasJob();
+      (global as any).scrollGasJob();
       (global as any).log.info("Connected to MongoDB");
     }
   });
