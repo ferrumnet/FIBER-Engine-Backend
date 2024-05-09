@@ -9,24 +9,31 @@ export const getGasForWithdraw = async (
   let isAllowedDynamicGas = await isAllowedDynamicGasValues(chainId);
   let item = await db.GasFees.findOne({ chainId: chainId });
   if (item) {
-    let maxFeePerGas = isAllowedDynamicGas
-      ? item.dynamicValues.maxFeePerGas
-      : item.maxFeePerGas;
-    let maxPriorityFeePerGas = isAllowedDynamicGas
-      ? item.dynamicValues.maxPriorityFeePerGas
-      : item.maxPriorityFeePerGas;
     let staticGasLimit = item.gasLimit;
-    data.maxFeePerGas = Web3.utils.toHex(
-      Web3.utils.toWei(maxFeePerGas, "gwei")
-    );
-    data.maxPriorityFeePerGas = Web3.utils.toHex(
-      Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
-    );
-
+    console.log(item);
+    if (isGasPriceSupportedNetwork(chainId)) {
+      data.gasPrice = isAllowedDynamicGas
+        ? item.dynamicValues.gasPrice
+        : item.gasPrice;
+    } else {
+      let maxFeePerGas = isAllowedDynamicGas
+        ? item.dynamicValues.maxFeePerGas
+        : item.maxFeePerGas;
+      let maxPriorityFeePerGas = isAllowedDynamicGas
+        ? item.dynamicValues.maxPriorityFeePerGas
+        : item.maxPriorityFeePerGas;
+      data.maxFeePerGas = Web3.utils.toHex(
+        Web3.utils.toWei(maxFeePerGas, "gwei")
+      );
+      data.maxPriorityFeePerGas = Web3.utils.toHex(
+        Web3.utils.toWei(maxPriorityFeePerGas, "gwei")
+      );
+    }
     data.gasLimit = dynamicGasLimit
       ? dynamicGasLimit?.toString()
       : staticGasLimit;
   }
+  console.log("data", data);
   return data;
 };
 
@@ -96,20 +103,19 @@ export const updateGasPriceEstimations = async (
   network: any,
   maxFeePerGas: any,
   maxPriorityFeePerGas: any,
-  gasPriceForBsc: any
+  gasPrice: any
 ): Promise<any> => {
   let body: any = {};
   if (network) {
-    if (network.chainId == 56) {
-      gasPriceForBsc = Number(
-        addBuffer__(gasPriceForBsc, await getPriceBuffer(network.chainId))
+    if (network.chainId == 56 || network.chainId == 534352) {
+      gasPrice = Number(
+        addBuffer__(gasPrice, await getPriceBuffer(network.chainId))
       );
       body = {
         dynamicValues: {
-          maxFeePerGas: gasPriceForBsc ? valueFixed(gasPriceForBsc, 2) : 0,
-          maxPriorityFeePerGas: gasPriceForBsc
-            ? valueFixed(gasPriceForBsc, 2)
-            : 0,
+          maxFeePerGas: gasPrice ? valueFixed(gasPrice, 2) : 0,
+          maxPriorityFeePerGas: gasPrice ? valueFixed(gasPrice, 2) : 0,
+          gasPrice: gasPrice ? valueFixed(gasPrice, 2) : 0,
         },
       };
     } else {
@@ -164,4 +170,12 @@ export const isAllowedAggressivePriceForDynamicGasEstimation = async (
       ? true
       : false;
   }
+};
+
+export const isGasPriceSupportedNetwork = (chainId: any): boolean => {
+  let scrollChainId = "534352";
+  if (chainId == scrollChainId) {
+    return true;
+  }
+  return false;
 };
