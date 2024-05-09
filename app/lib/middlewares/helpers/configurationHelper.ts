@@ -1,5 +1,6 @@
 export const OWLRACLE_PROVIDER_TAG = "owlracle";
 export const INFURA_PROVIDER_TAG = "infura";
+export const SCROLL_PROVIDER_TAG = "scroll";
 export const DEFAULT_SLIPPAGE = "2";
 const CCTP_ATTESTATION_API_THRESHOLD = 360;
 export const CCTP_BALANCE_THRESHOLD = 4;
