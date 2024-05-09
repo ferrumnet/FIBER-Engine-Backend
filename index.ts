@@ -92,6 +92,7 @@ if (
 (global as any).getAllNetworkJob = require("./app/lib/crons/getAllNetworkJob");
 (global as any).owlracleGasJob = require("./app/lib/crons/owlracleGasJob");
 (global as any).infuraGasJob = require("./app/lib/crons/infuraGasJob");
+(global as any).scrollGasJob = require("./app/lib/crons/scrollGasJob");
 
 // fiber
 (global as any).networkHelper = require("./network");
