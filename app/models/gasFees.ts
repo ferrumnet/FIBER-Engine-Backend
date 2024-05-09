@@ -8,8 +8,10 @@ var schema = mongoose.Schema(
     maxFeePerGas: { type: String, default: "" },
     maxPriorityFeePerGas: { type: String, default: "" },
     gasLimit: { type: String, default: "" },
+    gasPrice: { type: String, default: "" },
     bufferForGasEstimation: { type: Number, default: 0 },
     bufferForWithdrawal: { type: Number, default: 0 },
+    aggressivePriceBuffer: { type: Number, default: 0 },
     isAllowedDynamicGasLimit: { type: Boolean, default: false },
     isAllowedSourceAggressivePriceForDynamicGas: {
       type: Boolean,
@@ -23,6 +25,7 @@ var schema = mongoose.Schema(
     dynamicValues: {
       maxFeePerGas: { type: String, default: "" },
       maxPriorityFeePerGas: { type: String, default: "" },
+      gasPrice: { type: String, default: "" },
     },
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: new Date() },
