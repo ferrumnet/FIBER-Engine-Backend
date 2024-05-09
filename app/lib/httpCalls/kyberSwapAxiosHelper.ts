@@ -1,5 +1,6 @@
 var axios = require("axios").default;
 import { getSlippage } from "../middlewares/helpers/configurationHelper";
+import { getExpiry } from "../middlewares/helpers/gasFeeHelpers/gasFeeHelper";
 import { genericProviderError } from "../middlewares/helpers/stringHelper";
 
 interface Response {
@@ -67,6 +68,7 @@ export const getKyberSwapCallData = async (
       wallet: from,
       recipient: to,
       slippageTolerance: slippage, // in bps, 200 = 2%
+      deadline: getExpiry(),
     };
     let url = `https://aggregator-api.kyberswap.com/${chain}/api/v1/route/build`;
     console.log("url", url);
