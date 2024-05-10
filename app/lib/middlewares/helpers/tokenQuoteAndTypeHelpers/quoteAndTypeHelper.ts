@@ -242,14 +242,14 @@ const convertResponseForSameNetworksIntoDesire = (
   if (sData.amountOutIntoDecimals) {
     response.source.bridgeAmount = sData.amountOutIntoDecimals;
   }
-  response.source.oneInchData = sData?.oneInchData;
+  response.source.callData = sData?.oneInchData;
 
   response.destination.type = dData.destinationAssetType;
   response.destination.amount = dData.amountOutIntoNumber;
   response.destination.minAmount = dData.minAmountOutIntoNumber;
   response.destination.bridgeAmountIn = dData.amountInIntoDecimals;
   response.destination.bridgeAmountOut = dData.amountOutIntoDecimals;
-  response.destination.oneInchData = dData?.callData;
+  response.destination.callData = dData?.callData;
 
   return response;
 };
