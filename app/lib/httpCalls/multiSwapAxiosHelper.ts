@@ -74,7 +74,7 @@ export const getFeeDistributionDataByReferralCode = async (code: string) => {
     if ((global as any as any).utils.IS_LOCAL_ENV) {
       baseUrl = localHostUrl;
     }
-    let url = `${baseUrl}/community-member/multiSwap/referrals/fee-distribution?code=${code}`;
+    let url = `${baseUrl}/referrals/fee-distribution?code=${code}`;
     let res = await axios.get(url, config);
     console.log("res?.data?.body?.feeDistribution", res?.data?.body);
     return res?.data?.body?.feeDistribution;
