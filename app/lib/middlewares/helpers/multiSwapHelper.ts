@@ -6,7 +6,7 @@ import {
 import { getOneInchSelector } from "../../../lib/middlewares/helpers/configurationHelper";
 import { getQouteAndTypeForSameNetworks } from "../../../lib/middlewares/helpers/tokenQuoteAndTypeHelpers/quoteAndTypeHelper";
 import { sameNetworkSwapError } from "../../../lib/middlewares/helpers/stringHelper";
-let transactionUpdateAxiosHelper = require("../../..//lib/httpCalls/transactionUpdateAxiosHelper");
+import { updateTransactionJobStatus } from "../../..//lib/httpCalls/multiSwapAxiosHelper";
 let db = require("../../../models/index");
 
 export const getQuoteAndTokenTypeInformation = async function (req: any) {
@@ -168,10 +168,7 @@ export const doWithdraw = async function (req: any, query: any) {
     responseCode: data.responseCode,
     responseMessage: data.responseMessage,
   };
-  await await transactionUpdateAxiosHelper.updateTransactionJobStatus(
-    req.query.swapTransactionHash,
-    data
-  );
+  await await updateTransactionJobStatus(req.query.swapTransactionHash, data);
   return data;
 };
 

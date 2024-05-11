@@ -3,6 +3,7 @@
 var app = require("./index");
 var http = require("http");
 var webSockets = require("./app/lib/webSockets")();
+import { getAllNetworks } from "./app/lib/httpCalls/multiSwapAxiosHelper";
 
 var mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
@@ -12,7 +13,7 @@ mongoose.Promise = require("bluebird");
   (global as any).fiberEngine = require("./scripts/fiberEngine");
   (global as any).fiberNode = require("./scripts/fiberNode");
 
-  await (global as any).networksAxiosHelper.getAllNetworks();
+  await getAllNetworks();
   var mongoString = (global as any).environment.mongoConnectionUrl;
   let isLocalEnv = (global as any).environment.isLocalEnv;
   if (isLocalEnv) {

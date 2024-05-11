@@ -102,7 +102,7 @@ module.exports = {
           amount,
           sourceSlippage,
           sourceNetwork?.fiberRouter,
-          sourceNetwork?.fundManager
+          sourceNetwork?.fiberRouter
         );
         sourceCallData = response.callData;
         machineSourceAmountOut = response.amounts;

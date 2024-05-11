@@ -101,14 +101,19 @@ export const sourceFoundaryGasEstimation = async (
       network.provider,
       contract.contractAddress
     );
-    let response = await fiberRouter.estimateGas.swap(
+    let response = await fiberRouter.estimateGas.swapSigned(
       obj.sourceTokenAddress,
       obj.amount,
-      obj.targetChainId,
-      obj.targetTokenAddress,
-      obj.destinationWalletAddress,
+      {
+        targetNetwork: obj.targetChainId,
+        targetToken: await (
+          global as any
+        ).commonFunctions.getNativeTokenAddress(obj.targetTokenAddress),
+        targetAddress: obj.destinationWalletAddress,
+      },
       obj.withdrawalData,
       obj.isCCTP,
+      obj.feeDistribution,
       {
         from: obj.sourceWalletAddress,
         value: obj.value,
@@ -129,7 +134,6 @@ export const sourceOneInchGasEstimation = async (
   obj: SwapOneInch
 ): Promise<any> => {
   try {
-    console.log("obj", obj);
     let response;
     let fiberRouter = fiberRouterContract(
       network.provider,
@@ -140,39 +144,45 @@ export const sourceOneInchGasEstimation = async (
         obj.sourceTokenAddress
       )
     ) {
-      response = await fiberRouter.estimateGas.swapAndCrossRouterETH(
+      response = await fiberRouter.estimateGas.swapSignedAndCrossRouterETH(
         obj.amountOut,
         obj.foundryTokenAddress,
         obj.gasPrice,
         obj.aggregateRouterContractAddress,
         obj.sourceOneInchData,
-        obj.targetChainId,
-        await (global as any).commonFunctions.getNativeTokenAddress(
-          obj.targetTokenAddress
-        ),
-        obj.destinationWalletAddress,
+        {
+          targetNetwork: obj.targetChainId,
+          targetToken: await (
+            global as any
+          ).commonFunctions.getNativeTokenAddress(obj.targetTokenAddress),
+          targetAddress: obj.destinationWalletAddress,
+        },
         obj.withdrawalData,
         obj.isCCTP,
+        obj.feeDistribution,
         {
           from: obj.sourceWalletAddress,
           value: obj.value,
         }
       );
     } else {
-      response = await fiberRouter.estimateGas.swapAndCrossRouter(
+      response = await fiberRouter.estimateGas.swapSignedAndCrossRouter(
         obj.amountIn,
         obj.amountOut,
         obj.sourceTokenAddress,
         obj.foundryTokenAddress,
         obj.aggregateRouterContractAddress,
         obj.sourceOneInchData,
-        obj.targetChainId,
-        await (global as any).commonFunctions.getNativeTokenAddress(
-          obj.targetTokenAddress
-        ),
-        obj.destinationWalletAddress,
+        {
+          targetNetwork: obj.targetChainId,
+          targetToken: await (
+            global as any
+          ).commonFunctions.getNativeTokenAddress(obj.targetTokenAddress),
+          targetAddress: obj.destinationWalletAddress,
+        },
         obj.withdrawalData,
         obj.isCCTP,
+        obj.feeDistribution,
         {
           from: obj.sourceWalletAddress,
           value: obj.value,
