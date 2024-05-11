@@ -1,3 +1,5 @@
+import { FeeDistribution } from "./feeDistributionInterface";
+
 export interface WithdrawSigned {
   targetTokenAddress: string;
   destinationWalletAddress: string;
@@ -10,6 +12,7 @@ export interface WithdrawSigned {
   targetChainId: string;
   swapTransactionHash: string;
   gasLimit: string;
+  isCCTP: boolean;
 }
 
 export interface WithdrawSignedAndSwapOneInch {
@@ -29,6 +32,20 @@ export interface WithdrawSignedAndSwapOneInch {
   swapTransactionHash: string;
   gasLimit: string;
   aggregateRouterContractAddress: string;
+  isCCTP: boolean;
+}
+
+export interface Swap {
+  sourceTokenAddress: string;
+  amount: string;
+  targetChainId: string;
+  targetTokenAddress: string;
+  destinationWalletAddress: string;
+  withdrawalData: string;
+  sourceWalletAddress: string;
+  value: string;
+  isCCTP: boolean;
+  feeDistribution: FeeDistribution;
 }
 
 export interface SwapOneInch {
@@ -44,6 +61,8 @@ export interface SwapOneInch {
   gasPrice: string;
   oneInchSelector: string;
   aggregateRouterContractAddress: string;
+  isCCTP: boolean;
+  feeDistribution: FeeDistribution;
 }
 
 export interface SwapSameNetwork {

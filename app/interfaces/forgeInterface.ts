@@ -1,3 +1,5 @@
+import { FeeDistribution } from "./feeDistributionInterface";
+
 export interface Contract {
   rpcUrl: string;
   contractAddress: string;
@@ -10,6 +12,7 @@ export interface WithdrawSigned {
   salt: string;
   signatureExpiry: number;
   signature: string;
+  isCCTP: boolean;
 }
 
 export interface WithdrawSignedAndSwapOneInch {
@@ -24,6 +27,7 @@ export interface WithdrawSignedAndSwapOneInch {
   signature: string;
   oneInchSelector: string;
   aggregateRouterContractAddress: string;
+  isCCTP: boolean;
 }
 
 export interface Swap {
@@ -35,6 +39,8 @@ export interface Swap {
   withdrawalData: string;
   sourceWalletAddress: string;
   value: string;
+  isCCTP: boolean;
+  feeDistribution: FeeDistribution;
 }
 
 export interface SwapOneInch {
@@ -52,6 +58,8 @@ export interface SwapOneInch {
   value: string;
   oneInchSelector: string;
   aggregateRouterContractAddress: string;
+  isCCTP: boolean;
+  feeDistribution: FeeDistribution;
 }
 
 export interface SwapSameNetwork {

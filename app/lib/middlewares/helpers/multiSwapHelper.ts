@@ -6,7 +6,7 @@ import {
 import { getOneInchSelector } from "../../../lib/middlewares/helpers/configurationHelper";
 import { getQouteAndTypeForSameNetworks } from "../../../lib/middlewares/helpers/tokenQuoteAndTypeHelpers/quoteAndTypeHelper";
 import { sameNetworkSwapError } from "../../../lib/middlewares/helpers/stringHelper";
-let transactionUpdateAxiosHelper = require("../../..//lib/httpCalls/transactionUpdateAxiosHelper");
+import { updateTransactionJobStatus } from "../../..//lib/httpCalls/multiSwapAxiosHelper";
 let db = require("../../../models/index");
 
 export const getQuoteAndTokenTypeInformation = async function (req: any) {
@@ -44,7 +44,9 @@ export const getQuoteAndTokenTypeInformation = async function (req: any) {
     );
   } else {
     console.log("i am not same network swap");
-    categorizedInfo = await (global as any).fiberNode.categoriseSwapAssets(
+    categorizedInfo = await (
+      global as any
+    ).fiberNode.getQouteAndTypeForCrossNetworks(
       sourceNetworkChainId,
       sourceTokenContractAddress,
       destinationNetworkChainId,
@@ -166,11 +168,68 @@ export const doWithdraw = async function (req: any, query: any) {
     responseCode: data.responseCode,
     responseMessage: data.responseMessage,
   };
-  await await transactionUpdateAxiosHelper.updateTransactionJobStatus(
-    req.query.swapTransactionHash,
-    data
-  );
+  await await updateTransactionJobStatus(req.query.swapTransactionHash, data);
   return data;
+};
+
+export const quotAndTokenValidation = function (req: any) {
+  if (
+    !req.query.sourceWalletAddress ||
+    !req.query.sourceTokenContractAddress ||
+    !req.query.sourceNetworkChainId ||
+    !req.query.sourceAmount ||
+    !req.query.destinationTokenContractAddress ||
+    !req.query.destinationNetworkChainId
+  ) {
+    throw "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing";
+  }
+};
+
+export const swapSignedValidation = function (req: any) {
+  if (
+    !req.query.sourceWalletAddress ||
+    !req.query.sourceTokenContractAddress ||
+    !req.query.sourceNetworkChainId ||
+    !req.query.sourceAmount ||
+    !req.query.destinationTokenContractAddress ||
+    !req.query.destinationNetworkChainId ||
+    !req.query.sourceAssetType ||
+    !req.query.destinationAssetType
+  ) {
+    throw "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType are missing";
+  }
+  if (
+    req.query.sourceNetworkChainId != req.query.destinationNetworkChainId &&
+    !req.query.gasPrice
+  ) {
+    throw "gasPrice is missing";
+  }
+};
+
+export const withdrawSignedValidation = function (req: any) {
+  if (
+    !req.body.sourceWalletAddress ||
+    !req.body.sourceTokenContractAddress ||
+    !req.body.sourceNetworkChainId ||
+    !req.body.sourceAmount ||
+    !req.body.destinationTokenContractAddress ||
+    !req.body.destinationNetworkChainId ||
+    !req.body.salt ||
+    !req.body.hash ||
+    !req.body.signatures ||
+    !req.params.txHash
+  ) {
+    throw (
+      "sourceWalletAddress & sourceTokenContractAddress &" +
+      " sourceNetworkChainId & sourceAmount & destinationTokenContractAddress &" +
+      " destinationNetworkChainId & salt & hash & signatures &" +
+      " swapTransactionHash are missing"
+    );
+  }
+
+  if (req.body.signatures && req.body.signatures.length == 0) {
+    throw "signatures can not be empty";
+  }
 };
 
 const getResponseForQuoteAndTokenTypeInformation = async function (
@@ -185,14 +244,14 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     minDestinationAmount = categorizedInfo?.destination?.minAmount
       ? categorizedInfo?.destination?.minAmount
       : categorizedInfo?.destination?.amount;
-    let sourceOneInchData = "";
-    let destinationOneInchData = "";
+    let sourceCallData = "";
+    let destinationCallData = "";
     let sourceBridgeAmount = "";
-    if (categorizedInfo?.source?.oneInchData) {
-      sourceOneInchData = categorizedInfo?.source?.oneInchData;
+    if (categorizedInfo?.source?.callData) {
+      sourceCallData = categorizedInfo?.source?.callData;
     }
-    if (categorizedInfo?.destination?.oneInchData) {
-      destinationOneInchData = categorizedInfo?.destination?.oneInchData;
+    if (categorizedInfo?.destination?.callData) {
+      destinationCallData = categorizedInfo?.destination?.callData;
     }
     if (categorizedInfo?.source?.bridgeAmount) {
       sourceBridgeAmount = categorizedInfo?.source?.bridgeAmount;
@@ -202,7 +261,7 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
     sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
     sourceTokenCategorizedInfo.sourceBridgeAmount = sourceBridgeAmount;
-    sourceTokenCategorizedInfo.sourceOneInchData = sourceOneInchData;
+    sourceTokenCategorizedInfo.sourceOneInchData = sourceCallData;
 
     let destinationTokenCategorizedInfo: any = {};
     destinationTokenCategorizedInfo.type = categorizedInfo.destination.type;
@@ -215,12 +274,13 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
       ? categorizedInfo?.destination?.bridgeAmountOut
       : "";
     destinationTokenCategorizedInfo.destinationOneInchData =
-      destinationOneInchData;
+      destinationCallData;
     data.sourceSlippage = await getSlippage(req.query.sourceSlippage);
     data.destinationSlippage = await getSlippage(req.query.destinationSlippage);
 
     data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
     data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
+    data.isCCTP = categorizedInfo?.isCCTP ? categorizedInfo?.isCCTP : false;
   }
   console.log("getTokenCategorizedInformation response", data);
   return data;

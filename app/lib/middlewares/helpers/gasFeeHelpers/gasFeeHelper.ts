@@ -7,7 +7,7 @@ const { Big } = require("big.js");
 import {
   createSignedPayment,
   recoverAddress,
-} from "../forgeHelpers/forgeSignatureHelpers/forgeSignatureHelper";
+} from "../forgeHelpers/forgeSignatureHelper";
 import {
   destinationFoundaryGasEstimation,
   destinationOneInchGasEstimation,
@@ -31,8 +31,11 @@ import {
   SwapOneInch,
   SwapSameNetwork,
 } from "../../../../interfaces/forgeInterface";
-import { getWithdrawalDataHashForSwap } from "../../../../lib/middlewares/helpers/signatureHelper";
-import { getValueForSwap } from "../../../../lib/middlewares/helpers/fiberEngineHelper";
+import { getWithdrawalDataHashForSwap } from "../signatureHelper";
+import { getValueForSwap } from "../fiberEngineHelper";
+import { getIsCCTP, getForgeFundManager } from "../cctpHelpers/cctpHelper";
+import { getFeeDistributionData } from "../feeDistribution/feeDistributionHelper";
+
 export const gasEstimationValidation = (req: any): any => {
   if (
     !req.query.destinationNetworkChainId ||
@@ -179,7 +182,7 @@ export const doDestinationFoundaryGasEstimation = async (
   let obj: WithdrawSigned = {
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -187,6 +190,7 @@ export const doDestinationFoundaryGasEstimation = async (
     salt: salt,
     signatureExpiry: expiry,
     signature: signature,
+    isCCTP: getIsCCTP(req.query.isCCTP),
   };
   return await destinationFoundaryGasEstimation(contract, network, obj);
 };
@@ -203,7 +207,7 @@ export const doDestinationOneInchGasEstimation = async (
   let obj: WithdrawSignedAndSwapOneInch = {
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -217,6 +221,7 @@ export const doDestinationOneInchGasEstimation = async (
     oneInchSelector: req.query.destinationOneInchSelector,
     aggregateRouterContractAddress:
       targetNetwork.aggregateRouterContractAddress,
+    isCCTP: getIsCCTP(req.query.isCCTP),
   };
   return await destinationOneInchGasEstimation(contractObj, network, obj);
 };
@@ -228,6 +233,10 @@ export const doSourceFoundaryGasEstimation = async (
   provider: any,
   gasPrice: string
 ): Promise<any> => {
+  let feeDistribution = await getFeeDistributionData(
+    req?.query?.referralCode,
+    network
+  );
   let amount = await getSourceAmount(
     req.query.sourceAmount,
     await (global as any).commonFunctions.getWrappedNativeTokenAddress(
@@ -242,7 +251,7 @@ export const doSourceFoundaryGasEstimation = async (
     targetChainId: req.query.destinationNetworkChainId,
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -262,6 +271,8 @@ export const doSourceFoundaryGasEstimation = async (
         req.query.sourceTokenContractAddress
       )
     ),
+    isCCTP: getIsCCTP(req.query.isCCTP),
+    feeDistribution: feeDistribution,
   };
   return await sourceFoundaryGasEstimation(contractObj, network, obj);
 };
@@ -274,6 +285,10 @@ export const doSourceOneInchGasEstimation = async (
   gasPrice: string,
   foundryTokenAddress: string
 ): Promise<any> => {
+  let feeDistribution = await getFeeDistributionData(
+    req?.query?.referralCode,
+    network
+  );
   let amount = await getSourceAmount(
     req.query.sourceAmount,
     await (global as any).commonFunctions.getWrappedNativeTokenAddress(
@@ -288,7 +303,7 @@ export const doSourceOneInchGasEstimation = async (
     targetChainId: req.query.destinationNetworkChainId,
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -314,6 +329,8 @@ export const doSourceOneInchGasEstimation = async (
     ),
     oneInchSelector: req.query.sourceOneInchSelector,
     aggregateRouterContractAddress: network.aggregateRouterContractAddress,
+    isCCTP: getIsCCTP(req.query.isCCTP),
+    feeDistribution: feeDistribution,
   };
   return await sourceOneInchGasEstimation(contractObj, network, obj);
 };
@@ -339,7 +356,7 @@ export const doSameNetworkGasEstimation = async (
     amountOut: req.query.destinationAmountOut,
     targetTokenAddress: await (
       global as any
-    ).commonFunctions.getOneInchTokenAddress(
+    ).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
@@ -371,10 +388,10 @@ export const getForgeSignature = async (
     req.query.destinationNetworkChainId,
     req.query.destinationWalletAddress, // need to check
     req.query.destinationAmountIn,
-    await (global as any).commonFunctions.getOneInchTokenAddress(
+    await (global as any).commonFunctions.getNativeTokenAddress(
       req.query.destinationTokenContractAddress
     ),
-    targetNetwork.forgeFundManager,
+    getForgeFundManager(getIsCCTP(req.query.isCCTP), targetNetwork),
     salt,
     req.query.destinationAssetType,
     req.query.destinationAmountIn,

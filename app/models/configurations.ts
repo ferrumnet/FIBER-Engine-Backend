@@ -6,13 +6,15 @@ var collectionName = "configurations";
 var schema = mongoose.Schema(
   {
     slippage: { type: Number, default: 0 },
+    cctpBalanceThreshold: { type: Number, default: 0 },
+    cctpAttestationApiThreshold: { type: Number, default: 0 },
     nativeTokens: [
       {
         chainId: { type: String, default: "" },
         symbol: { type: String, default: "" },
         address: { type: String, default: "" },
         wrappedAddress: { type: String, default: "" },
-        oneInchAddress: { type: String, default: "" },
+        nativeAddress: { type: String, default: "" },
       },
     ],
     oneInchSelector: [
@@ -27,6 +29,18 @@ var schema = mongoose.Schema(
         chainId: { type: String, default: "" },
         shortName: { type: String, default: "" },
         provider: { type: String, default: "owlracle" },
+      },
+    ],
+    allowedNetworksForCCTP: [
+      {
+        name: { type: String, default: "" },
+        chainId: { type: String, default: "" },
+      },
+    ],
+    allowedNetworksForKyberSwap: [
+      {
+        name: { type: String, default: "" },
+        chainId: { type: String, default: "" },
       },
     ],
     isActive: { type: Boolean, default: true },

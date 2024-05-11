@@ -35,12 +35,15 @@ import {
   getValueForSwap,
   doSameNetworkSwap,
   isOutOfGasError,
+  doCCTPFlow,
+  doSwap,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
   SwapOneInch,
   WithdrawSigned,
   WithdrawSignedAndSwapOneInch,
   SwapSameNetwork,
+  Swap,
 } from "../app/interfaces/fiberEngineInterface";
 import {
   getWithdrawSignedObject,
@@ -48,6 +51,8 @@ import {
   sendSlackNotification,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import { isSameNetworksSwap } from "../app/lib/middlewares/helpers/multiSwapHelper";
+import { getIsCCTP } from "../app/lib/middlewares/helpers/cctpHelpers/cctpHelper";
+import { getFeeDistributionData } from "../app/lib/middlewares/helpers/feeDistribution/feeDistributionHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -115,7 +120,7 @@ module.exports = {
       targetNetwork.provider,
       body.destinationAmountIn
     );
-    if (!isValidLiquidityAvailable) {
+    if (!isValidLiquidityAvailable && !getIsCCTP(body?.isCCTP)) {
       sendSlackNotification(
         swapTransactionHash,
         "Error: " + IN_SUFFICIENT_LIQUIDITY_ERROR,
@@ -162,7 +167,14 @@ module.exports = {
         targetSigner,
         targetChainId,
         swapTransactionHash,
-        body?.gasLimit
+        body?.gasLimit,
+        getIsCCTP(body?.isCCTP)
+      );
+      await doCCTPFlow(
+        targetNetwork,
+        body?.cctpMessageBytes,
+        body?.cctpMessageHash,
+        getIsCCTP(body?.isCCTP)
       );
       const swapResult = await doFoundaryWithdraw(obj, 0);
       const receipt = await this.callEVMWithdrawAndGetReceipt(
@@ -196,8 +208,15 @@ module.exports = {
           targetSigner,
           targetChainId,
           swapTransactionHash,
-          body?.gasLimit
+          body?.gasLimit,
+          getIsCCTP(body?.isCCTP)
         );
+      await doCCTPFlow(
+        targetNetwork,
+        body?.cctpMessageBytes,
+        body?.cctpMessageHash,
+        getIsCCTP(body?.isCCTP)
+      );
       const swapResult = await doOneInchWithdraw(obj, 0);
       const receipt = await this.callEVMWithdrawAndGetReceipt(
         swapResult,
@@ -278,7 +297,7 @@ module.exports = {
           amountOut: query?.destinationAmountOut,
           targetTokenAddress: await (
             global as any
-          ).commonFunctions.getOneInchTokenAddress(
+          ).commonFunctions.getNativeTokenAddress(
             query?.destinationTokenContractAddress
           ),
           destinationWalletAddress: query?.destinationWalletAddress,
@@ -291,15 +310,13 @@ module.exports = {
         };
         swapResult = await doSameNetworkSwap(obj, fiberRouter);
       } else if (isFoundryAsset) {
-        swapResult = fiberRouter.methods.swap(
-          sourceTokenAddress,
-          amount,
-          targetChainId,
-          await (global as any).commonFunctions.getOneInchTokenAddress(
-            targetTokenAddress
-          ),
-          destinationWalletAddress,
-          getWithdrawalDataHashForSwap(
+        let obj: Swap = {
+          sourceTokenAddress: sourceTokenAddress,
+          amount: amount,
+          targetChainId: targetChainId,
+          targetTokenAddress: targetTokenAddress,
+          destinationWalletAddress: destinationWalletAddress,
+          withdrawalData: getWithdrawalDataHashForSwap(
             query?.sourceOneInchData,
             query?.destinationOneInchData,
             query?.destinationAmountIn,
@@ -307,8 +324,15 @@ module.exports = {
             query?.sourceAssetType,
             query?.destinationAssetType
           ),
-          false
-        );
+          sourceWalletAddress: sourceWalletAddress,
+          value: "",
+          isCCTP: getIsCCTP(query?.isCCTP),
+          feeDistribution: await getFeeDistributionData(
+            query?.referralCode,
+            sourceNetwork
+          ),
+        };
+        swapResult = await doSwap(obj, fiberRouter);
         sourceBridgeAmount = amount;
       } else {
         // 1Inch implementation
@@ -334,6 +358,11 @@ module.exports = {
           oneInchSelector: query?.sourceOneInchSelector,
           aggregateRouterContractAddress:
             sourceNetwork.aggregateRouterContractAddress,
+          isCCTP: getIsCCTP(query?.isCCTP),
+          feeDistribution: await getFeeDistributionData(
+            query?.referralCode,
+            sourceNetwork
+          ),
         };
         swapResult = await doOneInchSwap(obj, fiberRouter);
       }
