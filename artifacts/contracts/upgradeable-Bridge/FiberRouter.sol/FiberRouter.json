@@ -306,34 +306,6 @@
       "type": "event"
     },
     {
-      "inputs": [],
-      "name": "DISTRIBUTE_FEES_TYPEHASH",
-      "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "FEE_ALLOCATION_TYPEHASH",
-      "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "NAME",
-      "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "VERSION",
-      "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         { "internalType": "address", "name": "router", "type": "address" },
         { "internalType": "bytes4[]", "name": "selectors", "type": "bytes4[]" }
@@ -562,14 +534,39 @@
                   "type": "address"
                 },
                 {
-                  "internalType": "uint16",
-                  "name": "rateInBps",
-                  "type": "uint16"
+                  "internalType": "uint256",
+                  "name": "platformFee",
+                  "type": "uint256"
                 }
               ],
               "internalType": "struct FeeDistributor.FeeAllocation[]",
               "name": "feeAllocations",
               "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalPlatformFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sourceAmountIn",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sourceAmountOut",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "destinationAmountIn",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "destinationAmountOut",
+              "type": "uint256"
             },
             { "internalType": "bytes32", "name": "salt", "type": "bytes32" },
             { "internalType": "uint256", "name": "expiry", "type": "uint256" },
@@ -639,14 +636,39 @@
                   "type": "address"
                 },
                 {
-                  "internalType": "uint16",
-                  "name": "rateInBps",
-                  "type": "uint16"
+                  "internalType": "uint256",
+                  "name": "platformFee",
+                  "type": "uint256"
                 }
               ],
               "internalType": "struct FeeDistributor.FeeAllocation[]",
               "name": "feeAllocations",
               "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalPlatformFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sourceAmountIn",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sourceAmountOut",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "destinationAmountIn",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "destinationAmountOut",
+              "type": "uint256"
             },
             { "internalType": "bytes32", "name": "salt", "type": "bytes32" },
             { "internalType": "uint256", "name": "expiry", "type": "uint256" },
@@ -715,14 +737,39 @@
                   "type": "address"
                 },
                 {
-                  "internalType": "uint16",
-                  "name": "rateInBps",
-                  "type": "uint16"
+                  "internalType": "uint256",
+                  "name": "platformFee",
+                  "type": "uint256"
                 }
               ],
               "internalType": "struct FeeDistributor.FeeAllocation[]",
               "name": "feeAllocations",
               "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalPlatformFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sourceAmountIn",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sourceAmountOut",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "destinationAmountIn",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "destinationAmountOut",
+              "type": "uint256"
             },
             { "internalType": "bytes32", "name": "salt", "type": "bytes32" },
             { "internalType": "uint256", "name": "expiry", "type": "uint256" },
