@@ -20,6 +20,11 @@ import {
 import { isValidOneInchSelector } from "../app/lib/middlewares/helpers/configurationHelper";
 import { query } from "express";
 import { chooseProviderAndGetData } from "../app/lib/middlewares/helpers/tokenQuoteAndTypeHelpers/quoteProvidersHelper";
+import {
+  getDataAfterCutDistributionFee,
+  getFeeDistributionObject,
+} from "../app/lib/middlewares/helpers/feeDistribution/feeDistributionHelper";
+import { FeeDistribution } from "../app/interfaces/feeDistributionInterface";
 
 module.exports = {
   getQouteAndTypeForCrossNetworks: async function (
@@ -31,7 +36,8 @@ module.exports = {
     destinationWalletAddress: string,
     gasEstimationDestinationAmount: string,
     sourceSlippage: string,
-    destinationSlippage: string
+    destinationSlippage: string,
+    referralCode: string
   ) {
     const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
       sourceChainId
@@ -46,9 +52,11 @@ module.exports = {
     let destinationCallData;
     let destinationAmountOut;
     let minDestinationAmountOut;
+    let machineSourceAmountIn: any;
     let machineSourceAmountOut: any;
     let machineDestinationAmountIn: any;
     let machineDestinationAmountOut: any;
+    let feeDistribution: any;
     let targetFoundryTokenAddress;
     let isCCTP = false;
 
@@ -70,17 +78,16 @@ module.exports = {
       const sourceTokenDecimal = await sourceTokenContract.decimals();
       const sourceFoundryTokenDecimal =
         await sourceFoundryTokenContract.decimals();
-      let amount = (global as any).commonFunctions.numberIntoDecimals(
-        inputAmount,
-        sourceTokenDecimal
-      );
+      machineSourceAmountIn = (
+        global as any
+      ).commonFunctions.numberIntoDecimals(inputAmount, sourceTokenDecimal);
       let sourceTypeResponse = await getSourceAssetTypes(
         sourceNetwork,
         await (global as any).commonFunctions.getWrappedNativeTokenAddress(
           sourceTokenAddress,
           sourceChainId
         ),
-        amount
+        machineSourceAmountIn
       );
       const isFoundryAsset = sourceTypeResponse.isFoundryAsset;
       if (isFoundryAsset) {
@@ -90,7 +97,17 @@ module.exports = {
       }
 
       if (isFoundryAsset) {
-        sourceBridgeAmount = inputAmount;
+        machineSourceAmountOut = machineSourceAmountIn;
+        const { amountAfterCut, data } = await getDataAfterCutDistributionFee(
+          referralCode,
+          machineSourceAmountOut
+        );
+        machineSourceAmountOut = amountAfterCut;
+        feeDistribution = data;
+        sourceBridgeAmount = (global as any).commonFunctions.decimalsIntoNumber(
+          machineSourceAmountOut,
+          sourceFoundryTokenDecimal
+        );
       } else {
         let response: any = await chooseProviderAndGetData(
           sourceChainId,
@@ -99,7 +116,7 @@ module.exports = {
             sourceChainId
           ),
           sourceNetwork?.foundryTokenAddress,
-          amount,
+          machineSourceAmountIn,
           sourceSlippage,
           sourceNetwork?.fiberRouter,
           sourceNetwork?.fiberRouter
@@ -112,6 +129,12 @@ module.exports = {
           machineSourceAmountOut,
           sourceSlippage
         );
+        const { amountAfterCut, data } = await getDataAfterCutDistributionFee(
+          referralCode,
+          machineSourceAmountOut
+        );
+        machineSourceAmountOut = amountAfterCut;
+        feeDistribution = data;
         sourceBridgeAmount = (global as any).commonFunctions.decimalsIntoNumber(
           machineSourceAmountOut,
           sourceFoundryTokenDecimal
@@ -242,17 +265,31 @@ module.exports = {
     let data: any = { source: {}, destination: {}, isCCTP: isCCTP };
     data.source.type = sourceAssetType;
     data.source.amount = inputAmount;
+    data.source.sourceAmountIn = machineSourceAmountIn;
     if (machineSourceAmountOut) {
-      data.source.bridgeAmount = machineSourceAmountOut;
+      data.source.sourceAmountOut = machineSourceAmountOut;
     }
     data.source.callData = sourceCallData;
 
+    machineDestinationAmountOut = machineDestinationAmountOut
+      ? machineDestinationAmountOut
+      : machineDestinationAmountIn;
     data.destination.type = targetAssetType;
     data.destination.amount = destinationAmountOut;
     data.destination.minAmount = minDestinationAmountOut;
-    data.destination.bridgeAmountIn = machineDestinationAmountIn;
-    data.destination.bridgeAmountOut = machineDestinationAmountOut;
+    data.destination.destinationAmountIn = machineDestinationAmountIn;
+    data.destination.destinationAmountOut = machineDestinationAmountOut;
     data.destination.callData = destinationCallData;
+    if (!gasEstimationDestinationAmount) {
+      data.feeDistribution = await getFeeDistributionObject(
+        feeDistribution,
+        sourceNetwork,
+        machineSourceAmountIn,
+        machineSourceAmountOut,
+        machineDestinationAmountIn,
+        machineDestinationAmountOut
+      );
+    }
     return data;
   },
 };

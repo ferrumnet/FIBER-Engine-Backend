@@ -1,4 +1,5 @@
 let asyncMiddleware = require("../../../lib/response/asyncMiddleware");
+import { convertIntoFeeDistributionObject } from "../../../lib/middlewares/helpers/feeDistribution/feeDistributionHelper";
 import {
   getQuoteAndTokenTypeInformation,
   getSwapSigned,
@@ -26,10 +27,17 @@ module.exports = function (router: any) {
     })
   );
 
-  router.get(
+  router.post(
     "/swap/signed",
     asyncMiddleware(async (req: any, res: any) => {
       swapSignedValidation(req);
+      req.body.feeDistribution = convertIntoFeeDistributionObject(
+        req.body.feeDistribution,
+        req.query.sourceAmountIn,
+        req.query.sourceAmountOut,
+        req.query.destinationAmountIn,
+        req.query.destinationAmountOut
+      );
       if (
         req.query.sourceNetworkChainId == req.query.destinationNetworkChainId
       ) {
