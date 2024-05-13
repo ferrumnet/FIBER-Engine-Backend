@@ -6,7 +6,7 @@ import {
 import { getOneInchSelector } from "../../../lib/middlewares/helpers/configurationHelper";
 import { getQouteAndTypeForSameNetworks } from "../../../lib/middlewares/helpers/tokenQuoteAndTypeHelpers/quoteAndTypeHelper";
 import { sameNetworkSwapError } from "../../../lib/middlewares/helpers/stringHelper";
-let transactionUpdateAxiosHelper = require("../../..//lib/httpCalls/transactionUpdateAxiosHelper");
+import { updateTransactionJobStatus } from "../../..//lib/httpCalls/multiSwapAxiosHelper";
 let db = require("../../../models/index");
 
 export const getQuoteAndTokenTypeInformation = async function (req: any) {
@@ -22,6 +22,8 @@ export const getQuoteAndTokenTypeInformation = async function (req: any) {
   let gasEstimationDestinationAmount = req.query.gasEstimationDestinationAmount;
   let sourceSlippage = req.query.sourceSlippage;
   let destinationSlippage = req.query.destinationSlippage;
+  let referralCode = req.query.referralCode;
+
   if (
     isSameNetworksSwap(
       req.query.sourceNetworkChainId,
@@ -55,7 +57,8 @@ export const getQuoteAndTokenTypeInformation = async function (req: any) {
       destinationWalletAddress,
       gasEstimationDestinationAmount,
       sourceSlippage,
-      destinationSlippage
+      destinationSlippage,
+      referralCode
     );
   }
   let data: any = await getResponseForQuoteAndTokenTypeInformation(
@@ -75,7 +78,8 @@ export const getSwapSigned = async function (req: any) {
     req.query.destinationNetworkChainId,
     req.query.sourceAmount,
     req.query.destinationWalletAddress,
-    req.query
+    req.query,
+    req.body
   );
   return data;
 };
@@ -168,10 +172,7 @@ export const doWithdraw = async function (req: any, query: any) {
     responseCode: data.responseCode,
     responseMessage: data.responseMessage,
   };
-  await await transactionUpdateAxiosHelper.updateTransactionJobStatus(
-    req.query.swapTransactionHash,
-    data
-  );
+  await await updateTransactionJobStatus(req.query.swapTransactionHash, data);
   return data;
 };
 
@@ -201,11 +202,15 @@ export const swapSignedValidation = function (req: any) {
   ) {
     throw "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType are missing";
   }
-  if (
-    req.query.sourceNetworkChainId != req.query.destinationNetworkChainId &&
-    !req.query.gasPrice
-  ) {
+  const isSameNetworkSwap = isSameNetworksSwap(
+    req.query.sourceNetworkChainId,
+    req.query.destinationNetworkChainId
+  );
+  if (!isSameNetworkSwap && !req.query.gasPrice) {
     throw "gasPrice is missing";
+  }
+  if (!isSameNetworkSwap && !req.body.feeDistribution) {
+    throw "feeDistribution is missing";
   }
 };
 
@@ -249,21 +254,20 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
       : categorizedInfo?.destination?.amount;
     let sourceCallData = "";
     let destinationCallData = "";
-    let sourceBridgeAmount = "";
     if (categorizedInfo?.source?.callData) {
       sourceCallData = categorizedInfo?.source?.callData;
     }
     if (categorizedInfo?.destination?.callData) {
       destinationCallData = categorizedInfo?.destination?.callData;
     }
-    if (categorizedInfo?.source?.bridgeAmount) {
-      sourceBridgeAmount = categorizedInfo?.source?.bridgeAmount;
-    }
 
     let sourceTokenCategorizedInfo: any = {};
     sourceTokenCategorizedInfo.type = categorizedInfo.source.type;
     sourceTokenCategorizedInfo.sourceAmount = req.query.sourceAmount;
-    sourceTokenCategorizedInfo.sourceBridgeAmount = sourceBridgeAmount;
+    sourceTokenCategorizedInfo.sourceAmountIn =
+      categorizedInfo?.source?.sourceAmountIn;
+    sourceTokenCategorizedInfo.sourceAmountOut =
+      categorizedInfo?.source?.sourceAmountOut;
     sourceTokenCategorizedInfo.sourceOneInchData = sourceCallData;
 
     let destinationTokenCategorizedInfo: any = {};
@@ -271,11 +275,9 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     destinationTokenCategorizedInfo.destinationAmount = destinationAmount;
     destinationTokenCategorizedInfo.minDestinationAmount = minDestinationAmount;
     destinationTokenCategorizedInfo.destinationAmountIn =
-      categorizedInfo?.destination?.bridgeAmountIn;
-    destinationTokenCategorizedInfo.destinationAmountOut = categorizedInfo
-      ?.destination?.bridgeAmountOut
-      ? categorizedInfo?.destination?.bridgeAmountOut
-      : "";
+      categorizedInfo?.destination?.destinationAmountIn;
+    destinationTokenCategorizedInfo.destinationAmountOut =
+      categorizedInfo?.destination?.destinationAmountOut;
     destinationTokenCategorizedInfo.destinationOneInchData =
       destinationCallData;
     data.sourceSlippage = await getSlippage(req.query.sourceSlippage);
@@ -284,6 +286,7 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
     data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     data.isCCTP = categorizedInfo?.isCCTP ? categorizedInfo?.isCCTP : false;
+    data.feeDistribution = categorizedInfo?.feeDistribution;
   }
   console.log("getTokenCategorizedInformation response", data);
   return data;

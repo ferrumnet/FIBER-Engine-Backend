@@ -71,9 +71,6 @@ if (
 ).multiSwapHelper = require("./app/lib/middlewares/helpers/multiSwapHelper");
 (
   global as any
-).networksAxiosHelper = require("./app/lib/httpCalls/networksAxiosHelper");
-(
-  global as any
 ).web3ConfigurationHelper = require("./app/lib/middlewares/helpers/web3Helpers/web3ConfigurationHelper");
 (
   global as any
@@ -81,9 +78,6 @@ if (
 (
   global as any
 ).cudosPriceAxiosHelper = require("./app/lib/httpCalls/cudosPriceAxiosHelper");
-(
-  global as any
-).transactionUpdateAxiosHelper = require("./app/lib/httpCalls/transactionUpdateAxiosHelper");
 
 // crons
 (

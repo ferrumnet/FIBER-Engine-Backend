@@ -1,4 +1,5 @@
 let asyncMiddleware = require("../../../lib/response/asyncMiddleware");
+import { convertIntoFeeDistributionObject } from "../../../lib/middlewares/helpers/feeDistribution/feeDistributionHelper";
 import {
   gasEstimationValidation,
   destinationGasEstimation,
@@ -7,7 +8,7 @@ import {
 import { isSameNetworksSwap } from "../../../lib/middlewares/helpers/multiSwapHelper";
 
 module.exports = function (router: any) {
-  router.get(
+  router.post(
     "/estimation",
     asyncMiddleware(async (req: any, res: any) => {
       let destinationGasPrices;
@@ -16,6 +17,13 @@ module.exports = function (router: any) {
         req?.query?.destinationNetworkChainId
       );
       gasEstimationValidation(req);
+      req.body.feeDistribution = convertIntoFeeDistributionObject(
+        req.body.feeDistribution,
+        req.query.sourceAmountIn,
+        req.query.sourceAmountOut,
+        req.body.originalDestinationAmountIn,
+        req.body.originalDestinationAmountOut
+      );
       if (!isSameNetworks) {
         destinationGasPrices = await destinationGasEstimation(req);
       }

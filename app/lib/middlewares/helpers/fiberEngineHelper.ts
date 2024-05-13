@@ -5,6 +5,7 @@ import {
   WithdrawSignedAndSwapOneInch,
   WithdrawOneInchLogs,
   SwapSameNetwork,
+  Swap,
 } from "../../../interfaces/fiberEngineInterface";
 import {
   getGasForWithdraw,
@@ -256,48 +257,75 @@ export const doOneInchWithdraw = async (
   return result;
 };
 
+export const doSwap = async (obj: Swap, fiberRouter: any): Promise<any> => {
+  let result;
+  try {
+    result = fiberRouter.methods.swapSigned(
+      obj.sourceTokenAddress,
+      obj.amount,
+      {
+        targetNetwork: obj.targetChainId,
+        targetToken: await (
+          global as any
+        ).commonFunctions.getNativeTokenAddress(obj.targetTokenAddress),
+        targetAddress: obj.destinationWalletAddress,
+      },
+      obj.withdrawalData,
+      obj.isCCTP,
+      obj.feeDistribution
+    );
+  } catch (e) {
+    console.log(e);
+  }
+  return result;
+};
+
 export const doOneInchSwap = async (
   obj: SwapOneInch,
   fiberRouter: any
 ): Promise<any> => {
   let result;
   try {
-    console.log("i am here 1.1");
-    console.log("obj", obj);
     if (
       await (global as any).commonFunctions.isNativeToken(
         obj.sourceTokenAddress
       )
     ) {
-      result = fiberRouter.methods.swapAndCrossRouterETH(
+      result = fiberRouter.methods.swapSignedAndCrossRouterETH(
         obj.amountOut,
         obj.foundryTokenAddress,
         obj.gasPrice,
         obj.aggregateRouterContractAddress,
         obj.sourceOneInchData,
-        obj.targetChainId,
-        await (global as any).commonFunctions.getNativeTokenAddress(
-          obj.targetTokenAddress
-        ),
-        obj.destinationWalletAddress,
+        {
+          targetNetwork: obj.targetChainId,
+          targetToken: await (
+            global as any
+          ).commonFunctions.getNativeTokenAddress(obj.targetTokenAddress),
+          targetAddress: obj.destinationWalletAddress,
+        },
         obj.withdrawalData,
-        obj.isCCTP
+        obj.isCCTP,
+        obj.feeDistribution
       );
     } else {
-      result = fiberRouter.methods.swapAndCrossRouter(
+      result = fiberRouter.methods.swapSignedAndCrossRouter(
         obj.amountIn,
         obj.amountOut,
         obj.sourceTokenAddress,
         obj.foundryTokenAddress,
         obj.aggregateRouterContractAddress,
         obj.sourceOneInchData,
-        obj.targetChainId,
-        await (global as any).commonFunctions.getNativeTokenAddress(
-          obj.targetTokenAddress
-        ),
-        obj.destinationWalletAddress,
+        {
+          targetNetwork: obj.targetChainId,
+          targetToken: await (
+            global as any
+          ).commonFunctions.getNativeTokenAddress(obj.targetTokenAddress),
+          targetAddress: obj.destinationWalletAddress,
+        },
         obj.withdrawalData,
-        obj.isCCTP
+        obj.isCCTP,
+        obj.feeDistribution
       );
     }
   } catch (e) {

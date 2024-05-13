@@ -34,6 +34,8 @@ import {
 import { getWithdrawalDataHashForSwap } from "../signatureHelper";
 import { getValueForSwap } from "../fiberEngineHelper";
 import { getIsCCTP, getForgeFundManager } from "../cctpHelpers/cctpHelper";
+import { getFeeDistributionData } from "../feeDistribution/feeDistributionHelper";
+
 export const gasEstimationValidation = (req: any): any => {
   if (
     !req.query.destinationNetworkChainId ||
@@ -231,6 +233,10 @@ export const doSourceFoundaryGasEstimation = async (
   provider: any,
   gasPrice: string
 ): Promise<any> => {
+  let feeDistribution = await getFeeDistributionData(
+    req?.query?.referralCode,
+    network
+  );
   let amount = await getSourceAmount(
     req.query.sourceAmount,
     await (global as any).commonFunctions.getWrappedNativeTokenAddress(
@@ -266,6 +272,7 @@ export const doSourceFoundaryGasEstimation = async (
       )
     ),
     isCCTP: getIsCCTP(req.query.isCCTP),
+    feeDistribution: feeDistribution,
   };
   return await sourceFoundaryGasEstimation(contractObj, network, obj);
 };
@@ -278,6 +285,10 @@ export const doSourceOneInchGasEstimation = async (
   gasPrice: string,
   foundryTokenAddress: string
 ): Promise<any> => {
+  let feeDistribution = await getFeeDistributionData(
+    req?.query?.referralCode,
+    network
+  );
   let amount = await getSourceAmount(
     req.query.sourceAmount,
     await (global as any).commonFunctions.getWrappedNativeTokenAddress(
@@ -319,6 +330,7 @@ export const doSourceOneInchGasEstimation = async (
     oneInchSelector: req.query.sourceOneInchSelector,
     aggregateRouterContractAddress: network.aggregateRouterContractAddress,
     isCCTP: getIsCCTP(req.query.isCCTP),
+    feeDistribution: feeDistribution,
   };
   return await sourceOneInchGasEstimation(contractObj, network, obj);
 };

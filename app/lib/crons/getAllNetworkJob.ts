@@ -1,32 +1,31 @@
-export {}
-var cron = require('node-cron');
-import moment from 'moment';
+export {};
+var cron = require("node-cron");
+import moment from "moment";
+import { getAllNetworks } from "../httpCalls/multiSwapAxiosHelper";
 
 module.exports = function () {
-  if ((global as any).starterEnvironment.isCronEnvironmentSupportedForGetAllNetwork === 'yes') {
+  if (
+    (global as any).starterEnvironment
+      .isCronEnvironmentSupportedForGetAllNetwork === "yes"
+  ) {
     start();
   }
-}
+};
 
 async function start() {
-
   try {
-
-    let task = cron.schedule('1 */5 * * * *', async () => {
-      console.log(moment().utc(),':::')
-      console.log('getAllNetworkJob cron triggered:::')
-      triggerJobs()
+    let task = cron.schedule("1 */5 * * * *", async () => {
+      console.log(moment().utc(), ":::");
+      console.log("getAllNetworkJob cron triggered:::");
+      triggerJobs();
     });
 
     task.start();
-
-
   } catch (e) {
     console.log(e);
   }
-
 }
 
 async function triggerJobs() {
-  await (global as any).networksAxiosHelper.getAllNetworks();
+  await getAllNetworks();
 }
