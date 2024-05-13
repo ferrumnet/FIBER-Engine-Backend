@@ -17,14 +17,14 @@ module.exports = function (router: any) {
         req?.query?.destinationNetworkChainId
       );
       gasEstimationValidation(req);
-      req.body.feeDistribution = convertIntoFeeDistributionObject(
-        req.body.feeDistribution,
-        req.query.sourceAmountIn,
-        req.query.sourceAmountOut,
-        req.body.originalDestinationAmountIn,
-        req.body.originalDestinationAmountOut
-      );
       if (!isSameNetworks) {
+        req.body.feeDistribution = convertIntoFeeDistributionObject(
+          req.body.feeDistribution,
+          req.query.sourceAmountIn,
+          req.query.sourceAmountOut,
+          req.body.originalDestinationAmountIn,
+          req.body.originalDestinationAmountOut
+        );
         destinationGasPrices = await destinationGasEstimation(req);
       }
       let sourceGasPrices = await sourceGasEstimation(

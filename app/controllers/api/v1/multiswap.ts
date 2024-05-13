@@ -4,6 +4,7 @@ import {
   getQuoteAndTokenTypeInformation,
   getSwapSigned,
   getWithdrawSigned,
+  isSameNetworksSwap,
   quotAndTokenValidation,
   swapSignedValidation,
   withdrawSignedValidation,
@@ -31,17 +32,20 @@ module.exports = function (router: any) {
     "/swap/signed",
     asyncMiddleware(async (req: any, res: any) => {
       swapSignedValidation(req);
-      req.body.feeDistribution = convertIntoFeeDistributionObject(
-        req.body.feeDistribution,
-        req.query.sourceAmountIn,
-        req.query.sourceAmountOut,
-        req.query.destinationAmountIn,
-        req.query.destinationAmountOut
+      const isSameNetworkSwap = isSameNetworksSwap(
+        req.query.sourceNetworkChainId,
+        req.query.destinationNetworkChainId
       );
-      if (
-        req.query.sourceNetworkChainId == req.query.destinationNetworkChainId
-      ) {
+      if (isSameNetworkSwap) {
         req.query.gasPrice = "";
+      } else {
+        req.body.feeDistribution = convertIntoFeeDistributionObject(
+          req.body.feeDistribution,
+          req.query.sourceAmountIn,
+          req.query.sourceAmountOut,
+          req.query.destinationAmountIn,
+          req.query.destinationAmountOut
+        );
       }
       req.query.sourceWalletAddress =
         req.query.sourceWalletAddress.toLowerCase();

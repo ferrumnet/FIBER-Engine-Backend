@@ -34,7 +34,7 @@ import {
 import { getWithdrawalDataHashForSwap } from "../signatureHelper";
 import { getValueForSwap } from "../fiberEngineHelper";
 import { getIsCCTP, getForgeFundManager } from "../cctpHelpers/cctpHelper";
-import { getFeeDistributionData } from "../feeDistribution/feeDistributionHelper";
+import { isSameNetworksSwap } from "../multiSwapHelper";
 
 export const gasEstimationValidation = (req: any): any => {
   if (
@@ -51,6 +51,20 @@ export const gasEstimationValidation = (req: any): any => {
       "destinationNetworkChainId & destinationWalletAddress & destinationTokenContractAddress &" +
       "destinationAmountIn & destinationAssetType & sourceNetworkChainId & sourceTokenContractAddress & sourceAssetType  are missing"
     );
+  }
+  const isSameNetworkSwap = isSameNetworksSwap(
+    req.query.sourceNetworkChainId,
+    req.query.destinationNetworkChainId
+  );
+  if (!isSameNetworkSwap && !req.body.feeDistribution) {
+    throw "feeDistribution is missing";
+  }
+  if (!isSameNetworkSwap && !req.body.originalDestinationAmountIn) {
+    throw "originalDestinationAmountIn is missing";
+  }
+
+  if (!isSameNetworkSwap && !req.body.originalDestinationAmountOut) {
+    throw "originalDestinationAmountOut is missing";
   }
 };
 
@@ -233,10 +247,7 @@ export const doSourceFoundaryGasEstimation = async (
   provider: any,
   gasPrice: string
 ): Promise<any> => {
-  let feeDistribution = await getFeeDistributionData(
-    req?.query?.referralCode,
-    network
-  );
+  let feeDistribution = req?.body?.feeDistribution;
   let amount = await getSourceAmount(
     req.query.sourceAmount,
     await (global as any).commonFunctions.getWrappedNativeTokenAddress(
@@ -285,10 +296,7 @@ export const doSourceOneInchGasEstimation = async (
   gasPrice: string,
   foundryTokenAddress: string
 ): Promise<any> => {
-  let feeDistribution = await getFeeDistributionData(
-    req?.query?.referralCode,
-    network
-  );
+  let feeDistribution = req?.body?.feeDistribution;
   let amount = await getSourceAmount(
     req.query.sourceAmount,
     await (global as any).commonFunctions.getWrappedNativeTokenAddress(
