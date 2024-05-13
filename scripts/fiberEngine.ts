@@ -52,7 +52,6 @@ import {
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import { isSameNetworksSwap } from "../app/lib/middlewares/helpers/multiSwapHelper";
 import { getIsCCTP } from "../app/lib/middlewares/helpers/cctpHelpers/cctpHelper";
-import { getFeeDistributionData } from "../app/lib/middlewares/helpers/feeDistribution/feeDistributionHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -254,7 +253,8 @@ module.exports = {
     targetChainId: any,
     inputAmount: any,
     destinationWalletAddress: any,
-    query: any
+    query: any,
+    body: any
   ) {
     try {
       const sourceNetwork = (global as any).commonFunctions.getNetworkByChainId(
@@ -288,7 +288,6 @@ module.exports = {
         query
       );
       const isFoundryAsset = sourceTypeResponse.isFoundryAsset;
-      let sourceBridgeAmount;
       let swapResult;
       const isSameNetworks = isSameNetworksSwap(sourceChainId, targetChainId);
       if (isSameNetworks) {
@@ -327,13 +326,9 @@ module.exports = {
           sourceWalletAddress: sourceWalletAddress,
           value: "",
           isCCTP: getIsCCTP(query?.isCCTP),
-          feeDistribution: await getFeeDistributionData(
-            query?.referralCode,
-            sourceNetwork
-          ),
+          feeDistribution: body?.feeDistribution,
         };
         swapResult = await doSwap(obj, fiberRouter);
-        sourceBridgeAmount = amount;
       } else {
         // 1Inch implementation
         let withdrawalData = getWithdrawalDataHashForSwap(
@@ -346,7 +341,7 @@ module.exports = {
         );
         let obj: SwapOneInch = {
           amountIn: amount,
-          amountOut: query?.sourceBridgeAmount,
+          amountOut: query?.sourceAmountOut,
           targetChainId: targetChainId,
           targetTokenAddress: targetTokenAddress,
           destinationWalletAddress: destinationWalletAddress,
@@ -359,10 +354,7 @@ module.exports = {
           aggregateRouterContractAddress:
             sourceNetwork.aggregateRouterContractAddress,
           isCCTP: getIsCCTP(query?.isCCTP),
-          feeDistribution: await getFeeDistributionData(
-            query?.referralCode,
-            sourceNetwork
-          ),
+          feeDistribution: body?.feeDistribution,
         };
         swapResult = await doOneInchSwap(obj, fiberRouter);
       }
