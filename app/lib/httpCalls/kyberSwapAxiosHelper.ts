@@ -9,6 +9,12 @@ interface Response {
   data: any;
 }
 
+const config = {
+  headers: {
+    "x-client-id": (global as any as any).environment.KyberSwapApiKey,
+  },
+};
+
 export const kyberSwap = async (
   chain: string,
   tokenIn: string,
@@ -22,9 +28,11 @@ export const kyberSwap = async (
   let data = null;
   let responseMessage = "";
   try {
-    let url = `https://aggregator-api.kyberswap.com/${chain}/api/v1/routes?tokenIn=${tokenIn}&tokenOut=${tokenOut}&amountIn=${amountIn}`;
+    let url = `https://aggregator-api.kyberswap.com/${chain}/api/v1/routes?tokenIn=${tokenIn}&tokenOut=${tokenOut}&amountIn=${amountIn}&source=${
+      (global as any as any).environment.KyberSwapApiKey
+    }`;
     console.log("url", url);
-    let res = await axios.get(url);
+    let res = await axios.get(url, config);
     res = res?.data?.data?.routeSummary;
     if (res) {
       let bRes = await getKyberSwapCallData(chain, res, from, to, slippage);
@@ -70,9 +78,11 @@ export const getKyberSwapCallData = async (
       slippageTolerance: slippage, // in bps, 200 = 2%
       deadline: getExpiry(),
     };
-    let url = `https://aggregator-api.kyberswap.com/${chain}/api/v1/route/build`;
+    let url = `https://aggregator-api.kyberswap.com/${chain}/api/v1/route/build?source=${
+      (global as any as any).environment.KyberSwapApiKey
+    }`;
     console.log("url", url);
-    let res = await axios.post(url, body);
+    let res = await axios.post(url, body, config);
     res = res?.data?.data;
     console.log(res);
     if (res?.data) {
