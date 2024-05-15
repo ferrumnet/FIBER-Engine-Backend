@@ -11,7 +11,6 @@ mongoose.Promise = require("bluebird");
   await (global as any).awsHelper.awsSecretsManagerInit();
   (global as any).commonFunctions.setPrivateKey();
   (global as any).fiberEngine = require("./scripts/fiberEngine");
-  (global as any).fiberNode = require("./scripts/fiberNode");
 
   await getAllNetworks();
   var mongoString = (global as any).environment.mongoConnectionUrl;
