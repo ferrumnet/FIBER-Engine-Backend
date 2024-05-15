@@ -551,10 +551,9 @@ async function getSourceAmount(amount: string, address: string, provider: any) {
       provider,
       address
     );
-    let amountIntoDeciaml = (global as any).commonFunctions.numberIntoDecimals(
-      amount,
-      decimals
-    );
+    let amountIntoDeciaml = (
+      global as any
+    ).commonFunctions.numberIntoDecimals__(amount, decimals);
     return amountIntoDeciaml;
   } catch (e) {
     console.error(e);

@@ -1,11 +1,6 @@
 import { getSlippage } from "../../../lib/middlewares/helpers/configurationHelper";
-import {
-  removeSelector,
-  getSelector,
-} from "../../../lib/middlewares/helpers/oneInchDecoderHelper";
-import { getOneInchSelector } from "../../../lib/middlewares/helpers/configurationHelper";
-import { getQouteAndTypeForSameNetworks } from "../../../lib/middlewares/helpers/tokenQuoteAndTypeHelpers/quoteAndTypeHelper";
-import { sameNetworkSwapError } from "../../../lib/middlewares/helpers/stringHelper";
+import { getQouteAndTypeForCrossNetworks } from "../../../lib/middlewares/helpers/tokenQuoteAndTypeHelpers/crossNetworkQuoteAndTypeHelper";
+import { getQouteAndTypeForSameNetworks } from "./tokenQuoteAndTypeHelpers/sameNetworkQuoteAndTypeHelper";
 import { updateTransactionJobStatus } from "../../..//lib/httpCalls/multiSwapAxiosHelper";
 let db = require("../../../models/index");
 
@@ -46,9 +41,7 @@ export const getQuoteAndTokenTypeInformation = async function (req: any) {
     );
   } else {
     console.log("i am not same network swap");
-    categorizedInfo = await (
-      global as any
-    ).fiberNode.getQouteAndTypeForCrossNetworks(
+    categorizedInfo = await getQouteAndTypeForCrossNetworks(
       sourceNetworkChainId,
       sourceTokenContractAddress,
       destinationNetworkChainId,
@@ -288,6 +281,6 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     data.isCCTP = categorizedInfo?.isCCTP ? categorizedInfo?.isCCTP : false;
     data.feeDistribution = categorizedInfo?.feeDistribution;
   }
-  console.log("getTokenCategorizedInformation response", data);
+  // console.log("getTokenCategorizedInformation response", data);
   return data;
 };

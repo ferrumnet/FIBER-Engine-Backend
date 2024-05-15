@@ -1,12 +1,9 @@
 var { ethers } = require("ethers");
 var tokenAbi = require("../../../../../artifacts/contracts/token/Token.sol/Token.json");
-import {
-  getSourceAssetTypes,
-  getTargetAssetTypes,
-} from "../../helpers/tokenQuoteAndTypeHelpers/assetTypeHelper";
-import { chooseProviderAndGetData } from "../../helpers/tokenQuoteAndTypeHelpers/quoteProvidersHelper";
-import { DEFAULT_SLIPPAGE } from "../../helpers/configurationHelper";
-import { getSourceAmountOut } from "../../helpers/fiberNodeHelper";
+import { getSourceAssetTypes, getTargetAssetTypes } from "./assetTypeHelper";
+import { chooseProviderAndGetData } from "./quoteProvidersHelper";
+import { DEFAULT_SLIPPAGE } from "../configurationHelper";
+import { getSourceAmountOut } from "../fiberNodeHelper";
 
 let common = (global as any).commonFunctions;
 
@@ -93,7 +90,7 @@ const handleSource = async (
   let sourceAmountIn: any;
   let response: any = {};
 
-  let inputAmountIntoDecimals = common.numberIntoDecimals(
+  let inputAmountIntoDecimals = common.numberIntoDecimals__(
     inputAmount,
     sourceTokenDecimals
   );
@@ -103,7 +100,7 @@ const handleSource = async (
     sourceChainId,
     inputAmountIntoDecimals
   );
-  let amountOutIntoDecimals = await common.numberIntoDecimals(
+  let amountOutIntoDecimals = await common.numberIntoDecimals__(
     inputAmount,
     sourceTokenDecimals
   );
@@ -132,7 +129,7 @@ const handleDestination = async (
   let assetType;
   let response: any;
 
-  let inputAmountIntoDecimals = common.numberIntoDecimals(
+  let inputAmountIntoDecimals = common.numberIntoDecimals__(
     inputAmount,
     sourceTokenDecimals
   );
@@ -159,7 +156,8 @@ const handleDestination = async (
     inputAmountIntoDecimals,
     slippage,
     sourceWallet,
-    destinationWallet
+    destinationWallet,
+    false
   );
   response.amountOutIntoNumber = common.decimalsIntoNumber(
     response.amounts,
@@ -180,7 +178,7 @@ const handleDestination = async (
 };
 
 const handleFoundary = async (inputAmount: any, tokenDecimals: any) => {
-  let amountOutIntoDecimals = await common.numberIntoDecimals(
+  let amountOutIntoDecimals = await common.numberIntoDecimals__(
     inputAmount,
     tokenDecimals
   );

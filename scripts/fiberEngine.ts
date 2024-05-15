@@ -16,6 +16,7 @@ import {
   createEVMResponse,
   IN_SUFFICIENT_LIQUIDITY_ERROR,
   CODE_701,
+  CODE_702,
 } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
@@ -37,6 +38,8 @@ import {
   isOutOfGasError,
   doCCTPFlow,
   doSwap,
+  getLatestCallData,
+  handleWithdrawalErrors,
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import {
   SwapOneInch,
@@ -52,6 +55,7 @@ import {
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import { isSameNetworksSwap } from "../app/lib/middlewares/helpers/multiSwapHelper";
 import { getIsCCTP } from "../app/lib/middlewares/helpers/cctpHelpers/cctpHelper";
+import { genericProviderError } from "../app/lib/middlewares/helpers/stringHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -120,17 +124,11 @@ module.exports = {
       body.destinationAmountIn
     );
     if (!isValidLiquidityAvailable && !getIsCCTP(body?.isCCTP)) {
-      sendSlackNotification(
+      return handleWithdrawalErrors(
         swapTransactionHash,
-        "Error: " + IN_SUFFICIENT_LIQUIDITY_ERROR,
-        "Not used"
+        IN_SUFFICIENT_LIQUIDITY_ERROR,
+        CODE_701
       );
-      let receipt = { code: CODE_701 };
-      withdrawResponse = createEVMResponse(receipt);
-      let data: any = {};
-      data.responseCode = withdrawResponse?.responseCode;
-      data.responseMessage = withdrawResponse?.responseMessage;
-      return data;
     }
 
     let targetTypeResponse = await convertIntoAssetTypesObjectForTarget(body);
@@ -190,6 +188,31 @@ module.exports = {
       transactionHash = withdrawResponse?.transactionHash;
     } else {
       // 1Inch implementation
+      await doCCTPFlow(
+        targetNetwork,
+        body?.cctpMessageBytes,
+        body?.cctpMessageHash,
+        getIsCCTP(body?.isCCTP)
+      );
+      let callData: any = await getLatestCallData(
+        targetChainId,
+        targetNetwork?.foundryTokenAddress,
+        await (global as any).commonFunctions.getNativeTokenAddress(
+          targetTokenAddress
+        ),
+        body?.destinationAmountIn,
+        body?.destinationSlippage,
+        targetNetwork?.fiberRouter,
+        destinationWalletAddress
+      );
+      if (!callData) {
+        console.log("i am here");
+        return handleWithdrawalErrors(
+          swapTransactionHash,
+          genericProviderError,
+          CODE_702
+        );
+      }
       let signatureResponse: any = getSignature(body);
       let obj: WithdrawSignedAndSwapOneInch =
         getWithdrawSignedAndSwapOneInchObject(
@@ -198,7 +221,7 @@ module.exports = {
           body?.destinationAmountOut,
           targetNetwork?.foundryTokenAddress,
           targetTokenAddress,
-          body.destinationOneInchData,
+          callData,
           signatureResponse.salt,
           body.signatureExpiry,
           String(signatureResponse.signature),
@@ -210,12 +233,6 @@ module.exports = {
           body?.gasLimit,
           getIsCCTP(body?.isCCTP)
         );
-      await doCCTPFlow(
-        targetNetwork,
-        body?.cctpMessageBytes,
-        body?.cctpMessageHash,
-        getIsCCTP(body?.isCCTP)
-      );
       const swapResult = await doOneInchWithdraw(obj, 0);
       const receipt = await this.callEVMWithdrawAndGetReceipt(
         swapResult,
@@ -280,7 +297,7 @@ module.exports = {
         sourceNetwork.provider
       );
       const sourceTokenDecimal = await sourceTokenContract.decimals();
-      let amount = (global as any).commonFunctions.numberIntoDecimals(
+      let amount = (global as any).commonFunctions.numberIntoDecimals__(
         inputAmount,
         sourceTokenDecimal
       );
