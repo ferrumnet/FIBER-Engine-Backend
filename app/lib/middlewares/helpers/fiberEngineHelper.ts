@@ -17,6 +17,9 @@ import { postAlertIntoChannel } from "../../httpCalls/slackAxiosHelper";
 import { getAttestation } from "../../middlewares/helpers/cctpHelpers/cctpHelper";
 import { messageTransmitter } from "../../middlewares/helpers/cctpHelpers/cctpContractHelper";
 import { Contract } from "../../../interfaces/forgeInterface";
+import { chooseProviderAndGetData } from "../helpers/tokenQuoteAndTypeHelpers/quoteProvidersHelper";
+import { getProviderApiThreshold } from "./configurationHelper";
+import { createEVMResponse } from "./withdrawResponseHelper";
 
 const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;
 const MAX_WITHDRAW_TRIES = 10;
@@ -491,6 +494,61 @@ export const doCCTPFlow = async (
     messageBytes,
     attestationSignature
   );
+};
+
+export const getLatestCallData = async (
+  chainId: string,
+  src: any,
+  dst: string,
+  amount: string,
+  slippage: string,
+  from: string,
+  to: string,
+  recursionCount = 0
+) => {
+  let providerResponse: any = await chooseProviderAndGetData(
+    chainId,
+    src,
+    dst,
+    amount,
+    slippage,
+    from,
+    to,
+    true
+  );
+  if (
+    providerResponse?.responseMessage &&
+    recursionCount < (await getProviderApiThreshold())
+  ) {
+    console.log("responseMessage", providerResponse?.responseMessage);
+    await delay();
+    recursionCount = recursionCount + 1;
+    providerResponse = await getLatestCallData(
+      chainId,
+      src,
+      dst,
+      amount,
+      slippage,
+      from,
+      to,
+      recursionCount
+    );
+  }
+  return providerResponse?.callData ? providerResponse?.callData : "";
+};
+
+export const handleWithdrawalErrors = async (
+  swapTransactionHash: string,
+  error: string,
+  code: any
+) => {
+  sendSlackNotification(swapTransactionHash, "Error: " + error, "Not used");
+  let receipt = { code: code };
+  let withdrawResponse = createEVMResponse(receipt);
+  let data: any = {};
+  data.responseCode = withdrawResponse?.responseCode;
+  data.responseMessage = withdrawResponse?.responseMessage;
+  return data;
 };
 
 const getGasLimitTagForSlackNotification = (

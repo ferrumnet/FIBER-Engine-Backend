@@ -8,6 +8,7 @@ var schema = mongoose.Schema(
     slippage: { type: Number, default: 0 },
     cctpBalanceThreshold: { type: Number, default: 0 },
     cctpAttestationApiThreshold: { type: Number, default: 0 },
+    providerApiThreshold: { type: Number, default: 0 },
     nativeTokens: [
       {
         chainId: { type: String, default: "" },
