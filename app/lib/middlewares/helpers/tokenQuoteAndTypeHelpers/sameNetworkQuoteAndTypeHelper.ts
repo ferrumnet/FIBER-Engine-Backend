@@ -90,7 +90,7 @@ const handleSource = async (
   let sourceAmountIn: any;
   let response: any = {};
 
-  let inputAmountIntoDecimals = common.numberIntoDecimals(
+  let inputAmountIntoDecimals = common.numberIntoDecimals__(
     inputAmount,
     sourceTokenDecimals
   );
@@ -100,7 +100,7 @@ const handleSource = async (
     sourceChainId,
     inputAmountIntoDecimals
   );
-  let amountOutIntoDecimals = await common.numberIntoDecimals(
+  let amountOutIntoDecimals = await common.numberIntoDecimals__(
     inputAmount,
     sourceTokenDecimals
   );
@@ -129,7 +129,7 @@ const handleDestination = async (
   let assetType;
   let response: any;
 
-  let inputAmountIntoDecimals = common.numberIntoDecimals(
+  let inputAmountIntoDecimals = common.numberIntoDecimals__(
     inputAmount,
     sourceTokenDecimals
   );
@@ -156,7 +156,8 @@ const handleDestination = async (
     inputAmountIntoDecimals,
     slippage,
     sourceWallet,
-    destinationWallet
+    destinationWallet,
+    false
   );
   response.amountOutIntoNumber = common.decimalsIntoNumber(
     response.amounts,
@@ -177,7 +178,7 @@ const handleDestination = async (
 };
 
 const handleFoundary = async (inputAmount: any, tokenDecimals: any) => {
-  let amountOutIntoDecimals = await common.numberIntoDecimals(
+  let amountOutIntoDecimals = await common.numberIntoDecimals__(
     inputAmount,
     tokenDecimals
   );

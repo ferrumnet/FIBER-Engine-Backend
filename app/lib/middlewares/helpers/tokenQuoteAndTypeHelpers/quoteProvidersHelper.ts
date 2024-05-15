@@ -10,7 +10,8 @@ export const chooseProviderAndGetData = async (
   amount: any,
   slippage: string,
   from: string,
-  to: string
+  to: string,
+  isForRefresh: boolean
 ) => {
   await delay(1000);
   if (await isKyberSwap(chainId)) {
@@ -22,11 +23,21 @@ export const chooseProviderAndGetData = async (
       amount,
       slippage,
       from,
-      to
+      to,
+      isForRefresh
     );
   } else {
     console.log("OneInch provider");
-    return await oneInchProvider(chainId, src, dst, amount, slippage, from, to);
+    return await oneInchProvider(
+      chainId,
+      src,
+      dst,
+      amount,
+      slippage,
+      from,
+      to,
+      isForRefresh
+    );
   }
 };
 
@@ -37,7 +48,8 @@ export const oneInchProvider = async (
   amount: any,
   slippage: string,
   from: string,
-  to: string
+  to: string,
+  isForRefresh: boolean
 ) => {
   let callData;
   let amounts;
@@ -50,7 +62,7 @@ export const oneInchProvider = async (
     to,
     slippage
   );
-  if (response?.responseMessage) {
+  if (response?.responseMessage && !isForRefresh) {
     throw response?.responseMessage;
   }
   if (response && response.amounts && response.data) {
@@ -60,6 +72,7 @@ export const oneInchProvider = async (
   return {
     amounts: amounts,
     callData: callData,
+    responseMessage: response?.responseMessage,
   };
 };
 
@@ -70,7 +83,8 @@ export const kyberSwapProvider = async (
   amount: any,
   slippage: string,
   from: string,
-  to: string
+  to: string,
+  isForRefresh: boolean
 ) => {
   let callData;
   let amounts;
@@ -84,7 +98,7 @@ export const kyberSwapProvider = async (
     to
   );
   console.log("response", response);
-  if (response?.responseMessage) {
+  if (response?.responseMessage && !isForRefresh) {
     throw response?.responseMessage;
   }
   if (response && response.amounts && response.data) {
@@ -94,6 +108,7 @@ export const kyberSwapProvider = async (
   return {
     amounts: amounts,
     callData: callData,
+    responseMessage: response?.responseMessage,
   };
 };
 

@@ -155,7 +155,7 @@ const handleSource = async (
   );
   const sourceTokenDecimal = await sourceTokenContract.decimals();
   const sourceFoundryTokenDecimal = await sourceFoundryTokenContract.decimals();
-  response.sourceAmountIn = common.numberIntoDecimals(
+  response.sourceAmountIn = common.numberIntoDecimals__(
     inputAmount,
     sourceTokenDecimal
   );
@@ -193,7 +193,8 @@ const handleSource = async (
       response.sourceAmountIn,
       sourceSlippage,
       sourceNetwork?.fiberRouter,
-      sourceNetwork?.fiberRouter
+      sourceNetwork?.fiberRouter,
+      false
     );
     response.sourceCallData = responseProvider.callData;
     response.sourceAmountOut = responseProvider.amounts;
@@ -325,7 +326,8 @@ const handleDestination = async (
       machineAmount,
       destinationSlippage,
       targetNetwork?.fiberRouter,
-      destinationWalletAddress
+      destinationWalletAddress,
+      false
     );
     response.destinationCallData = providerResponse.callData;
     response.destinationAmountOut = providerResponse.amounts;

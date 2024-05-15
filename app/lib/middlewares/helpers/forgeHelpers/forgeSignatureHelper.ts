@@ -119,7 +119,7 @@ export const produceOneInchHash = (
   console.log("i am 1Inch");
   const methodHash = Web3.utils.keccak256(
     Web3.utils.utf8ToHex(
-      "withdrawSignedAndSwapRouter(address to,uint256 amountIn,uint256 minAmountOut,address foundryToken,address targetToken,address router,bytes32 routerCalldata,bytes32 salt,uint256 expiry)"
+      "withdrawSignedAndSwapRouter(address to,uint256 amountIn,uint256 minAmountOut,address foundryToken,address targetToken,address router,bytes32 salt,uint256 expiry)"
     )
   );
   const params = [
@@ -131,7 +131,6 @@ export const produceOneInchHash = (
     "address",
     "address",
     "bytes32",
-    "bytes32",
     "uint256",
   ];
   const structure = web3.eth.abi.encodeParameters(params, [
@@ -142,7 +141,6 @@ export const produceOneInchHash = (
     foundryToken,
     targetToken,
     aggregateRouterContractAddress,
-    Web3.utils.keccak256(routerCalldata),
     salt,
     expiry,
   ]);
