@@ -3,6 +3,7 @@ export const INFURA_PROVIDER_TAG = "infura";
 export const SCROLL_PROVIDER_TAG = "scroll";
 export const DEFAULT_SLIPPAGE = "2";
 const CCTP_ATTESTATION_API_THRESHOLD = 360;
+const PROVIDER_API_THRESHOLD = 180;
 export const CCTP_BALANCE_THRESHOLD = 4;
 
 export const getSlippage = async (slippage = ""): Promise<any> => {
@@ -86,6 +87,13 @@ export const getCCTPAttestationApiThreshold = async (): Promise<number> => {
   return data?.cctpAttestationApiThreshold
     ? data?.cctpAttestationApiThreshold
     : CCTP_ATTESTATION_API_THRESHOLD;
+};
+
+export const getProviderApiThreshold = async (): Promise<number> => {
+  let data = await db.Configurations.findOne();
+  return data?.providerApiThreshold
+    ? data?.providerApiThreshold
+    : PROVIDER_API_THRESHOLD;
 };
 
 export const getCCTPBalanceThreshold = async (): Promise<number> => {
