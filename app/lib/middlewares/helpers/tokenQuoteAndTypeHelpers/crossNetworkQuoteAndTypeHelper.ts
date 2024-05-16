@@ -68,6 +68,7 @@ export const getQouteAndTypeForCrossNetworks = async (
   sourceCallData = sResponse?.sourceCallData;
 
   let dResponse: DestinationCrossNetowrObject = await handleDestination(
+    sourceChainId,
     targetChainId,
     targetTokenAddress,
     destinationWalletAddress,
@@ -226,7 +227,8 @@ const handleSource = async (
 };
 
 const handleDestination = async (
-  targetChainId: any,
+  sourceChainId: string,
+  targetChainId: string,
   targetTokenAddress: any,
   destinationWalletAddress: string,
   gasEstimationDestinationAmount: string,
@@ -358,6 +360,7 @@ const handleDestination = async (
     targetNetwork.provider,
     utils.convertFromExponentialToDecimal(response.destinationAmountIn),
     targetFoundryTokenDecimal,
+    sourceChainId,
     targetChainId
   );
   console.log("machineDestinationAmountIn", response.destinationAmountIn);

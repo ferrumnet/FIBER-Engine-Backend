@@ -25,6 +25,7 @@ import {
   addBuffer_,
   getGasPrice,
   isAllowedAggressivePriceForDynamicGasEstimation,
+  getCCTPGasPrice,
 } from "./gasEstimationHelper";
 import {
   Swap,
@@ -172,7 +173,8 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
     req.query.destinationNetworkChainId,
     TARGET_NETWORK.rpcUrl,
     gasPrice,
-    TARGET_NETWORK.provider
+    TARGET_NETWORK.provider,
+    getIsCCTP(req.query.isCCTP)
   );
 
   let gasPrices: any = await convertIntoSourceGasPrices(
@@ -481,7 +483,8 @@ async function getDestinationGasPrices(
   chainId: string,
   rpcUrl: string,
   gasPrice: any,
-  provider: any
+  provider: any,
+  isCCTP: boolean
 ) {
   try {
     let currentGasPrice = await getCurrentGasPrice(chainId, provider, false);
@@ -499,6 +502,7 @@ async function getDestinationGasPrices(
       decimals
     );
     gasPriceInNative = new Big(gasPriceInNative);
+    gasPriceInNative = await addCCTPFee(gasPriceInNative, isCCTP, chainId);
     let usdPrice = await getQuote(nativeToken?.symbol);
     let gasPriceInToUSD = new Big(gasPriceInNative).mul(usdPrice);
     gasPriceInToUSD = await addBuffer_(gasPriceInToUSD, chainId, false);
@@ -558,4 +562,21 @@ async function getSourceAmount(amount: string, address: string, provider: any) {
   } catch (e) {
     console.error(e);
   }
+}
+
+async function addCCTPFee(fee: any, isCCTP: boolean, chainId: string) {
+  if (!isCCTP) {
+    return fee;
+  }
+  let cctpFee = await getCCTPGasPrice(chainId);
+  let sum = fee.add(Big(cctpFee));
+  console.log(
+    "before",
+    fee?.toString(),
+    "cctp",
+    cctpFee?.toString(),
+    "after",
+    sum?.toString()
+  );
+  return sum;
 }

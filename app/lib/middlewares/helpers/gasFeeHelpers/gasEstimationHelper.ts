@@ -179,3 +179,8 @@ export const isGasPriceSupportedNetwork = (chainId: any): boolean => {
   }
   return false;
 };
+
+export const getCCTPGasPrice = async (chainId: any) => {
+  let data = await db.GasFees.findOne({ chainId: chainId });
+  return data?.gasPriceForCCTP ? data?.gasPriceForCCTP : 0;
+};
