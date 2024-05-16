@@ -56,7 +56,8 @@ export const checkForCCTP = async (
   provider: any,
   amount: any,
   foundaryDecimals: any,
-  chainId: string
+  srcChainId: string,
+  desChainId: string
 ): Promise<boolean> => {
   const contract = new ethers.Contract(
     foundryTokenAddress,
@@ -80,7 +81,10 @@ export const checkForCCTP = async (
       "foundaryDecimals:",
       foundaryDecimals
     );
-    if (await isCCTPNetwork(chainId)) {
+    if (
+      (await isCCTPNetwork(srcChainId)) &&
+      (await isCCTPNetwork(desChainId))
+    ) {
       console.log("i am here 1");
       if (amount.gt(balance) || amount.gte(threshold)) {
         return true;
