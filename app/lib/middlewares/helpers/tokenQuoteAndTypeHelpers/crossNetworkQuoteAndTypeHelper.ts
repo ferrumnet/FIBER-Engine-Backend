@@ -172,10 +172,14 @@ const handleSource = async (
   if (isFoundryAsset) {
     response.sourceAssetType = utils.assetType.FOUNDARY;
     response.sourceAmountOut = response.sourceAmountIn;
-    const { amountAfterCut, data } = await getDataAfterCutDistributionFee(
-      referralCode,
-      response.sourceAmountOut
-    );
+    const { error, amountAfterCut, data } =
+      await getDataAfterCutDistributionFee(
+        referralCode,
+        response.sourceAmountOut
+      );
+    if (error) {
+      throw error;
+    }
     response.sourceAmountOut = amountAfterCut;
     response.feeDistribution = data;
     response.sourceAmountInNumber = common.decimalsIntoNumber(

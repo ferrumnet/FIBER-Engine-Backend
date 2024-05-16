@@ -5,6 +5,9 @@ import {
   getSaltAndExpiryData,
 } from "../feeDistribution/feeDistributionSignatureHelper";
 import { getFeeDistributionDataByReferralCode } from "../../../httpCalls/multiSwapAxiosHelper";
+import { getPlatformFee } from "../configurationHelper";
+import { invalidPlatformFee } from "../stringHelper";
+const common = (global as any).commonFunctions;
 
 export async function getFeeDistributionObject(
   feeDistribution: FeeDistribution,
@@ -58,24 +61,28 @@ export async function getDataAfterCutDistributionFee(
     signature: "",
   };
   try {
-    const response = await getFeeDistributionDataByReferralCode(referralCode);
-    if (response?.rateInBps && response?.recipient) {
-      const rateInBps = response?.rateInBps;
-      const rate = Number(rateInBps) / 100;
-      console.log("rate", rate);
-      amountAfterCut = await (
-        global as any
-      ).commonFunctions.addSlippageInDecimal(decimalAmount, rate);
-      totalPlatformFee = Big(decimalAmount)
-        .minus(Big(amountAfterCut))
-        .toString();
-      feeAllocations.push({
-        recipient: response?.recipient,
-        platformFee: totalPlatformFee?.toString(),
-      });
+    const pf = await getPlatformFee();
+    if (!pf) {
+      return {
+        error: invalidPlatformFee,
+      };
     }
+    amountAfterCut = common.getAmountAfterCut(decimalAmount, pf);
+    totalPlatformFee = Big(decimalAmount).minus(Big(amountAfterCut)).toString();
+    console.log(
+      "amountAfterCut",
+      amountAfterCut,
+      "totalPlatformFee",
+      totalPlatformFee,
+      "totalPlatformFee%",
+      pf
+    );
+    const feeAllocations: any = await getFeeAllocations(
+      referralCode,
+      totalPlatformFee
+    );
     data = {
-      feeAllocations: feeAllocations,
+      feeAllocations: feeAllocations ? feeAllocations : [],
       totalPlatformFee: totalPlatformFee,
       sourceAmountIn: "",
       sourceAmountOut: "",
@@ -110,4 +117,34 @@ export function convertIntoFeeDistributionObject(
     console.error(e);
   }
   return feeDistribution;
+}
+
+export async function getFeeAllocations(
+  referralCode: string,
+  totalPlatformFee: any
+) {
+  let feeAllocations: any = [];
+  try {
+    const response = await getFeeDistributionDataByReferralCode(referralCode);
+    if (response?.rateInBps && response?.recipient) {
+      const rateInBps = response?.rateInBps;
+      let rate = Number(rateInBps) / 100;
+      console.log("rate", rate);
+      if (rate >= 100) {
+        rate = 0;
+      }
+      const award = common.getAmountAfterCut(
+        totalPlatformFee?.toString(),
+        rate
+      );
+      console.log("awardForRecipient", award);
+      feeAllocations.push({
+        recipient: response?.recipient,
+        platformFee: award,
+      });
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return feeAllocations;
 }

@@ -85,12 +85,10 @@ export const checkForCCTP = async (
       (await isCCTPNetwork(srcChainId)) &&
       (await isCCTPNetwork(desChainId))
     ) {
-      console.log("i am here 1");
       if (amount.gt(balance) || amount.gte(threshold)) {
         return true;
       }
     } else if (amount.gt(balance)) {
-      console.log("i am here 2");
       throw IN_SUFFICIENT_LIQUIDITY_ERROR;
     }
   }

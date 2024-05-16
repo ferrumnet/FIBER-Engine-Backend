@@ -9,6 +9,7 @@ var schema = mongoose.Schema(
     cctpBalanceThreshold: { type: Number, default: 0 },
     cctpAttestationApiThreshold: { type: Number, default: 0 },
     providerApiThreshold: { type: Number, default: 0 },
+    platformFee: { type: Number, default: 0 },
     nativeTokens: [
       {
         chainId: { type: String, default: "" },
