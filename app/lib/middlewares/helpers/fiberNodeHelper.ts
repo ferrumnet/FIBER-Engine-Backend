@@ -1,4 +1,4 @@
-let fakeAmount = "0.1";
+let fakeAmount = "0.5";
 export const getSourceAmountOut = (
   destinationAmount: string,
   actualAmount: any

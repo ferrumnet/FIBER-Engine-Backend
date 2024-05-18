@@ -304,6 +304,20 @@
       "type": "event"
     },
     {
+      "inputs": [],
+      "name": "NAME",
+      "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VERSION",
+      "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         { "internalType": "address", "name": "router", "type": "address" },
         { "internalType": "bytes4[]", "name": "selectors", "type": "bytes4[]" }
@@ -325,6 +339,13 @@
     {
       "inputs": [],
       "name": "cctpFundManager",
+      "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "feeWallet",
       "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
       "stateMutability": "view",
       "type": "function"
@@ -386,6 +407,13 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "platformFee",
+      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         { "internalType": "address", "name": "router", "type": "address" },
         { "internalType": "bytes", "name": "selector", "type": "bytes" }
@@ -426,6 +454,15 @@
     },
     {
       "inputs": [
+        { "internalType": "address", "name": "_feeWallet", "type": "address" }
+      ],
+      "name": "setFeeWallet",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
         { "internalType": "address", "name": "_fundManager", "type": "address" }
       ],
       "name": "setFundManager",
@@ -455,6 +492,15 @@
         }
       ],
       "name": "setGasWallet",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "uint256", "name": "_platformFee", "type": "uint256" }
+      ],
+      "name": "setPlatformFee",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -554,25 +600,18 @@
         {
           "components": [
             {
-              "components": [
-                {
-                  "internalType": "address",
-                  "name": "recipient",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "platformFee",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct FeeDistributor.FeeAllocation[]",
-              "name": "feeAllocations",
-              "type": "tuple[]"
+              "internalType": "address",
+              "name": "referral",
+              "type": "address"
             },
             {
               "internalType": "uint256",
-              "name": "totalPlatformFee",
+              "name": "referralFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "referralDiscount",
               "type": "uint256"
             },
             {
@@ -656,25 +695,18 @@
         {
           "components": [
             {
-              "components": [
-                {
-                  "internalType": "address",
-                  "name": "recipient",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "platformFee",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct FeeDistributor.FeeAllocation[]",
-              "name": "feeAllocations",
-              "type": "tuple[]"
+              "internalType": "address",
+              "name": "referral",
+              "type": "address"
             },
             {
               "internalType": "uint256",
-              "name": "totalPlatformFee",
+              "name": "referralFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "referralDiscount",
               "type": "uint256"
             },
             {
@@ -757,25 +789,18 @@
         {
           "components": [
             {
-              "components": [
-                {
-                  "internalType": "address",
-                  "name": "recipient",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "platformFee",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct FeeDistributor.FeeAllocation[]",
-              "name": "feeAllocations",
-              "type": "tuple[]"
+              "internalType": "address",
+              "name": "referral",
+              "type": "address"
             },
             {
               "internalType": "uint256",
-              "name": "totalPlatformFee",
+              "name": "referralFee",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "referralDiscount",
               "type": "uint256"
             },
             {
@@ -911,7 +936,7 @@
         },
         { "internalType": "address", "name": "targetToken", "type": "address" },
         { "internalType": "address", "name": "router", "type": "address" },
-        { "internalType": "bytes", "name": "routerCallData", "type": "bytes" },
+        { "internalType": "bytes", "name": "routerCalldata", "type": "bytes" },
         { "internalType": "bytes32", "name": "salt", "type": "bytes32" },
         { "internalType": "uint256", "name": "expiry", "type": "uint256" },
         { "internalType": "bytes", "name": "multiSignature", "type": "bytes" },

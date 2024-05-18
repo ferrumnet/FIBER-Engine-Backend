@@ -132,3 +132,8 @@ export const getChainKyberSwap = async (chainId: string): Promise<string> => {
   }
   return "";
 };
+
+export const getPlatformFee = async (): Promise<number> => {
+  let data = await db.Configurations.findOne();
+  return data?.platformFee;
+};

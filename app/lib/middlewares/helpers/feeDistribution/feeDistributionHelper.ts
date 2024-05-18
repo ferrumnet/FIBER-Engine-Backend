@@ -5,6 +5,10 @@ import {
   getSaltAndExpiryData,
 } from "../feeDistribution/feeDistributionSignatureHelper";
 import { getFeeDistributionDataByReferralCode } from "../../../httpCalls/multiSwapAxiosHelper";
+import { getPlatformFee } from "../configurationHelper";
+import { invalidPlatformFee } from "../stringHelper";
+const common = (global as any).commonFunctions;
+const emptyReferral = "0x0000000000000000000000000000000000000000";
 
 export async function getFeeDistributionObject(
   feeDistribution: FeeDistribution,
@@ -44,11 +48,11 @@ export async function getDataAfterCutDistributionFee(
   decimalAmount: any
 ): Promise<any> {
   let amountAfterCut = decimalAmount;
-  let totalPlatformFee = "0";
-  let feeAllocations: any = [];
+  let totalFee = "0";
   let data: FeeDistribution = {
-    feeAllocations: [],
-    totalPlatformFee: "",
+    referral: "",
+    referralFee: "",
+    referralDiscount: "",
     sourceAmountIn: "",
     sourceAmountOut: "",
     destinationAmountIn: "",
@@ -58,25 +62,36 @@ export async function getDataAfterCutDistributionFee(
     signature: "",
   };
   try {
-    const response = await getFeeDistributionDataByReferralCode(referralCode);
-    if (response?.rateInBps && response?.recipient) {
-      const rateInBps = response?.rateInBps;
-      const rate = Number(rateInBps) / 100;
-      console.log("rate", rate);
-      amountAfterCut = await (
-        global as any
-      ).commonFunctions.addSlippageInDecimal(decimalAmount, rate);
-      totalPlatformFee = Big(decimalAmount)
-        .minus(Big(amountAfterCut))
-        .toString();
-      feeAllocations.push({
-        recipient: response?.recipient,
-        platformFee: totalPlatformFee?.toString(),
-      });
+    let pf = await getPlatformFee();
+    if (!pf) {
+      return {
+        error: invalidPlatformFee,
+      };
     }
+    totalFee = common.getAmountAfterPercentageCut(decimalAmount, pf);
+    amountAfterCut = Big(decimalAmount).minus(Big(totalFee)).toString();
+    console.log(
+      "amountAfterCut",
+      amountAfterCut,
+      "totalPlatformFee",
+      totalFee,
+      "totalPlatformFee%",
+      pf
+    );
+    const refData: any = await getReferralData(referralCode, totalFee);
+    totalFee = refData?.totalPlatformFee;
+    if (refData?.referralDiscountAmount) {
+      amountAfterCut = Big(amountAfterCut).add(
+        Big(refData?.referralDiscountAmount)
+      );
+    }
+    console.log("totalPlatformFee", totalFee?.toString(), refData);
     data = {
-      feeAllocations: feeAllocations,
-      totalPlatformFee: totalPlatformFee,
+      referral: refData?.recipient ? refData?.recipient : emptyReferral,
+      referralFee: refData?.referralFee ? refData?.referralFee : "0",
+      referralDiscount: refData?.referralDiscount
+        ? refData?.referralDiscount
+        : "0",
       sourceAmountIn: "",
       sourceAmountOut: "",
       destinationAmountIn: "",
@@ -90,6 +105,7 @@ export async function getDataAfterCutDistributionFee(
   }
   return {
     amountAfterCut: amountAfterCut,
+    totalFee: totalFee?.toString(),
     data: data,
   };
 }
@@ -110,4 +126,61 @@ export function convertIntoFeeDistributionObject(
     console.error(e);
   }
   return feeDistribution;
+}
+
+export async function getReferralData(
+  referralCode: string,
+  totalPlatformFee: any
+) {
+  let referral;
+  try {
+    const res = await getFeeDistributionDataByReferralCode(referralCode);
+    if (res?.recipient && res?.fee && res?.discount) {
+      let fee = Number(res?.fee);
+      let discount = Number(res?.discount);
+      fee = fee >= 100 ? 100 : fee;
+      discount = discount >= 100 ? 100 : discount;
+      const refDiscount = common.getAmountAfterPercentageCut(
+        totalPlatformFee?.toString(),
+        discount
+      );
+      totalPlatformFee = Big(totalPlatformFee).minus(Big(refDiscount));
+      console.log(
+        "feeAfterDiscount",
+        totalPlatformFee?.toString(),
+        "refDiscount",
+        refDiscount.toString()
+      );
+      return {
+        totalPlatformFee: totalPlatformFee?.toString(),
+        recipient: res?.recipient,
+        referralFee: fee,
+        referralDiscount: discount,
+        referralDiscountAmount: refDiscount,
+      };
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return {
+    totalPlatformFee: totalPlatformFee,
+  };
+}
+
+export function getSourceAmountWithFee(amount: string, fee: string) {
+  try {
+    if (amount) {
+      console.log(
+        "sourceAmountBefore",
+        amount?.toString(),
+        "fee",
+        fee?.toString()
+      );
+      amount = Big(amount).add(Big(fee));
+      console.log("after", amount.toString());
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return amount ? amount.toString() : "";
 }

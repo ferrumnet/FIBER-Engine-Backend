@@ -6,6 +6,7 @@ export interface SourceCrossNetowrObject {
   sourceAmountOut: any;
   feeDistribution: any;
   sourceSlippageInNumber: "0";
+  totalPlatformFee: "0";
 }
 
 export interface DestinationCrossNetowrObject {
