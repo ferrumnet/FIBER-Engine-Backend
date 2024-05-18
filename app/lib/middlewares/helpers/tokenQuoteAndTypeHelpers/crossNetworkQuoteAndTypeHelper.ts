@@ -12,11 +12,13 @@ import { chooseProviderAndGetData } from "../tokenQuoteAndTypeHelpers/quoteProvi
 import {
   getDataAfterCutDistributionFee,
   getFeeDistributionObject,
+  getSourceAmountWithFee,
 } from "../feeDistribution/feeDistributionHelper";
 import {
   DestinationCrossNetowrObject,
   SourceCrossNetowrObject,
 } from "../../../../interfaces/quoteAndTypeInterface";
+import { FeeDistribution } from "../../../../interfaces/feeDistributionInterface";
 
 export const getQouteAndTypeForCrossNetworks = async (
   sourceChainId: any,
@@ -47,7 +49,8 @@ export const getQouteAndTypeForCrossNetworks = async (
   let machineSourceAmountOut: any;
   let machineDestinationAmountIn: any;
   let machineDestinationAmountOut: any;
-  let feeDistribution: any;
+  let feeDistribution: FeeDistribution;
+  let totalPlatformFee: any;
   let targetFoundryTokenAddress;
   let isCCTP = false;
 
@@ -66,6 +69,7 @@ export const getQouteAndTypeForCrossNetworks = async (
   machineSourceAmountIn = sResponse?.sourceAmountIn;
   machineSourceAmountOut = sResponse?.sourceAmountOut;
   sourceCallData = sResponse?.sourceCallData;
+  totalPlatformFee = sResponse?.totalPlatformFee;
 
   let dResponse: DestinationCrossNetowrObject = await handleDestination(
     sourceChainId,
@@ -91,9 +95,10 @@ export const getQouteAndTypeForCrossNetworks = async (
   data.source.type = sourceAssetType;
   data.source.amount = inputAmount;
   data.source.sourceAmountIn = machineSourceAmountIn;
-  if (machineSourceAmountOut) {
-    data.source.sourceAmountOut = machineSourceAmountOut;
-  }
+  data.source.sourceAmountOut = getSourceAmountWithFee(
+    machineSourceAmountOut,
+    totalPlatformFee
+  );
   data.source.callData = sourceCallData;
 
   machineDestinationAmountOut = machineDestinationAmountOut
@@ -110,7 +115,7 @@ export const getQouteAndTypeForCrossNetworks = async (
       feeDistribution,
       sourceNetwork,
       machineSourceAmountIn,
-      machineSourceAmountOut,
+      data.source.sourceAmountOut,
       machineDestinationAmountIn,
       machineDestinationAmountOut
     );
@@ -137,6 +142,7 @@ const handleSource = async (
     sourceAmountOut: undefined,
     feeDistribution: undefined,
     sourceSlippageInNumber: "0",
+    totalPlatformFee: "0",
   };
   if (gasEstimationDestinationAmount) {
     return response;
@@ -172,7 +178,7 @@ const handleSource = async (
   if (isFoundryAsset) {
     response.sourceAssetType = utils.assetType.FOUNDARY;
     response.sourceAmountOut = response.sourceAmountIn;
-    const { error, amountAfterCut, data } =
+    const { error, amountAfterCut, totalFee, data } =
       await getDataAfterCutDistributionFee(
         referralCode,
         response.sourceAmountOut
@@ -180,6 +186,7 @@ const handleSource = async (
     if (error) {
       throw error;
     }
+    response.totalPlatformFee = totalFee;
     response.sourceAmountOut = amountAfterCut;
     response.feeDistribution = data;
     response.sourceAmountInNumber = common.decimalsIntoNumber(
@@ -216,10 +223,12 @@ const handleSource = async (
       "slippageInNumber:",
       response.sourceSlippageInNumber.toString()
     );
-    const { amountAfterCut, data } = await getDataAfterCutDistributionFee(
-      referralCode,
-      response.sourceAmountOut
-    );
+    const { amountAfterCut, totalFee, data } =
+      await getDataAfterCutDistributionFee(
+        referralCode,
+        response.sourceAmountOut
+      );
+    response.totalPlatformFee = totalFee;
     response.sourceAmountOut = amountAfterCut;
     response.feeDistribution = data;
     response.sourceAmountInNumber = common.decimalsIntoNumber(

@@ -1,6 +1,7 @@
 export interface FeeDistribution {
-  feeAllocations: any[];
-  totalPlatformFee: string;
+  referral: string;
+  referralFee: string;
+  referralDiscount: string;
   sourceAmountIn: string;
   sourceAmountOut: string;
   destinationAmountIn: string;

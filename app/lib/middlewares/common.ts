@@ -286,18 +286,17 @@ module.exports = {
     return valueWithSlippage;
   },
 
-  getAmountAfterCut(originalValue: any, percentage = "") {
-    let p = Big(100 - Number(percentage));
+  getAmountAfterPercentageCut(originalValue: any, percentage = "") {
+    let p = Big(percentage).div(Big(100));
     originalValue = Big(originalValue);
-    let mul = originalValue.mul(p);
-    let valueWithSlippage = mul.div(Big(100));
-    valueWithSlippage = (global as any).utils.convertFromExponentialToDecimal(
-      valueWithSlippage.toString()
+    let value = originalValue.mul(p);
+    value = (global as any).utils.convertFromExponentialToDecimal(
+      value.toString()
     );
-    if (valueWithSlippage.includes(".")) {
-      valueWithSlippage = valueWithSlippage.split(".")[0];
+    if (value.includes(".")) {
+      value = value.split(".")[0];
     }
-    return valueWithSlippage ? valueWithSlippage.toString() : "0";
+    return value;
   },
 
   encrypt: function (data: string, key: string) {

@@ -25,19 +25,7 @@ export const getFeeDistributionSignature = async (
   destinationAmountIn: string,
   destinationAmountOut: string
 ) => {
-  console.log("feeAllocations", feeDistribution?.feeAllocations);
-  console.log("totalPlatformFee", feeDistribution?.totalPlatformFee);
-  console.log(
-    "sourceAmountIn:",
-    sourceAmountIn,
-    "sourceAmountOut:",
-    sourceAmountOut,
-    "destinationAmountIn:",
-    destinationAmountIn,
-    "destinationAmountOut:",
-    destinationAmountOut
-  );
-
+  console.log("feeAllocations", feeDistribution);
   const domain = {
     name: CONTRACT_NAME,
     version: CONTRACT_VERSION,
@@ -45,14 +33,11 @@ export const getFeeDistributionSignature = async (
     verifyingContract: fiberRouterContractAddress,
   };
   const types = {
-    FeeAllocation: [
-      { name: "recipient", type: "address" },
-      { name: "platformFee", type: "uint256" },
-    ],
     DistributeFees: [
       { name: "token", type: "address" },
-      { name: "feeAllocations", type: "FeeAllocation[]" },
-      { name: "totalPlatformFee", type: "uint256" },
+      { name: "referral", type: "address" },
+      { name: "referralFee", type: "uint256" },
+      { name: "referralDiscount", type: "uint256" },
       { name: "sourceAmountIn", type: "uint256" },
       { name: "sourceAmountOut", type: "uint256" },
       { name: "destinationAmountIn", type: "uint256" },
@@ -63,8 +48,9 @@ export const getFeeDistributionSignature = async (
   };
   const values = {
     token: token,
-    feeAllocations: feeDistribution?.feeAllocations,
-    totalPlatformFee: feeDistribution?.totalPlatformFee,
+    referral: feeDistribution?.referral,
+    referralFee: feeDistribution?.referralFee,
+    referralDiscount: feeDistribution?.referralDiscount,
     sourceAmountIn: sourceAmountIn,
     sourceAmountOut: sourceAmountOut,
     destinationAmountIn: destinationAmountIn,
