@@ -20,6 +20,8 @@ export const OneInchSwap = async (
   let amounts = null;
   let data = null;
   let responseMessage = "";
+  let excludedProtocols =
+    "ARBITRUM_CURVE_V2_TRICRYPTO_NG,ONE_INCH_LIMIT_ORDER_V3,BASE_CURVE_V2_TRICRYPTO_NG,CURVE_V2_TRICRYPTO_NG";
 
   try {
     let config = {
@@ -31,7 +33,7 @@ export const OneInchSwap = async (
     };
     let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${await getSlippage(
       slippage
-    )}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}&compatibility=true`;
+    )}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}&compatibility=true&excludedProtocols=${excludedProtocols}`;
     let res = await axios.get(url, config);
     if (res?.data?.toAmount) {
       amounts = res?.data?.toAmount;
