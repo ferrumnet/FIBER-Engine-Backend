@@ -15,6 +15,7 @@ var schema = mongoose.Schema(
         oneInchAddress: { type: String, default: "" },
       },
     ],
+    oneInchExcludedProtocols: [],
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: new Date() },
     updatedAt: { type: Date, default: new Date() },
