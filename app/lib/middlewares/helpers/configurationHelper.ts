@@ -137,3 +137,16 @@ export const getPlatformFee = async (): Promise<number> => {
   let data = await db.Configurations.findOne();
   return data?.platformFee;
 };
+
+export const getOneInchExcludedProtocols = async (): Promise<any> => {
+  let data = await db.Configurations.findOne();
+  let protocols: any = data?.oneInchExcludedProtocols
+    ? data?.oneInchExcludedProtocols
+    : [];
+  if (protocols) {
+    protocols = protocols.join(",");
+  } else {
+    protocols = "";
+  }
+  return protocols ? protocols : "";
+};
