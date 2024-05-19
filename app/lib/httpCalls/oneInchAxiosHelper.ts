@@ -1,5 +1,8 @@
 var axios = require("axios").default;
-import { getSlippage } from "../../lib/middlewares/helpers/configurationHelper";
+import {
+  getSlippage,
+  getOneInchExcludedProtocols,
+} from "../../lib/middlewares/helpers/configurationHelper";
 import { genericProviderError } from "../../lib/middlewares/helpers/stringHelper";
 
 interface Response {
@@ -20,6 +23,7 @@ export const OneInchSwap = async (
   let amounts = null;
   let data = null;
   let responseMessage = "";
+  let excludedProtocols = await getOneInchExcludedProtocols();
 
   try {
     let config = {
@@ -31,7 +35,8 @@ export const OneInchSwap = async (
     };
     let url = `https://api.1inch.dev/swap/v6.0/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${await getSlippage(
       slippage
-    )}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}&compatibility=true&excludedProtocols=ARBITRUM_CURVE_V2_TRICRYPTO_NG`;
+    )}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}&compatibility=true&excludedProtocols=${excludedProtocols}`;
+    console.log("url", url);
     let res = await axios.get(url, config);
     if (res?.data?.dstAmount) {
       amounts = res?.data?.dstAmount;
