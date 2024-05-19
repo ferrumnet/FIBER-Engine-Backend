@@ -10,3 +10,16 @@ export const getNativeTokens = async (): Promise<any> => {
   let data = await db.Configurations.findOne();
   return data?.nativeTokens ? data?.nativeTokens : [];
 };
+
+export const getOneInchExcludedProtocols = async (): Promise<any> => {
+  let data = await db.Configurations.findOne();
+  let protocols: any = data?.oneInchExcludedProtocols
+    ? data?.oneInchExcludedProtocols
+    : [];
+  if (protocols) {
+    protocols = protocols.join(",");
+  } else {
+    protocols = "";
+  }
+  return protocols ? protocols : "";
+};
