@@ -26,6 +26,7 @@ export const getQouteAndTypeForCrossNetworks = async (
   targetChainId: any,
   targetTokenAddress: any,
   inputAmount: any,
+  sourceWalletAddress: string,
   destinationWalletAddress: string,
   gasEstimationDestinationAmount: string,
   sourceSlippage: string,
@@ -57,6 +58,7 @@ export const getQouteAndTypeForCrossNetworks = async (
   let sResponse: SourceCrossNetowrObject = await handleSource(
     sourceChainId,
     sourceTokenAddress,
+    sourceWalletAddress,
     inputAmount,
     gasEstimationDestinationAmount,
     sourceSlippage,
@@ -127,6 +129,7 @@ export const getQouteAndTypeForCrossNetworks = async (
 const handleSource = async (
   sourceChainId: any,
   sourceTokenAddress: any,
+  sourceWalletAddress: string,
   inputAmount: any,
   gasEstimationDestinationAmount: string,
   sourceSlippage: string,
@@ -183,6 +186,7 @@ const handleSource = async (
     const { error, amountAfterCut, totalFee, data } =
       await getDataAfterCutDistributionFee(
         referralCode,
+        sourceWalletAddress,
         response.sourceAmountOut
       );
     if (error) {
@@ -228,6 +232,7 @@ const handleSource = async (
     const { amountAfterCut, totalFee, data } =
       await getDataAfterCutDistributionFee(
         referralCode,
+        sourceWalletAddress,
         response.sourceAmountOut
       );
     response.totalPlatformFee = totalFee;

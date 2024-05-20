@@ -47,6 +47,7 @@ export const getQuoteAndTokenTypeInformation = async function (req: any) {
       destinationNetworkChainId,
       destinationTokenContractAddress,
       sourceAmount,
+      sourceWalletAddress,
       destinationWalletAddress,
       gasEstimationDestinationAmount,
       sourceSlippage,
