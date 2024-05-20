@@ -112,6 +112,7 @@ export const getQouteAndTypeForCrossNetworks = async (
   data.destination.destinationAmountIn = machineDestinationAmountIn;
   data.destination.destinationAmountOut = machineDestinationAmountOut;
   data.destination.callData = destinationCallData;
+  data.platformFee = sResponse?.totalPlatformFeeInNumber;
   if (!gasEstimationDestinationAmount) {
     data.feeDistribution = await getFeeDistributionObject(
       feeDistribution,
@@ -146,6 +147,7 @@ const handleSource = async (
     feeDistribution: undefined,
     sourceSlippageInNumber: "0",
     totalPlatformFee: "0",
+    totalPlatformFeeInNumber: "",
   };
   if (gasEstimationDestinationAmount) {
     return response;
@@ -241,6 +243,10 @@ const handleSource = async (
       sourceFoundryTokenDecimal
     );
   }
+  response.totalPlatformFeeInNumber = getPlatformFeeInNumber(
+    response.totalPlatformFee,
+    sourceFoundryTokenDecimal
+  );
   return response;
 };
 
@@ -453,4 +459,12 @@ const getFoundaryAmountWithoutSourceSlippage = (
   let finalAmount = Big(destinationAmount).add(Big(sourceSlippageInNumber));
   console.log("finalAmount", finalAmount.toString());
   return finalAmount?.toString();
+};
+
+const getPlatformFeeInNumber = (fee: any, decimals: any) => {
+  const common = (global as any).commonFunctions;
+  if (fee) {
+    fee = common.decimalsIntoNumber(fee, decimals);
+  }
+  return fee;
 };

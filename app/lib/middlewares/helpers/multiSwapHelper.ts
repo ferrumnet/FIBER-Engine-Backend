@@ -281,6 +281,7 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     data.isCCTP = categorizedInfo?.isCCTP ? categorizedInfo?.isCCTP : false;
     data.feeDistribution = categorizedInfo?.feeDistribution;
+    data.platformFee = categorizedInfo?.platformFee;
   }
   // console.log("getTokenCategorizedInformation response", data);
   return data;
