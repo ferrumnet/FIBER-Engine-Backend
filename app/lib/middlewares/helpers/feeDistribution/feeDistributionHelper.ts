@@ -45,6 +45,7 @@ export async function getFeeDistributionObject(
 
 export async function getDataAfterCutDistributionFee(
   referralCode: string,
+  sourceWalletAddress: string,
   decimalAmount: any
 ): Promise<any> {
   let amountAfterCut = decimalAmount;
@@ -78,7 +79,11 @@ export async function getDataAfterCutDistributionFee(
       "totalPlatformFee%",
       pf
     );
-    const refData: any = await getReferralData(referralCode, totalFee);
+    const refData: any = await getReferralData(
+      referralCode,
+      sourceWalletAddress,
+      totalFee
+    );
     totalFee = refData?.totalPlatformFee;
     if (refData?.referralDiscountAmount) {
       amountAfterCut = Big(amountAfterCut).add(
@@ -130,11 +135,15 @@ export function convertIntoFeeDistributionObject(
 
 export async function getReferralData(
   referralCode: string,
+  sourceWalletAddress: string,
   totalPlatformFee: any
 ) {
   let referral;
   try {
-    const res = await getFeeDistributionDataByReferralCode(referralCode);
+    const res = await getFeeDistributionDataByReferralCode(
+      sourceWalletAddress,
+      referralCode
+    );
     if (res?.recipient && res?.fee && res?.discount) {
       let fee = Number(res?.fee);
       let discount = Number(res?.discount);
