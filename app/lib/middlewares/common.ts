@@ -247,7 +247,9 @@ module.exports = {
     amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
       amountFormatted.toString()
     );
-    amountFormatted = parseInt(amountFormatted);
+    if (amountFormatted.includes(".")) {
+      amountFormatted = amountFormatted.split(".")[0];
+    }
     amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
       amountFormatted.toString()
     );
