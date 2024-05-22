@@ -20,6 +20,7 @@ import { Contract } from "../../../interfaces/forgeInterface";
 import { chooseProviderAndGetData } from "../helpers/tokenQuoteAndTypeHelpers/quoteProvidersHelper";
 import { getProviderApiThreshold } from "./configurationHelper";
 import { createEVMResponse } from "./withdrawResponseHelper";
+import { genericProviderError } from "./stringHelper";
 
 const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;
 const MAX_WITHDRAW_TRIES = 10;
@@ -518,6 +519,7 @@ export const getLatestCallData = async (
   );
   if (
     providerResponse?.responseMessage &&
+    providerResponse?.responseMessage == genericProviderError &&
     recursionCount < (await getProviderApiThreshold())
   ) {
     console.log("responseMessage", providerResponse?.responseMessage);

@@ -3,7 +3,10 @@ import {
   getSlippage,
   getOneInchExcludedProtocols,
 } from "../../lib/middlewares/helpers/configurationHelper";
-import { genericProviderError } from "../../lib/middlewares/helpers/stringHelper";
+import {
+  insufficientLiquidityError,
+  genericProviderError,
+} from "../../lib/middlewares/helpers/stringHelper";
 
 interface Response {
   responseMessage: string;
@@ -45,8 +48,17 @@ export const OneInchSwap = async (
       data = res?.data?.tx?.data;
     }
   } catch (error: any) {
-    console.log("1Inch error", error);
-    responseMessage = genericProviderError;
+    console.log("1Inch error status", error?.response?.status);
+    console.log("1Inch error statusText", error?.response?.statusText);
+    if (
+      error?.response?.status &&
+      error?.response?.statusText.toLowerCase() ==
+        insufficientLiquidityError.toLowerCase()
+    ) {
+      responseMessage = insufficientLiquidityError;
+    } else {
+      responseMessage = genericProviderError;
+    }
   }
 
   let response: Response = {
