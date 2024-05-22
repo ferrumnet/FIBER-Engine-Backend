@@ -187,7 +187,8 @@ const handleSource = async (
       await getDataAfterCutDistributionFee(
         referralCode,
         sourceWalletAddress,
-        response.sourceAmountOut
+        response.sourceAmountOut,
+        sourceFoundryTokenDecimal
       );
     if (error) {
       throw error;
@@ -229,12 +230,16 @@ const handleSource = async (
       "slippageInNumber:",
       response.sourceSlippageInNumber.toString()
     );
-    const { amountAfterCut, totalFee, data } =
+    const { error, amountAfterCut, totalFee, data } =
       await getDataAfterCutDistributionFee(
         referralCode,
         sourceWalletAddress,
-        response.sourceAmountOut
+        response.sourceAmountOut,
+        sourceFoundryTokenDecimal
       );
+    if (error) {
+      throw error;
+    }
     response.totalPlatformFee = totalFee;
     response.sourceAmountOut = amountAfterCut;
     response.feeDistribution = data;

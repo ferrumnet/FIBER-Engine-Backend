@@ -301,6 +301,17 @@ module.exports = {
     return value;
   },
 
+  getAmountAfterAbsoluteCut(originalValue: any, cut: any) {
+    let value = Big(originalValue).minus(Big(cut));
+    value = (global as any).utils.convertFromExponentialToDecimal(
+      value.toString()
+    );
+    if (value.includes(".")) {
+      value = value.split(".")[0];
+    }
+    return value;
+  },
+
   encrypt: function (data: string, key: string) {
     try {
       var ciphertext = CryptoJS.AES.encrypt(data, key).toString();
