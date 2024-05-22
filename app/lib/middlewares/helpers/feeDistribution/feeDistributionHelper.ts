@@ -46,10 +46,11 @@ export async function getFeeDistributionObject(
 export async function getDataAfterCutDistributionFee(
   referralCode: string,
   sourceWalletAddress: string,
-  decimalAmount: any
+  decimalAmount: any,
+  foundaryDecimals: any
 ): Promise<any> {
   let amountAfterCut = decimalAmount;
-  let totalFee = "0";
+  let totalFee: any = "0";
   let data: FeeDistribution = {
     referral: "",
     referralFee: "",
@@ -64,13 +65,22 @@ export async function getDataAfterCutDistributionFee(
   };
   try {
     let pf = await getPlatformFee();
+    let pfInNumber = pf;
     if (!pf) {
       return {
         error: invalidPlatformFee,
       };
     }
-    totalFee = common.getAmountAfterPercentageCut(decimalAmount, pf);
-    amountAfterCut = Big(decimalAmount).minus(Big(totalFee)).toString();
+    pf = common.numberIntoDecimals__(pf, foundaryDecimals);
+    if (!isValidAmountSwap(decimalAmount, pf)) {
+      return {
+        error: `Swap amount should be ${getPlatformFeeInNumber(
+          pfInNumber
+        )} USDC worth or greater`,
+      };
+    }
+    totalFee = pf;
+    amountAfterCut = common.getAmountAfterAbsoluteCut(decimalAmount, pf);
     console.log(
       "amountAfterCut",
       amountAfterCut,
@@ -91,6 +101,7 @@ export async function getDataAfterCutDistributionFee(
       );
     }
     console.log("totalPlatformFee", totalFee?.toString(), refData);
+    console.log("amountAfterCut", amountAfterCut?.toString());
     data = {
       referral: refData?.recipient ? refData?.recipient : emptyReferral,
       referralFee: refData?.referralFee ? refData?.referralFee : "0",
@@ -192,4 +203,28 @@ export function getSourceAmountWithFee(amount: string, fee: string) {
     console.log(e);
   }
   return amount ? amount.toString() : "";
+}
+
+function isValidAmountSwap(amount: any, pf: any): boolean {
+  try {
+    if (amount) {
+      amount = Big(amount);
+      pf = Big(pf).mul(Big(2));
+      console.log("amount", amount?.toString(), "pf", pf?.toString());
+      if (amount.gte(pf)) {
+        return true;
+      }
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return false;
+}
+
+function getPlatformFeeInNumber(pf: any) {
+  try {
+    return Big(pf).mul(Big(2));
+  } catch (e) {
+    console.log(e);
+  }
 }
