@@ -171,7 +171,9 @@ export const doFoundaryWithdraw = async (
       result = await doFoundaryWithdraw(obj, extraBuffer, count);
     }
   }
-  result.dynamicGasPrice = dynamicGasPrice;
+  if (result) {
+    result.dynamicGasPrice = dynamicGasPrice;
+  }
   return result;
 };
 
@@ -257,7 +259,9 @@ export const doOneInchWithdraw = async (
       result = await doOneInchWithdraw(obj, extraBuffer, count);
     }
   }
-  result.dynamicGasPrice = dynamicGasPrice;
+  if (result) {
+    result.dynamicGasPrice = dynamicGasPrice;
+  }
   return result;
 };
 
