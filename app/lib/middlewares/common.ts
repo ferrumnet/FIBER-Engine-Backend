@@ -162,6 +162,8 @@ module.exports = {
                 this.getFundManagerContract(multiswapNetworkFIBERInformation);
               multiswapNetworkFIBERInformation.fiberRouterContract =
                 this.getFiberRouterContract(multiswapNetworkFIBERInformation);
+              multiswapNetworkFIBERInformation.aggregateRouterContractAddress =
+                multiswapNetworkFIBERInformation.aggregateRouterContractAddress;
             } else {
               multiswapNetworkFIBERInformation.decimals = 18;
             }
@@ -245,7 +247,9 @@ module.exports = {
     amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
       amountFormatted.toString()
     );
-    amountFormatted = parseInt(amountFormatted);
+    if (amountFormatted.includes(".")) {
+      amountFormatted = amountFormatted.split(".")[0];
+    }
     amountFormatted = (global as any).utils.convertFromExponentialToDecimal(
       amountFormatted.toString()
     );
@@ -282,6 +286,30 @@ module.exports = {
       valueWithSlippage.toString()
     );
     return valueWithSlippage;
+  },
+
+  getAmountAfterPercentageCut(originalValue: any, percentage = "") {
+    let p = Big(percentage).div(Big(100));
+    originalValue = Big(originalValue);
+    let value = originalValue.mul(p);
+    value = (global as any).utils.convertFromExponentialToDecimal(
+      value.toString()
+    );
+    if (value.includes(".")) {
+      value = value.split(".")[0];
+    }
+    return value;
+  },
+
+  getAmountAfterAbsoluteCut(originalValue: any, cut: any) {
+    let value = Big(originalValue).minus(Big(cut));
+    value = (global as any).utils.convertFromExponentialToDecimal(
+      value.toString()
+    );
+    if (value.includes(".")) {
+      value = value.split(".")[0];
+    }
+    return value;
   },
 
   encrypt: function (data: string, key: string) {
@@ -335,11 +363,11 @@ module.exports = {
     return address;
   },
 
-  getOneInchTokenAddress: async function (address: string): Promise<string> {
+  getNativeTokenAddress: async function (address: string): Promise<string> {
     let tokens: any = await getNativeTokens();
     for (let item of tokens || []) {
       if (item?.address.toLowerCase() == address.toLowerCase()) {
-        return item?.oneInchAddress;
+        return item?.nativeAddress;
       }
     }
     return address;

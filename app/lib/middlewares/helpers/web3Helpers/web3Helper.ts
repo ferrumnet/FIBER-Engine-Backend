@@ -16,7 +16,7 @@ export const getLogsFromTransactionReceipt = (
   rcpUrl: string,
   isOneInch: boolean
 ): any => {
-  let logDataAndTopic = undefined;
+  let logDataAndTopic: any = undefined;
 
   if (tx?.logs?.length) {
     for (const log of tx?.logs) {
@@ -33,7 +33,7 @@ export const getLogsFromTransactionReceipt = (
     }
 
     let swapEventInputs = contractABI.find(
-      (abi) => abi.name === "WithdrawOneInch" && abi.type === "event"
+      (abi) => abi.name === "WithdrawRouter" && abi.type === "event"
     )?.inputs;
 
     if (logDataAndTopic?.data && logDataAndTopic.topics) {
@@ -51,7 +51,7 @@ export const getLogsFromTransactionReceipt = (
 
 const findSwapEvent = (topics: any[], isOneInch: boolean) => {
   let oneInchEventHash = Web3.utils.sha3(
-    "WithdrawOneInch(address,uint256,uint256,address,address,bytes,bytes32,bytes)"
+    "WithdrawRouter(address,uint256,uint256,address,address,address,bytes,bytes32,bytes)"
   );
   if (topics?.length) {
     return topics.findIndex((topic) => topic === oneInchEventHash);
