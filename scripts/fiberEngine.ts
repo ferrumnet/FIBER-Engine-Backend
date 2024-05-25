@@ -17,6 +17,7 @@ import {
   IN_SUFFICIENT_LIQUIDITY_ERROR,
   CODE_701,
   CODE_702,
+  CODE_703,
 } from "../app/lib/middlewares/helpers/withdrawResponseHelper";
 import { getAmountOut } from "../app/lib/middlewares/helpers/dexContractHelper";
 import { OneInchSwap } from "../app/lib/httpCalls/oneInchAxiosHelper";
@@ -55,7 +56,10 @@ import {
 } from "../app/lib/middlewares/helpers/fiberEngineHelper";
 import { isSameNetworksSwap } from "../app/lib/middlewares/helpers/multiSwapHelper";
 import { getIsCCTP } from "../app/lib/middlewares/helpers/cctpHelpers/cctpHelper";
-import { genericProviderError } from "../app/lib/middlewares/helpers/stringHelper";
+import {
+  attestationSignatureError,
+  genericProviderError,
+} from "../app/lib/middlewares/helpers/stringHelper";
 
 const cudosWithdraw = require("./cudosWithdraw");
 const { ecsign, toRpcSig } = require("ethereumjs-util");
@@ -167,12 +171,19 @@ module.exports = {
         body?.gasLimit,
         getIsCCTP(body?.isCCTP)
       );
-      await doCCTPFlow(
+      let res = await doCCTPFlow(
         targetNetwork,
         body?.cctpMessageBytes,
         body?.cctpMessageHash,
         getIsCCTP(body?.isCCTP)
       );
+      if (res == attestationSignatureError) {
+        return handleWithdrawalErrors(
+          swapTransactionHash,
+          attestationSignatureError,
+          CODE_703
+        );
+      }
       const swapResult = await doFoundaryWithdraw(obj, 0);
       const receipt = await this.callEVMWithdrawAndGetReceipt(
         swapResult,
@@ -188,12 +199,19 @@ module.exports = {
       transactionHash = withdrawResponse?.transactionHash;
     } else {
       // 1Inch implementation
-      await doCCTPFlow(
+      let res = await doCCTPFlow(
         targetNetwork,
         body?.cctpMessageBytes,
         body?.cctpMessageHash,
         getIsCCTP(body?.isCCTP)
       );
+      if (res == attestationSignatureError) {
+        return handleWithdrawalErrors(
+          swapTransactionHash,
+          attestationSignatureError,
+          CODE_703
+        );
+      }
       let callData: any = await getLatestCallData(
         targetChainId,
         targetNetwork?.foundryTokenAddress,

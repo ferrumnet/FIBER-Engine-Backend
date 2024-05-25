@@ -20,7 +20,10 @@ import { Contract } from "../../../interfaces/forgeInterface";
 import { chooseProviderAndGetData } from "../helpers/tokenQuoteAndTypeHelpers/quoteProvidersHelper";
 import { getProviderApiThreshold } from "./configurationHelper";
 import { createEVMResponse } from "./withdrawResponseHelper";
-import { genericProviderError } from "./stringHelper";
+import {
+  attestationSignatureError,
+  genericProviderError,
+} from "./stringHelper";
 
 const MAX_WITH_DYNAMIC_GAS_WITHDRAW_TRIES = 9;
 const MAX_WITHDRAW_TRIES = 10;
@@ -485,7 +488,7 @@ export const doCCTPFlow = async (
     network.chainId
   );
   if (!isCCTP) {
-    return;
+    return "";
   }
   let contract: Contract = {
     rpcUrl: network.rpcUrl,
@@ -493,6 +496,14 @@ export const doCCTPFlow = async (
   };
   let attestationSignature = await getAttestation(messageHash);
   console.log("attestationSignature:", attestationSignature);
+  sendSlackNotification(
+    messageHash,
+    "attestationSignature: " + attestationSignature,
+    null
+  );
+  if (!attestationSignature) {
+    return attestationSignatureError;
+  }
   await messageTransmitter(
     contract,
     network,

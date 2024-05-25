@@ -22,7 +22,11 @@ export const getCCTPAttestation = async (
       status = res?.data?.status;
     }
   } catch (error: any) {
-    console.log("getCCTPAttestation error", error);
+    console.log("getCCTPAttestation error status", error?.response?.status);
+    console.log(
+      "getCCTPAttestation error statusText",
+      error?.response?.statusText
+    );
     status = "failed";
   }
 
