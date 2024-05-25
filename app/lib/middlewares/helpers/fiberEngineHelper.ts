@@ -493,6 +493,11 @@ export const doCCTPFlow = async (
   };
   let attestationSignature = await getAttestation(messageHash);
   console.log("attestationSignature:", attestationSignature);
+  sendSlackNotification(
+    messageHash,
+    "attestationSignature: " + attestationSignature,
+    null
+  );
   await messageTransmitter(
     contract,
     network,
