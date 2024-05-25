@@ -23,22 +23,19 @@ export const getForgeFundManager = (isCCTP: boolean, network: any): string => {
   }
 };
 
-export const getAttestation = async (
-  mesgHash: string,
-  recursionCount = 0
-): Promise<string> => {
+export const getAttestation = async (mesgHash: string): Promise<string> => {
   console.log("mesgHash", mesgHash);
+  const threshold = await getCCTPAttestationApiThreshold();
   let attestation = "";
   if (mesgHash) {
-    let response = await getCCTPAttestation(mesgHash);
-    console.log("response", response);
-    let status = response?.status;
-    if (status == "complete") {
-      attestation = response.attestation;
-    } else if (recursionCount < (await getCCTPAttestationApiThreshold())) {
+    for (let count = 0; count <= threshold; count++) {
+      let response = await getCCTPAttestation(mesgHash);
+      console.log("response", response);
+      let status = response?.status;
+      if (status == "complete") {
+        return response.attestation;
+      }
       await delay();
-      recursionCount = recursionCount + 1;
-      attestation = await getAttestation(mesgHash, recursionCount);
     }
   }
   return attestation;
