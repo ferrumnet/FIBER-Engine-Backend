@@ -74,9 +74,9 @@ export async function getDataAfterCutDistributionFee(
     pf = common.numberIntoDecimals__(pf, foundaryDecimals);
     if (!isValidAmountSwap(decimalAmount, pf)) {
       return {
-        error: `Swap amount should be ${getPlatformFeeInNumber(
+        error: `Swap amount should be more than ${getPlatformFeeInNumber(
           pfInNumber
-        )} USDC worth or greater`,
+        )} USDC`,
       };
     }
     totalFee = pf;
