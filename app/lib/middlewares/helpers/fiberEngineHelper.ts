@@ -504,12 +504,33 @@ export const doCCTPFlow = async (
   if (!attestationSignature) {
     return attestationSignatureError;
   }
-  await messageTransmitter(
+  await doMessageTransmitter(
     contract,
     network,
     messageBytes,
     attestationSignature
   );
+};
+
+const doMessageTransmitter = async (
+  contract: any,
+  network: any,
+  messageBytes: string,
+  attestationSignature: string
+) => {
+  for (let count = 0; count < 5; count++) {
+    if (
+      await messageTransmitter(
+        contract,
+        network,
+        messageBytes,
+        attestationSignature
+      )
+    ) {
+      return "";
+    }
+    await delay();
+  }
 };
 
 export const getLatestCallData = async (

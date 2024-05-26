@@ -2,6 +2,7 @@ var { ethers } = require("ethers");
 const forgeAbi: any = require("../../../../../config/forge.json");
 const cctpMessageTransmitter: any = require("../../../../../config/cctpMessageTransmitter.json");
 import { Contract } from "../../../../interfaces/forgeInterface";
+import { sendSlackNotification } from "../fiberEngineHelper";
 import {
   addBuffer,
   getGasForWithdraw,
@@ -25,7 +26,8 @@ export const messageTransmitter = async (
   network: any,
   messageBytes: string,
   attestationSignature: string
-): Promise<any> => {
+): Promise<boolean> => {
+  let receipt: any;
   try {
     console.log(contract);
     let cctpMTContract = cctpContract(
@@ -44,9 +46,19 @@ export const messageTransmitter = async (
         attestationSignature,
         await getGasForWithdraw(network.chainId, gasLimit)
       );
-    let receipt = await response?.wait();
+    receipt = await response?.wait();
     console.log("receipt.status", receipt.status);
+    if (receipt?.status) {
+      return true;
+    }
   } catch (e: any) {
+    receipt = e;
     console.log(e);
   }
+  sendSlackNotification(
+    attestationSignature,
+    "Message Transmitter Receipt: " + receipt,
+    null
+  );
+  return false;
 };
