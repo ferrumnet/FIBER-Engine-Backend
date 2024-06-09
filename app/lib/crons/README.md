@@ -106,11 +106,6 @@ This setup ensures that specific entries are automatically cleaned up from the d
 # infuraGasJob.ts
 
 1.  **start**
-
-    javascript
-
-    Copy code
-
     `async function start() {
     try {
     let task = cron.schedule("40 \* \* \* \* \*", async () => {
@@ -129,12 +124,7 @@ This setup ensures that specific entries are automatically cleaned up from the d
     - When triggered, it logs the event and calls `triggerJobs`.
 
 2.  **triggerJobs**
-
-        javascript
-
-        Copy code
-
-        `async function triggerJobs() {
+    `async function triggerJobs() {
 
     let networks = await getGasNetworks(INFURA_PROVIDER_TAG);
     if (networks && networks.length > 0) {
@@ -149,12 +139,7 @@ This setup ensures that specific entries are automatically cleaned up from the d
         - For each network, it calls `getGasEstimation`.
 
 3.  **getGasEstimation**
-
-        javascript
-
-        Copy code
-
-        `async function getGasEstimation(network: any) {
+    `async function getGasEstimation(network: any) {
 
     let data = await getInfuraGas(network?.chainId);
     data = data?.high;
