@@ -144,10 +144,6 @@
 
 The schema is then used to create a Mongoose model:
 
-javascript
-
-Copy code
-
 `var gasFeesModel = mongoose.model(collectionName, schema);
 module.exports = gasFeesModel;`
 

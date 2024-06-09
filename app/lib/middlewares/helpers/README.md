@@ -488,10 +488,6 @@ This function initializes the helper with default configuration values for vario
 
 #### Example of use:
 
-javascript
-
-Copy code
-
 `const process = {
   argv: ['node', 'script.js', 'prod', 'cron']
 };
