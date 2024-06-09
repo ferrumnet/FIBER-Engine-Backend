@@ -105,10 +105,6 @@ This asynchronous function retrieves network data based on a given chain ID. It 
 
 Code:
 
-typescript
-
-Copy code
-
 `async getNetworkByChainId(chainId: any) {
     try {
         let baseUrl = (global as any).environment.baseUrlGatewayBackend;
@@ -126,10 +122,6 @@ Copy code
 This asynchronous function fetches a list of all networks. It similarly constructs a URL using the base URL from the global environment. However, this URL includes several query parameters such as `isNonEVM`, `isAllowedOnMultiSwap`, `allowFIBERData`, and `isPagination` to filter and control the returned data. It makes an Axios GET request to this constructed URL and if successful, converts the retrieved networks into FIBER networks using a function specified in the global environment, then logs and returns them. If an error occurs, it logs the error and returns `null`.
 
 Code:
-
-typescript
-
-Copy code
 
 `async getAllNetworks() {
     try {
@@ -187,10 +179,6 @@ Methodology:
 
 Usage Example:
 
-typescript
-
-Copy code
-
 `const swapResponse = await OneInchSwap(
   '1', // Ethereum Mainnet Chain ID
   '0x000...', // Source token contract address
@@ -227,10 +215,6 @@ Details:
 4.  Error Handling: Catches and logs any error that occurs during the HTTP request to the console. If an error occurs, the function returns `null`.
 
 Example Usage:
-
-typescript
-
-Copy code
 
 `const alertMessage = {
   text: "This is a test alert message!"

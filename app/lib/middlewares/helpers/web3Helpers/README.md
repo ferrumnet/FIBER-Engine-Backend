@@ -48,10 +48,6 @@ Returns:
 
 Example Usage:
 
-typescript
-
-Copy code
-
 `getTransactionReceipt('transaction_id_here', 'https://mainnet.infura.io/v3/your_project_id');`
 
 ### 2\. `getLogsFromTransactionReceipt(tx: any, rcpUrl: string, isOneInch: boolean): any`
@@ -70,10 +66,6 @@ Returns:
 
 Example Usage:
 
-typescript
-
-Copy code
-
 `const receipt = await getTransactionReceipt('transaction_id_here', 'https://mainnet.infura.io/v3/your_project_id');
 const logData = getLogsFromTransactionReceipt(receipt, 'https://mainnet.infura.io/v3/your_project_id', true);`
 
@@ -91,10 +83,6 @@ Returns:
 - The index of the "WithdrawOneInch" event topic in the topics array if found; otherwise undefined.
 
 Example Usage:
-
-typescript
-
-Copy code
 
 `const topics = transactionReceipt.logs[0].topics;
 const eventIndex = findSwapEvent(topics, true);`

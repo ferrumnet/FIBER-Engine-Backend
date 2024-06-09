@@ -6,10 +6,6 @@ This unnamed function is exported by the module and checks if the environment su
 
 Code:
 
-typescript
-
-Copy code
-
 `module.exports = function () {
   if ((global as any).starterEnvironment.isCronEnvironmentSupportedForGetAllNetwork === 'yes') {
     start();
@@ -21,10 +17,6 @@ Copy code
 The `start` function schedules and starts a cron job that runs every 5 minutes. Within the job, it logs the current UTC time and a message indicating the cron job has been triggered, and then calls the `triggerJobs` function.
 
 Code:
-
-typescript
-
-Copy code
 
 `async function start() {
 try {
@@ -47,10 +39,6 @@ The `triggerJobs` function asynchronously calls the `getAllNetworks` method from
 
 Code:
 
-typescript
-
-Copy code
-
 `async function triggerJobs() {
   await (global as any).networksAxiosHelper.getAllNetworks();
 }`
@@ -62,10 +50,6 @@ Each function is designed to work within a cron job environment and collectively
 ### Module Exports Function
 
 This unnamed function is exported by the module and serves as an initializer for the cron job, contingent upon certain environment settings.
-
-typescript
-
-Copy code
 
 `module.exports = function () {
   if ((global as any).starterEnvironment.isCronEnvironmentSupportedForDeleteRandomKey === "yes") {
@@ -81,10 +65,6 @@ Details:
 ### `start` Function
 
 This function sets up and starts the cron job using the `node-cron` library.
-
-typescript
-
-Copy code
 
 `async function start() {
 try {
@@ -108,10 +88,6 @@ Details:
 ### `triggerJobs` Function
 
 This function executes the primary logic for removing entries from the `RandomKeys` collection in the database.
-
-typescript
-
-Copy code
 
 `async function triggerJobs() {
   let deleteDate = moment().utc().subtract(1, "days").endOf("day").format();
@@ -351,10 +327,6 @@ This setup ensures that specific entries are automatically cleaned up from the d
 
 The `start` function schedules a task to run every 10 seconds. It logs the current time and a message indicating the job was triggered, and then calls `triggerJobs`.
 
-typescript
-
-Copy code
-
 `async function start() {
 try {
 let task = cron.schedule("_/10 _ \* \* \* \*", async () => {
@@ -374,10 +346,6 @@ console.log(e);
 
 The `triggerJobs` function retrieves networks using the `getGasNetworks` function and, if networks are found, calls `getGasEstimation` for each network.
 
-typescript
-
-Copy code
-
 `async function triggerJobs() {
   let networks = await getGasNetworks(SCROLL_PROVIDER_TAG);
   if (networks && networks.length > 0) {
@@ -391,10 +359,6 @@ Copy code
 #### `getGasEstimation`
 
 The `getGasEstimation` function gets the network's gas price and updates the gas price estimations using the `updateGasPriceEstimations` function.
-
-typescript
-
-Copy code
 
 `async function getGasEstimation(network: any) {
   const item = (global as any).commonFunctions.getNetworkByChainId(network.chainId).multiswapNetworkFIBERInformation;

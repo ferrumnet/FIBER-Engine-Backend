@@ -135,10 +135,6 @@ Each function handles specific parts of token management, including validation o
 
 ### Code snippet:
 
-typescript
-
-Copy code
-
 `async awsSecretsManagerInit() {
   return new Promise(async (resolve, reject) => {
     var client = new AWS.SecretsManager({
@@ -322,10 +318,6 @@ These functions collectively support the backend operations of the FIBER Engine,
 #### Function: getSourceAmountOut
 
 Signature:
-
-typescript
-
-Copy code
 
 `getSourceAmountOut(destinationAmount: string, actualAmount: any): any`
 
