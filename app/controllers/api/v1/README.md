@@ -64,3 +64,97 @@
   - Responds with the retrieved gas fees.
 
 # multiswap.ts
+
+#### 1\. Get Quote and Token Information
+
+**Endpoint**: `/token/categorized/quote/info`
+
+**Method**: GET
+
+**Description**: This route fetches the quote and token type information based on the request parameters. It validates the request and converts wallet addresses to lowercase.
+
+**Middleware**: `asyncMiddleware`
+
+**Validation**: `quotAndTokenValidation(req)`
+
+**Handler Function**:
+`asyncMiddleware(async (req: any, res: any) => {
+  quotAndTokenValidation(req);
+  if (req.query.destinationWalletAddress) {
+    req.query.destinationWalletAddress = req.query.destinationWalletAddress.toLowerCase();
+  } else {
+    req.query.destinationWalletAddress = req.query.sourceWalletAddress.toLowerCase();
+  }
+  return res.http200({
+    data: await getQuoteAndTokenTypeInformation(req),
+  });
+})`
+
+#### 2\. Perform Signed Swap
+
+**Endpoint**: `/swap/signed`
+
+**Method**: POST
+
+**Description**: This route handles signed swaps. It validates the request, checks if the swap is between the same networks, adjusts gas prices accordingly, and processes fee distribution.
+
+**Middleware**: `asyncMiddleware`
+
+**Validation**: `swapSignedValidation(req)`
+
+**Handler Function**:
+`asyncMiddleware(async (req: any, res: any) => {
+swapSignedValidation(req);
+const isSameNetworkSwap = isSameNetworksSwap(
+req.query.sourceNetworkChainId,
+req.query.destinationNetworkChainId
+);
+if (isSameNetworkSwap) {
+req.query.gasPrice = "";
+} else {
+req.body.feeDistribution = convertIntoFeeDistributionObject(
+req.body.feeDistribution,
+req.query.sourceAmountIn,
+req.query.sourceAmountOut,
+req.query.destinationAmountIn,
+req.query.destinationAmountOut
+);
+}
+req.query.sourceWalletAddress = req.query.sourceWalletAddress.toLowerCase();
+
+if (req.query.destinationWalletAddress) {
+req.query.destinationWalletAddress = req.query.destinationWalletAddress.toLowerCase();
+} else {
+req.query.destinationWalletAddress = req.query.sourceWalletAddress;
+}
+return res.http200({
+data: await getSwapSigned(req),
+});
+})`
+
+#### 3\. Handle Signed Withdraw
+
+**Endpoint**: `/withdraw/signed/:txHash`
+
+**Method**: POST
+
+**Description**: This route processes signed withdrawal transactions. It validates the request, merges query and body parameters, and retrieves the signed withdrawal data.
+
+**Middleware**: `asyncMiddleware`
+
+**Validation**: `withdrawSignedValidation(req)`
+
+**Handler Function**:
+`asyncMiddleware(async (req: any, res: any) => {
+  withdrawSignedValidation(req);
+  req.query = { ...req.query, ...req.body };
+  req.query.swapTransactionHash = req.params.txHash;
+  console.log("body", req.query);
+  if (req.query.destinationWalletAddress) {
+    req.query.destinationWalletAddress = req.query.destinationWalletAddress.toLowerCase();
+  } else {
+    req.query.destinationWalletAddress = req.query.sourceWalletAddress;
+  }
+  let data = await getWithdrawSigned(req);
+  return res.http200(data);
+})`
