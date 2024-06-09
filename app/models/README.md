@@ -159,11 +159,6 @@ module.exports = gasFeesModel;`
 - Method: Uses Node.js's `fs` (file system) module to read all files in the directory of the script.
 
 - Code Breakdown:
-
-  typescript
-
-  Copy code
-
   `var fs = require('fs');
 fs.readdirSync(__dirname).forEach(function (file: any) {
   if (file !== 'plugins' && file !== 'index.js') {

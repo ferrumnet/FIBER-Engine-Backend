@@ -157,12 +157,7 @@ This setup ensures that specific entries are automatically cleaned up from the d
 # owlracleGasJob.ts
 
 1.  **Module Exports**
-
-        typescript
-
-        Copy code
-
-        `module.exports = function () {
+    `module.exports = function () {
 
     if ((global as any).starterEnvironment.isCronEnvironmentSupportedForGetGasEstimation === "yes") {
     start();
@@ -172,11 +167,6 @@ This setup ensures that specific entries are automatically cleaned up from the d
         - This module exports a function that checks if the cron environment is supported for gas estimation. If supported, it initiates the `start` function.
 
 2.  **start()**
-
-    typescript
-
-    Copy code
-
     `async function start() {
     try {
     let task = cron.schedule("50 \* \* \* \* \*", async () => {
@@ -197,12 +187,7 @@ This setup ensures that specific entries are automatically cleaned up from the d
     - Calls `triggerJobs` to initiate the gas estimation process.
 
 3.  **triggerJobs()**
-
-        typescript
-
-        Copy code
-
-        `async function triggerJobs() {
+    `async function triggerJobs() {
 
     let networks = await getGasNetworks(OWLRACLE_PROVIDER_TAG);
     if (networks && networks.length > 0) {
@@ -217,12 +202,7 @@ This setup ensures that specific entries are automatically cleaned up from the d
         - Iterates over the networks and calls `getGasEstimation` for each network.
 
 4.  **getGasEstimation(network)**
-
-        typescript
-
-        Copy code
-
-        `async function getGasEstimation(network: any) {
+    `async function getGasEstimation(network: any) {
 
     let apiKey = getApiKey(network.chainId);
     let data: any = await getOwlracleGas(network?.shortName?.toLowerCase(), apiKey);
@@ -241,12 +221,7 @@ This setup ensures that specific entries are automatically cleaned up from the d
         - Updates gas price estimations in the system with the retrieved data.
 
 5.  **getSpeed(gasEstimation)**
-
-        typescript
-
-        Copy code
-
-        `function getSpeed(gasEstimation: any) {
+    `function getSpeed(gasEstimation: any) {
 
     if (gasEstimation && gasEstimation.speeds && gasEstimation.speeds.length > 0) {
     let speed = getHighAcceptanceValue(gasEstimation.speeds);
@@ -258,12 +233,7 @@ This setup ensures that specific entries are automatically cleaned up from the d
         - Extracts the most relevant speed data from the gas estimation response.
 
 6.  **getHighAcceptanceValue(speeds)**
-
-        typescript
-
-        Copy code
-
-        `function getHighAcceptanceValue(speeds: any) {
+    `function getHighAcceptanceValue(speeds: any) {
 
     let value = null;
     const max = Math.max(...speeds.map((item: any) => item.acceptance), 0);
@@ -279,12 +249,7 @@ This setup ensures that specific entries are automatically cleaned up from the d
         - Identifies and returns the speed with the highest acceptance value.
 
 7.  **getApiKey(chainId)**
-
-        typescript
-
-        Copy code
-
-        `function getApiKey(chainId: String) {
+    `function getApiKey(chainId: String) {
 
     let apiKey = null;
     if (chainId) {
