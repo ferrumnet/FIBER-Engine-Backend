@@ -1,60 +1,158 @@
 # configurations.ts
 
-1.  Module Dependencies and Initial Setup:
-
-    - `mongoose`: Required to interface with MongoDB for schema definitions and data modeling.
-    - `collectionName`: A variable set to "configurations" which specifies the name of the MongoDB collection this schema will be associated with.
-
-2.  Schema Definition:
-
-    - `slippage`: A numerical field initialized to `0`. This likely represents the default slippage tolerance in some transaction context.
-    - `nativeTokens`: An array to hold token configurations for various chains. Each token configuration object includes:
-      - `chainId`: A string to identify the blockchain network.
-      - `symbol`: The symbol of the token.
-      - `address`: The primary address of the token on the blockchain.
-      - `wrappedAddress`: An address for a wrapped version of the token.
-      - `oneInchAddress`: Likely an address related to the 1inch liquidity protocol for this token.
-    - `isActive`: A Boolean field initialized to `true`, indicating whether the configuration is currently active.
-    - `createdAt`: A date field to record when the configuration was created, defaults to the current date and time.
-    - `updatedAt`: A date field to record when the configuration was last updated, also defaults to the current date and time.
-
-3.  Model Compilation:
-
-    - The schema is compiled into a model named `gasFeesModel` using Mongoose's `model()` method. This model is associated with the `configurations` collection in MongoDB.
-
-4.  Exports:
-
-    - The `gasFeesModel` is exported for use elsewhere in the application, allowing other parts of the application to interact with the `configurations` collection through the defined schema.
-
-This structure provides a robust way to manage configuration settings related to transaction parameters and token information within the application.
+1.  **slippage**: A number indicating the slippage value, defaulting to 0.
+2.  **cctpBalanceThreshold**: A number indicating the CCTP balance threshold, defaulting to 0.
+3.  **cctpAttestationApiThreshold**: A number indicating the CCTP attestation API threshold, defaulting to 0.
+4.  **providerApiThreshold**: A number indicating the provider API threshold, defaulting to 0.
+5.  **platformFee**: A number indicating the platform fee, defaulting to 0.
+6.  **nativeTokens**: An array of objects, each containing:
+    - `chainId`: A string representing the chain ID, defaulting to an empty string.
+    - `symbol`: A string representing the symbol, defaulting to an empty string.
+    - `address`: A string representing the address, defaulting to an empty string.
+    - `wrappedAddress`: A string representing the wrapped address, defaulting to an empty string.
+    - `nativeAddress`: A string representing the native address, defaulting to an empty string.
+7.  **oneInchSelector**: An array of objects, each containing:
+    - `type`: A string representing the type, defaulting to "0".
+    - `hash`: A string representing the hash, defaulting to an empty string.
+8.  **gasNetworks**: An array of objects, each containing:
+    - `name`: A string representing the network name, defaulting to an empty string.
+    - `chainId`: A string representing the chain ID, defaulting to an empty string.
+    - `shortName`: A string representing the short name, defaulting to an empty string.
+    - `provider`: A string representing the provider, defaulting to "owlracle".
+9.  **allowedNetworksForCCTP**: An array of objects, each containing:
+    - `name`: A string representing the network name, defaulting to an empty string.
+    - `chainId`: A string representing the chain ID, defaulting to an empty string.
+10. **allowedNetworksForKyberSwap**: An array of objects, each containing:
+    - `name`: A string representing the network name, defaulting to an empty string.
+    - `chainId`: A string representing the chain ID, defaulting to an empty string.
+11. **oneInchExcludedProtocols**: An empty array for excluded protocols.
+12. **isActive**: A boolean indicating if the configuration is active, defaulting to `true`.
+13. **createdAt**: A date indicating when the configuration was created, defaulting to the current date.
+14. **updatedAt**: A date indicating when the configuration was last updated, defaulting to the current date.
 
 # gasFees.ts
 
-### File: `gasFees.ts`
+1.  **maxFeePerGas**
 
-This TypeScript file defines a Mongoose model for handling gas fee configurations in a MongoDB collection named `"gasFees"`. The model structure (`schema`) includes various fields related to gas fees for Ethereum transactions, allowing for both static and dynamic configuration.
+    - **Type**: String
+    - **Default**: ""
+    - **Description**: The maximum fee per gas unit allowed for transactions.
 
-#### Model Schema:
+2.  **maxPriorityFeePerGas**
 
-- maxFeePerGas (`String`): The maximum fee per gas that can be used for transactions. Defaults to an empty string if not specified.
-- maxPriorityFeePerGas (`String`): The priority fee per gas to incentivize miners to include the transaction in a block. Defaults to an empty string if not specified.
-- gasLimit (`String`): The limit on the maximum amount of gas that can be used for the transaction. Defaults to an empty string if not specified.
-- bufferForGasEstimation (`Number`): A numerical buffer to adjust the gas estimation for transactions. Defaults to `0`.
-- bufferForWithdrawal (`Number`): A numerical buffer to adjust the gas requirement for withdrawals. Defaults to `0`.
-- isAllowedDynamicGasLimit (`Boolean`): A flag indicating whether dynamic gas limits can be used. Defaults to `false`.
-- chainId (`String`): The identifier for the blockchain network (e.g., Ethereum mainnet, testnets). Defaults to an empty string.
-- dynamicValues:
-  - maxFeePerGas (`String`): Dynamic setting for maximum fee per gas, allowing real-time adjustment based on network conditions. Defaults to an empty string.
-  - maxPriorityFeePerGas (`String`): Dynamic setting for priority fee per gas. Defaults to an empty string.
-- isActive (`Boolean`): A flag to enable or disable the use of this gas fee configuration. Defaults to `true`.
-- createdAt (`Date`): The timestamp when the record was created. Defaults to the current date and time.
-- updatedAt (`Date`): The timestamp when the record was last updated. Defaults to the current date and time.
+    - **Type**: String
+    - **Default**: ""
+    - **Description**: The maximum priority fee per gas unit, used to expedite transactions.
 
-#### Model Declaration:
+3.  **gasLimit**
 
-The schema is registered with Mongoose under the collection name `"gasFees"`, and it exports the model as `gasFeesModel`.
+    - **Type**: String
+    - **Default**: ""
+    - **Description**: The maximum amount of gas that can be used for a transaction.
 
-This file uses strict mode for JavaScript and requires the `mongoose` library to define and interact with schemas in MongoDB.
+4.  **gasPrice**
+
+    - **Type**: String
+    - **Default**: ""
+    - **Description**: The price of gas per unit.
+
+5.  **bufferForGasEstimation**
+
+    - **Type**: Number
+    - **Default**: 0
+    - **Description**: A buffer value to be used during gas estimation to prevent underestimation.
+
+6.  **bufferForWithdrawal**
+
+    - **Type**: Number
+    - **Default**: 0
+    - **Description**: A buffer value to be used for withdrawal transactions.
+
+7.  **aggressivePriceBuffer**
+
+    - **Type**: Number
+    - **Default**: 0
+    - **Description**: An additional buffer for aggressive gas pricing strategies.
+
+8.  **gasPriceForCCTP**
+
+    - **Type**: Number
+    - **Default**: 0
+    - **Description**: Specific gas price configuration for Cross-Chain Transfer Protocol (CCTP) operations.
+
+9.  **isAllowedDynamicGasLimit**
+
+    - **Type**: Boolean
+    - **Default**: false
+    - **Description**: Flag to allow or disallow dynamic gas limit settings.
+
+10. **isAllowedSourceAggressivePriceForDynamicGas**
+
+    - **Type**: Boolean
+    - **Default**: false
+    - **Description**: Flag to allow or disallow aggressive pricing for dynamic gas on the source side of transactions.
+
+11. **isAllowedDestinationAggressivePriceForDynamicGas**
+
+    - **Type**: Boolean
+    - **Default**: false
+    - **Description**: Flag to allow or disallow aggressive pricing for dynamic gas on the destination side of transactions.
+
+12. **chainId**
+
+    - **Type**: String
+    - **Default**: ""
+    - **Description**: Identifier for the blockchain network this configuration applies to.
+
+13. **dynamicValues**
+
+    - **Type**: Object
+    - **Description**: Contains dynamic values for gas fee settings.
+      - **maxFeePerGas**
+        - **Type**: String
+        - **Default**: ""
+      - **maxPriorityFeePerGas**
+        - **Type**: String
+        - **Default**: ""
+      - **gasPrice**
+        - **Type**: String
+        - **Default**: ""
+
+14. **isActive**
+
+    - **Type**: Boolean
+    - **Default**: true
+    - **Description**: Flag to mark the configuration as active or inactive.
+
+15. **createdAt**
+
+    - **Type**: Date
+    - **Default**: new Date()
+    - **Description**: Timestamp of when the configuration was created.
+
+16. **updatedAt**
+
+    - **Type**: Date
+    - **Default**: new Date()
+    - **Description**: Timestamp of when the configuration was last updated.
+
+### Schema Options
+
+- **collection**: The name of the MongoDB collection where this schema will be stored is `gasFees`.
+
+## Model Definition
+
+The schema is then used to create a Mongoose model:
+
+javascript
+
+Copy code
+
+`var gasFeesModel = mongoose.model(collectionName, schema);
+module.exports = gasFeesModel;`
+
+- **Model Name**: `gasFees`
+- **Module Export**: The model is exported for use in other parts of the application.
 
 # index.ts
 
