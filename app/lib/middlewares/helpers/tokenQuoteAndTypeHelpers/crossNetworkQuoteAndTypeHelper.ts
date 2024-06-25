@@ -82,7 +82,8 @@ export const getQouteAndTypeForCrossNetworks = async (
     destinationSlippage,
     targetNetwork,
     sResponse.sourceAmountInNumber,
-    sResponse.sourceSlippageInNumber
+    sResponse.sourceSlippageInNumber,
+    sourceWalletAddress
   );
   targetAssetType = dResponse?.targetAssetType;
   destinationCallData = dResponse?.destinationCallData;
@@ -203,6 +204,7 @@ const handleSource = async (
   } else {
     response.sourceAssetType = utils.assetType.ONE_INCH;
     let responseProvider: any = await chooseProviderAndGetData(
+      sourceWalletAddress,
       sourceChainId,
       await common.getWrappedNativeTokenAddress(
         sourceTokenAddress,
@@ -264,7 +266,8 @@ const handleDestination = async (
   destinationSlippage: string,
   targetNetwork: any,
   sourceAmountInNumber: any,
-  sourceSlippageInNumber: any
+  sourceSlippageInNumber: any,
+  sourceWalletAddress: any
 ) => {
   const common = (global as any).commonFunctions;
   const utils = (global as any).utils;
@@ -351,6 +354,7 @@ const handleDestination = async (
       throw swapIsNotAvailable;
     }
     let providerResponse: any = await chooseProviderAndGetData(
+      sourceWalletAddress,
       targetChainId,
       targetNetwork?.foundryTokenAddress,
       await common.getNativeTokenAddress(targetTokenAddress),
