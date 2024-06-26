@@ -19,10 +19,9 @@ export const createSignedPayment = (
   amountIn: string,
   amountOut: string,
   targetFoundaryToken: string,
-  routerCalldata: string,
+  oneInchData: string,
   expiry: number,
-  web3: Web3,
-  aggregateRouterContractAddress: string
+  web3: Web3
 ) => {
   let hash;
   const FOUNDARY = (global as any).utils.assetType.FOUNDARY;
@@ -49,10 +48,9 @@ export const createSignedPayment = (
       amountOut,
       targetFoundaryToken,
       targetToken,
-      routerCalldata,
+      oneInchData,
       salt,
-      expiry,
-      aggregateRouterContractAddress
+      expiry
     );
   }
   const privateKey = getPrivateKey();
@@ -111,15 +109,14 @@ export const produceOneInchHash = (
   amountOut: string,
   foundryToken: string,
   targetToken: string,
-  routerCalldata: string,
+  oneInchData: string,
   salt: string,
-  expiry: number,
-  aggregateRouterContractAddress: string
+  expiry: number
 ): any => {
   console.log("i am 1Inch");
   const methodHash = Web3.utils.keccak256(
     Web3.utils.utf8ToHex(
-      "withdrawSignedAndSwapRouter(address to,uint256 amountIn,uint256 minAmountOut,address foundryToken,address targetToken,address router,bytes32 salt,uint256 expiry)"
+      "WithdrawSignedOneInch(address to,uint256 amountIn,uint256 amountOut,address foundryToken,address targetToken,bytes oneInchData,bytes32 salt,uint256 expiry)"
     )
   );
   const params = [
@@ -129,7 +126,7 @@ export const produceOneInchHash = (
     "uint256",
     "address",
     "address",
-    "address",
+    "bytes",
     "bytes32",
     "uint256",
   ];
@@ -140,7 +137,7 @@ export const produceOneInchHash = (
     amountOut,
     foundryToken,
     targetToken,
-    aggregateRouterContractAddress,
+    oneInchData,
     salt,
     expiry,
   ]);

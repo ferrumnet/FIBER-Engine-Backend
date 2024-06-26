@@ -1,5 +1,4 @@
 import Web3 from "web3";
-import { removeSelector } from "../helpers/oneInchDecoderHelper";
 
 export interface SignatureResponse {
   hash: String;
