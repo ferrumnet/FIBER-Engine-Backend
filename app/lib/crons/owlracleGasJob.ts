@@ -1,6 +1,12 @@
 export {};
 var cron = require("node-cron");
 import moment from "moment";
+import { getOwlracleGas } from "../httpCalls/gasEstimationAxiosHelper";
+import { updateGasPriceEstimations } from "../middlewares/helpers/gasFeeHelpers/gasEstimationHelper";
+import {
+  getGasNetworks,
+  OWLRACLE_PROVIDER_TAG,
+} from "../middlewares/helpers/configurationHelper";
 
 module.exports = function () {
   if (
@@ -15,7 +21,7 @@ async function start() {
   try {
     let task = cron.schedule("50 * * * * *", async () => {
       console.log(moment().utc(), ":::");
-      console.log("getGastEstimation cron triggered:::");
+      console.log("owlracleGasJob cron triggered:::");
       triggerJobs();
     });
 
@@ -26,61 +32,32 @@ async function start() {
 }
 
 async function triggerJobs() {
-  let networks = (global as any).networks;
+  let networks = await getGasNetworks(OWLRACLE_PROVIDER_TAG);
   if (networks && networks.length > 0) {
     for (let i = 0; i < networks.length; i++) {
       let network = networks[i];
-      if (
-        network &&
-        network.isAllowedDynamicGasValues == true &&
-        network.isNonEVM == false
-      ) {
-        getGasEstimation(network);
-      }
+      getGasEstimation(network);
     }
   }
 }
 
 async function getGasEstimation(network: any) {
   let apiKey = getApiKey(network.chainId);
-  let gasEstimation = await (
-    global as any
-  ).gasEstimationAxiosHelper.getGasEstimationByNetworkName(
-    network?.networkShortName?.toLowerCase(),
+  let data: any = await getOwlracleGas(
+    network?.shortName?.toLowerCase(),
     apiKey
   );
-  await updateGas(network, gasEstimation);
-}
-
-async function updateGas(network: any, gasEstimation: any) {
-  let speed: any = getSpeed(gasEstimation);
-  let body: any = {};
-  if (network && speed) {
-    if (network.chainId == 56) {
-      body = {
-        dynamicValues: {
-          maxFeePerGas: speed?.gasPrice ? valueFixed(speed?.gasPrice, 2) : 0,
-          maxPriorityFeePerGas: speed?.gasPrice
-            ? valueFixed(speed?.gasPrice, 2)
-            : 0,
-        },
-      };
-    } else {
-      body = {
-        dynamicValues: {
-          maxFeePerGas: speed?.maxFeePerGas
-            ? valueFixed(speed?.maxFeePerGas, 2)
-            : 0,
-          maxPriorityFeePerGas: speed?.maxPriorityFeePerGas
-            ? valueFixed(speed?.maxPriorityFeePerGas, 2)
-            : 0,
-        },
-      };
-    }
-
-    await db.GasFees.findOneAndUpdate({ chainId: network.chainId }, body, {
-      new: true,
-    });
+  data = getSpeed(data);
+  if (data) {
+    let maxFeePerGas = data?.maxFeePerGas;
+    let maxPriorityFeePerGas = data?.maxPriorityFeePerGas;
+    let gasPriceForBsc = data?.gasPrice;
+    await updateGasPriceEstimations(
+      network,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      gasPriceForBsc
+    );
   }
 }
 
@@ -125,9 +102,4 @@ function getApiKey(chainId: String) {
     }
   }
   return apiKey;
-}
-
-function valueFixed(x: any, d: any) {
-  if (!d) return x.toFixed(d); // don't go wrong if no decimal
-  return x.toFixed(d).replace(/\.?0+$/, "");
 }
