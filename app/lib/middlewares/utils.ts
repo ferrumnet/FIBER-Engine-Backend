@@ -7,11 +7,14 @@ declare const db: any,
   multiSwapHelper: any,
   fiberNode: any,
   fiberEngine: any,
+  networksAxiosHelper: any,
   removeRandomKeyJob: any,
   getAllNetworkJob: any,
   web3ConfigurationHelper: any,
   web3Helper: any,
-  cudosPriceAxiosHelper: any;
+  cudosPriceAxiosHelper: any,
+  gasEstimationAxiosHelper: any,
+  transactionUpdateAxiosHelper: any;
 
 module.exports = function () {
   const utils: any = {};

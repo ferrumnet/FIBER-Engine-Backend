@@ -1,12 +1,6 @@
 var axios = require("axios").default;
-import {
-  getSlippage,
-  getOneInchExcludedProtocols,
-} from "../../lib/middlewares/helpers/configurationHelper";
-import {
-  insufficientLiquidityError,
-  genericProviderError,
-} from "../../lib/middlewares/helpers/stringHelper";
+import { getSlippage } from "../../lib/middlewares/helpers/configurationHelper";
+import { genericOneInchError } from "../../lib/middlewares/helpers/stringHelper";
 
 interface Response {
   responseMessage: string;
@@ -26,7 +20,6 @@ export const OneInchSwap = async (
   let amounts = null;
   let data = null;
   let responseMessage = "";
-  let excludedProtocols = await getOneInchExcludedProtocols();
 
   try {
     let config = {
@@ -36,29 +29,19 @@ export const OneInchSwap = async (
         }`,
       },
     };
-    let url = `https://api.1inch.dev/swap/v6.0/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${await getSlippage(
+    let url = `https://api.1inch.dev/swap/v5.2/${chainId}/swap?src=${src}&dst=${dst}&amount=${amount}&from=${from}&slippage=${await getSlippage(
       slippage
-    )}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}&compatibility=true&excludedProtocols=${excludedProtocols}`;
-    console.log("url", url);
+    )}&disableEstimate=true&includeProtocols=true&allowPartialFill=true&receiver=${receiver}&compatibility=true`;
     let res = await axios.get(url, config);
-    if (res?.data?.dstAmount) {
-      amounts = res?.data?.dstAmount;
+    if (res?.data?.toAmount) {
+      amounts = res?.data?.toAmount;
     }
     if (res?.data?.tx?.data) {
       data = res?.data?.tx?.data;
     }
   } catch (error: any) {
-    console.log("1Inch error status", error?.response?.status);
-    console.log("1Inch error statusText", error?.response?.statusText);
-    if (
-      error?.response?.status &&
-      error?.response?.statusText.toLowerCase() ==
-        insufficientLiquidityError.toLowerCase()
-    ) {
-      responseMessage = insufficientLiquidityError;
-    } else {
-      responseMessage = genericProviderError;
-    }
+    console.log("1Inch error", error);
+    responseMessage = genericOneInchError;
   }
 
   let response: Response = {
