@@ -135,10 +135,6 @@ Each function handles specific parts of token management, including validation o
 
 ### Code snippet:
 
-typescript
-
-Copy code
-
 `async awsSecretsManagerInit() {
   return new Promise(async (resolve, reject) => {
     var client = new AWS.SecretsManager({
@@ -225,107 +221,222 @@ This documentation summarizes the contents and functionality provided by the fil
 
 # fiberEngineHelper.ts
 
-### `getWithdrawSignedObject`
+#### 1\. `getWithdrawSignedObject`
 
-Creates and returns an object conforming to the `WithdrawSigned` interface. This object is designed for generating a transaction to withdraw cryptocurrency from a smart contract with a signature that proves the transaction's legitimacy.
+Creates an object of type `WithdrawSigned`.
 
-- Parameters:
-  - `targetTokenAddress`: Address of the token to be withdrawn.
-  - `destinationWalletAddress`: Address of the wallet where tokens will be deposited.
-  - `destinationAmountIn`: Amount of tokens to withdraw.
-  - `salt`: A nonce to ensure the signature's uniqueness.
-  - `signatureExpiry`: Timestamp until which the signature remains valid.
-  - `signature`: The actual cryptographic signature.
-- Returns: An object of type `WithdrawSigned`.
+**Parameters:**
 
-### `getWithdrawSignedAndSwapOneInchObject`
+- `targetTokenAddress` (string): Address of the target token.
+- `destinationWalletAddress` (string): Address of the destination wallet.
+- `destinationAmountIn` (string): Amount to be transferred.
+- `salt` (string): Salt for the signature.
+- `signatureExpiry` (number): Expiry time of the signature.
+- `signature` (string): The signature itself.
+- `targetNetwork` (any): Target network information.
+- `targetSigner` (any): Target signer information.
+- `targetChainId` (string): ID of the target chain.
+- `swapTransactionHash` (string): Transaction hash of the swap.
+- `gasLimit` (string): Gas limit for the transaction.
+- `isCCTP` (boolean): Flag indicating if the operation is CCTP.
 
-Constructs and returns an object conforming to the `WithdrawSignedAndSwapOneInch` interface, facilitating a withdrawal transaction that includes a token swap via the 1inch exchange API.
+**Returns:** `WithdrawSigned` object.
 
-- Parameters:
-  - `destinationWalletAddress`: Destination wallet address for the tokens.
-  - `destinationAmountIn`: Amount of tokens to withdraw.
-  - `destinationAmountOut`: Expected amount of tokens after swap.
-  - `targetFoundryTokenAddress`: Token address involved in the swap.
-  - `targetTokenAddress`: Target token for withdrawal.
-  - `destinationOneInchData`: Encoded data required for the swap.
-  - `salt`: Nonce for the transaction.
-  - `signatureExpiry`: Validity period of the signature.
-  - `signature`: Digital signature for authentication.
-- Returns: An object of type `WithdrawSignedAndSwapOneInch`.
+#### 2\. `getWithdrawSignedAndSwapOneInchObject`
 
-### `doFoundaryWithdraw`
+Creates an object of type `WithdrawSignedAndSwapOneInch`.
 
-Executes a withdrawal transaction with dynamic gas estimation. It tries multiple times if necessary, utilizing dynamically adjusted gas prices for optimal execution cost.
+**Parameters:**
 
-- Parameters:
-  - `obj`: Object of type `WithdrawSigned`.
-  - `targetNetwork`: Blockchain network where the transaction will be processed.
-  - `targetSigner`: Signer object representing the transaction's initiator.
-  - `targetChainId`: Identifier for the blockchain network.
-  - `swapTransactionHash`: Hash of the swap transaction associated with this withdrawal.
-  - `gasLimit`: Maximum gas for the transaction.
-  - `count`: Current attempt number (defaults to 0).
-- Returns: A promise that resolves to the transaction result.
+- `destinationWalletAddress` (string): Address of the destination wallet.
+- `destinationAmountIn` (string): Input amount for the destination.
+- `destinationAmountOut` (string): Output amount for the destination.
+- `targetFoundryTokenAddress` (string): Address of the foundry token.
+- `targetTokenAddress` (string): Address of the target token.
+- `destinationOneInchData` (string): Data for 1inch swap.
+- `salt` (string): Salt for the signature.
+- `signatureExpiry` (number): Expiry time of the signature.
+- `signature` (string): The signature itself.
+- `destinationOneInchSelector` (string): Selector for 1inch.
+- `targetNetwork` (any): Target network information.
+- `targetSigner` (any): Target signer information.
+- `targetChainId` (string): ID of the target chain.
+- `swapTransactionHash` (string): Transaction hash of the swap.
+- `gasLimit` (string): Gas limit for the transaction.
+- `isCCTP` (boolean): Flag indicating if the operation is CCTP.
 
-### `doOneInchWithdraw`
+**Returns:** `WithdrawSignedAndSwapOneInch` object.
 
-Similar to `doFoundaryWithdraw`, but specifically for transactions that include a token swap via the 1inch API. Handles dynamic gas adjustments and retries in case of errors.
+#### 3\. `doFoundaryWithdraw`
 
-- Parameters: Same as `doFoundaryWithdraw`.
-- Returns: A promise that resolves to the transaction result involving a swap.
+Executes a foundry withdrawal.
 
-### `doOneInchSwap`
+**Parameters:**
 
-Performs a token swap transaction via the 1inch API, with additional handling for cross-chain transactions.
+- `obj` (WithdrawSigned): Object containing withdrawal details.
+- `extraBuffer` (number): Extra buffer for gas estimation.
+- `count` (number, default=0): Retry count.
 
-- Parameters:
-  - `obj`: Object of type `SwapOneInch`.
-  - `fiberRouter`: Router contract object for interfacing with the blockchain.
-- Returns: A promise that resolves to the transaction result.
+**Returns:** Promise resolving to the result of the withdrawal.
 
-### `getDestinationAmountFromLogs`
+#### 4\. `doOneInchWithdraw`
 
-Extracts the destination amount from transaction logs, specifically useful in decoding logs for transactions involving the 1inch exchange.
+Executes a 1inch withdrawal.
 
-- Parameters:
-  - `recipet`: Transaction receipt object.
-  - `rpcUrl`: URL of the RPC server for fetching transaction details.
-  - `destinationAmount`: The amount originally specified for the transaction.
-  - `isOneInch`: Flag indicating if the transaction involves the 1inch API.
-- Returns: The amount from the logs or the original destination amount if logs are not decodable.
+**Parameters:**
 
-### `sendSlackNotification`
+- `obj` (WithdrawSignedAndSwapOneInch): Object containing withdrawal details.
+- `extraBuffer` (number): Extra buffer for gas estimation.
+- `count` (number, default=0): Retry count.
 
-Sends a notification to a configured Slack channel regarding the status of a transaction.
+**Returns:** Promise resolving to the result of the withdrawal.
 
-- Parameters:
-  - `swapHash`: Transaction hash.
-  - `mesg`: Message or error object to be sent.
-  - `gasLimitTag`: Tag describing the gas limit used in the notification.
-- Usage: For monitoring and alerting purposes during transaction processing.
+#### 5\. `doSwap`
 
-### `getValueForSwap`
+Executes a swap.
 
-Calculates the value for a swap transaction, considering the gas price and whether the transaction involves native blockchain currency.
+**Parameters:**
 
-- Parameters:
-  - `amount`: Amount involved in the transaction.
-  - `gasPrice`: Gas price for the transaction.
-  - `isNative`: Boolean indicating if the native currency is involved.
-- Returns: The calculated value to be used in the transaction.
+- `obj` (Swap): Object containing swap details.
+- `fiberRouter` (any): Fiber router instance.
 
-These functions collectively support the backend operations of the FIBER Engine, particularly focusing on withdrawals, swaps, and cross-chain transactions in a blockchain environment.
+**Returns:** Promise resolving to the result of the swap.
+
+#### 6\. `doOneInchSwap`
+
+Executes a 1inch swap.
+
+**Parameters:**
+
+- `obj` (SwapOneInch): Object containing swap details.
+- `fiberRouter` (any): Fiber router instance.
+
+**Returns:** Promise resolving to the result of the swap.
+
+#### 7\. `doSameNetworkSwap`
+
+Executes a swap on the same network.
+
+**Parameters:**
+
+- `obj` (SwapSameNetwork): Object containing swap details.
+- `fiberRouter` (any): Fiber router instance.
+
+**Returns:** Promise resolving to the result of the swap.
+
+#### 8\. `getDestinationAmountFromLogs`
+
+Extracts the destination amount from logs.
+
+**Parameters:**
+
+- `recipet` (any): Transaction receipt.
+- `rpcUrl` (string): RPC URL.
+- `destinationAmount` (string): Initial destination amount.
+- `isOneInch` (boolean): Flag indicating if it's a 1inch swap.
+
+**Returns:** Decoded log or the initial destination amount.
+
+#### 9\. `sendSlackNotification`
+
+Sends a notification to Slack.
+
+**Parameters:**
+
+- `swapHash` (string): Swap transaction hash.
+- `mesg` (any): Message content.
+- `gasLimitTag` (any): Gas limit tag.
+
+**Returns:** Promise resolving when the notification is sent.
+
+#### 10\. `getValueForSwap`
+
+Calculates the value for a swap.
+
+**Parameters:**
+
+- `amount` (any): Swap amount.
+- `gasPrice` (any): Gas price.
+- `isNative` (boolean): Flag indicating if the token is native.
+- `isSameNetwork` (boolean, default=false): Flag indicating if it's the same network.
+
+**Returns:** Calculated value for the swap.
+
+#### 11\. `isOutOfGasError`
+
+Checks if the error is an out-of-gas error.
+
+**Parameters:**
+
+- `error` (any): Error object.
+- `totalGas` (any): Total gas used.
+
+**Returns:** Boolean indicating if it's an out-of-gas error.
+
+#### 12\. `doCCTPFlow`
+
+Executes the CCTP flow.
+
+**Parameters:**
+
+- `network` (any): Network information.
+- `messageBytes` (string): Message bytes.
+- `messageHash` (string): Message hash.
+- `isCCTP` (boolean): Flag indicating if it's a CCTP flow.
+
+**Returns:** Promise resolving to the result of the CCTP flow.
+
+#### 13\. `getLatestCallData`
+
+Fetches the latest call data.
+
+**Parameters:**
+
+- `chainId` (string): Chain ID.
+- `src` (any): Source details.
+- `dst` (string): Destination details.
+- `amount` (string): Amount for the call.
+- `slippage` (string): Slippage for the call.
+- `from` (string): From address.
+- `to` (string): To address.
+- `recursionCount` (number, default=0): Recursion count.
+
+**Returns:** Latest call data or an empty string.
+
+#### 14\. `handleWithdrawalErrors`
+
+Handles errors during withdrawal.
+
+**Parameters:**
+
+- `swapTransactionHash` (string): Swap transaction hash.
+- `error` (string): Error message.
+- `code` (any): Error code.
+
+**Returns:** Object containing response code and message.
+
+#### 15\. `getGasLimitTagForSlackNotification`
+
+Generates a gas limit tag for Slack notifications.
+
+**Parameters:**
+
+- `dynamicGasPrice` (any): Dynamic gas price.
+- `gasLimit` (any): Gas limit.
+
+**Returns:** Generated gas limit tag.
+
+#### 16\. `delay`
+
+Creates a delay.
+
+**Returns:** Promise that resolves after a delay.
 
 # fiberNodeHelper.ts
 
 #### Function: getSourceAmountOut
 
 Signature:
-
-typescript
-
-Copy code
 
 `getSourceAmountOut(destinationAmount: string, actualAmount: any): any`
 
@@ -350,91 +461,88 @@ This summarizes the function available in the `fiberNodeHelper.ts` file, which s
 
 # liquidityHelper.ts
 
-#### 1\. `isLiquidityAvailableForEVM`
+1.  **isLiquidityAvailableForEVM**
 
-This function checks if sufficient liquidity is available for Ethereum Virtual Machine (EVM) compatible blockchains.
+    - **Description**: Checks if sufficient liquidity is available for an EVM-compatible token.
+    - **Parameters**:
+      - `foundryTokenAddress` (string): The address of the token contract.
+      - `fundManagerAddress` (string): The address of the fund manager.
+      - `provider` (any): The provider to interact with the Ethereum network.
+      - `amount` (number): The required amount of tokens.
+    - **Returns**: `Promise<boolean>` - `true` if sufficient liquidity is available, otherwise `false`.
 
-- Parameters:
-  - `foundryTokenAddress`: The address of the token contract.
-  - `fundManagerAddress`: The address of the fund manager.
-  - `provider`: The Ethereum provider instance to connect to the network.
-  - `amount`: The amount of liquidity needed.
-- Returns: A promise that resolves to a boolean, `true` if sufficient liquidity is available, otherwise `false`.
-- Logic:
-  - An Ethereum contract instance is created using the provided token address and ABI.
-  - It fetches the token balance of the fund manager.
-  - If the balance is equal to or greater than the required amount, it returns `true`.
+2.  **isLiquidityAvailableForCudos**
 
-#### 2\. `isLiquidityAvailableForCudos`
+    - **Description**: Checks if sufficient liquidity is available for a Cudos token.
+    - **Parameters**:
+      - `foundryTokenAddress` (string): The address of the token contract.
+      - `fundManagerAddress` (string): The address of the fund manager.
+      - `rpc` (any): RPC endpoint for the Cudos network.
+      - `privateKey` (string): Private key for authentication.
+      - `amount` (number): The required amount of tokens.
+    - **Returns**: `Promise<boolean>` - `true` if sufficient liquidity is available, otherwise `false`.
 
-This function checks if sufficient liquidity is available specifically for the Cudos blockchain environment.
+3.  **checkForCCTP**
 
-- Parameters:
-  - `foundryTokenAddress`: The address of the token contract.
-  - `fundManagerAddress`: The address of the fund manager.
-  - `rpc`: The RPC interface for the blockchain connection.
-  - `privateKey`: The private key for authentication in blockchain operations.
-  - `amount`: The amount of liquidity needed.
-- Returns: A promise that resolves to a boolean, `true` if sufficient liquidity is available, otherwise `false`.
-- Logic:
-  - It uses the `cudosBalance` script to get the balance of the fund manager.
-  - The balance amount is converted from exponential to decimal notation.
-  - It then checks if this balance meets or exceeds the required amount, returning `true` if so.
-
-The functions are asynchronous and utilize modern JavaScript ES6 features like `async/await` for handling asynchronous operations. The code is structured to ensure clarity and maintainability, employing external utilities for complex operations like balance fetching and conversions.
+    - **Description**: Validates conditions for Cross-Chain Token Protocol (CCTP).
+    - **Parameters**:
+      - `foundryTokenAddress` (string): The address of the token contract.
+      - `fundManagerAddress` (string): The address of the fund manager.
+      - `provider` (any): The provider to interact with the Ethereum network.
+      - `amount` (any): The required amount of tokens.
+      - `foundaryDecimals` (any): The decimal precision for the token.
+      - `srcChainId` (string): The source chain ID.
+      - `desChainId` (string): The destination chain ID.
+    - **Returns**: `Promise<boolean>` - `true` if CCTP conditions are met, otherwise `false`.
 
 # multiSwapHelper.ts
 
-1.  getTokenCategorizedInformation:
+1.  **getQuoteAndTokenTypeInformation**
 
-    - Purpose: This asynchronous function retrieves categorized information about tokens involved in a swap operation. It processes multiple parameters like source and destination network chain IDs, token contract addresses, amounts, and slippages.
-    - Parameters: Receives a `req` object containing the necessary query parameters for the operation.
-    - Returns: An object containing the categorized token information, source, and destination slippage values, along with other related data if the categorization is successful. Outputs this data to the console.
-    - Dependencies: Utilizes the `getSlippage` function from `configurationHelper` to process the slippage values.
+    - This function retrieves quote and token type information based on the request parameters.
+    - It differentiates between same network swaps and cross-network swaps.
+    - Depending on the network type, it calls either `getQouteAndTypeForSameNetworks` or `getQouteAndTypeForCrossNetworks`.
 
-2.  getSwapSigned:
+2.  **getSwapSigned**
 
-    - Purpose: Facilitates the creation of a swap transaction by calling the `swapForAbi` method from the `fiberEngine`.
-    - Parameters: Receives a `req` object containing parameters such as wallet addresses, token contract addresses, network chain IDs, and the amount.
-    - Returns: The response from the `swapForAbi` method which likely includes the swap transaction data.
+    - This function signs the swap transaction using the `fiberEngine.swapForAbi` method.
 
-3.  getWithdrawSigned:
+3.  **getWithdrawSigned**
 
-    - Purpose: Initiates a withdrawal transaction after checking if the transaction log already includes a similar transaction, to avoid duplication.
-    - Parameters: Receives a `req` object.
-    - Returns: Initiates withdrawal if the transaction is new; otherwise, it throws an error indicating the transaction is already being processed.
+    - This function handles the withdrawal process.
+    - It checks if the transaction is already in the log and if not, logs the transaction and processes the withdrawal.
 
-4.  validatonForSameSourceAndDestination:
+4.  **isSameNetworksSwap**
 
-    - Purpose: Validates that the source and destination token contract addresses and network chain IDs are not identical to prevent erroneous operations.
-    - Parameters: Receives a `req` object.
-    - Returns: Throws an error if validation fails.
+    - This helper function checks if the source and destination networks are the same.
 
-5.  saveTransactionLog:
+5.  **saveTransactionLog**
 
-    - Purpose: Asynchronously saves a transaction log to the database.
-    - Parameters: Receives a `req` object.
-    - Returns: The result of the database operation to create a transaction log entry.
+    - This function saves a transaction log to the database.
 
-6.  isAlreadyInTransactionLog:
+6.  **isAlreadyInTransactionLog**
 
-    - Purpose: Checks the transaction log to determine if a specific transaction already exists.
-    - Parameters: Receives a `req` object.
-    - Returns: A boolean indicating whether the transaction exists.
+    - This function checks if a transaction is already present in the transaction log.
 
-7.  updateTransactionLog:
+7.  **updateTransactionLog**
 
-    - Purpose: Updates an existing transaction log in the database.
-    - Parameters: Takes `data` containing transaction details and `swapTransactionHash`.
-    - Returns: The result of the database operation to update the transaction log.
+    - This function updates a transaction log with the provided data.
 
-8.  doWithdraw:
+8.  **doWithdraw**
 
-    - Purpose: Conducts the withdrawal process by interacting with the `fiberEngine` and updates the transaction log based on the withdrawal's outcome.
-    - Parameters: Receives a `req` object and a `query` object containing the necessary transaction details.
-    - Returns: The updated transaction data along with response codes and messages.
+    - This function handles the withdrawal process by calling the `fiberEngine.withdraw` method and updating the transaction log.
 
-These functions collectively facilitate the handling of asset swaps and transaction management within the FIBER Engine backend infrastructure.
+9.  **quotAndTokenValidation**
+
+    - This function validates the required fields for quoting and token information.
+
+10. **swapSignedValidation**
+
+    - This function validates the required fields for signing a swap.
+
+11. **withdrawSignedValidation**
+
+-   This function validates the required fields for signing a withdraw.
 
 # signatureHelper.ts
 
@@ -496,10 +604,6 @@ This function initializes the helper with default configuration values for vario
 
 #### Example of use:
 
-javascript
-
-Copy code
-
 `const process = {
   argv: ['node', 'script.js', 'prod', 'cron']
 };
@@ -511,70 +615,55 @@ This function primarily aids in configuring the environment based on command-lin
 
 # stringHelper.ts
 
-1.  `swapIsNotAvailable`
+1.  **`swapIsNotAvailable`**
 
-    - Type: Constant String
-    - Value: `"Swap is not available"`
-    - Description: This constant holds an error message indicating that the swap functionality is not available.
+    - **Description**: This constant holds the error message indicating that the swap functionality is not available.
+    - **Value**: `"Swap is not available"`
 
-2.  `genericOneInchError`
+2.  **`genericProviderError`**
 
-    - Type: Constant String
-    - Value: `"1Inch is not responding. please try again"`
-    - Description: Stores a generic error message that is used when the 1Inch service is not responding. It prompts the user to try the operation again.
+    - **Description**: This constant holds a generic error message used when a provider is not responding.
+    - **Value**: `"Provider is not responding. please try again"`
 
-3.  `sameNetworkSwapError`
+3.  **`insufficientLiquidityError`**
 
-    - Type: Constant String
-    - Value: `"Same network swaps are currently not available"`
-    - Description: Contains an error message used to inform the user that swaps on the same network are currently unavailable.
+    - **Description**: This constant is used when there is insufficient liquidity available for a transaction.
+    - **Value**: `"Insufficient Liquidity"`
 
-These constants appear to be part of an error handling or messaging system within the application, providing clear user-facing messages for specific scenarios related to swapping functionalities.
+4.  **`sameNetworkSwapError`**
+
+    - **Description**: This constant holds the error message for scenarios where swaps on the same network are not available.
+    - **Value**: `"Same network swaps are currently not available"`
+
+5.  **`invalidPlatformFee`**
+
+    - **Description**: This constant is used when an invalid platform fee is detected.
+    - **Value**: `"Invalid platform fee"`
+
+6.  **`attestationSignatureError`**
+
+    - **Description**: This constant holds the error message for attestation signature errors.
+    - **Value**: `"Attestation signature error"`
 
 # withdrawResponseHelper.ts
 
-### Constants
+1.  **createCudosResponse**
 
-- `SUCCESS`: A string constant with the value `"success"`.
-- `IN_SUFFICIENT_LIQUIDITY_ERROR`: A string constant representing the error message `"Insufficient liquidity"`.
-- `CODE_100, CODE_200, CODE_201, CODE_701`: Numeric constants representing various response codes.
+    Creates a response object for Cudos transactions.
 
-### Interface: `Response`
+    - **Parameters**: `tx` (any) - Transaction object.
+    - **Returns**: `Response` - Formatted response object.
 
-Defines the structure for response objects.
+2.  **createEVMResponse**
 
-- `responseCode`: Number indicating the status code of the response.
-- `responseMessage`: String message accompanying the response.
-- `transactionHash`: String representing the transaction hash.
+    Creates a response object for EVM transactions.
 
-### Function: `createCudosResponse(tx: any): Response`
+    - **Parameters**: `tx` (any) - Transaction object.
+    - **Returns**: `Response` - Formatted response object.
 
-Creates a response object based on the transaction information from a Cudos blockchain interaction.
+3.  **filterEVMResponseMessage**
 
-- Parameters:
-  - `tx`: Transaction object which may contain status and other response details.
-- Returns: An object of type `Response` containing:
-  - `responseCode`: Derived from the transaction's status; `CODE_200` for successful transactions, otherwise `CODE_201`.
-  - `responseMessage`: `SUCCESS` if transaction is successful.
-  - `transactionHash`: Transaction hash if available.
+    A function to filter EVM response messages.
 
-### Function: `createEVMResponse(tx: any): Response`
-
-Creates a response object based on the transaction information from an EVM (Ethereum Virtual Machine) compatible blockchain interaction.
-
-- Parameters:
-  - `tx`: Transaction object which may contain status, error codes, and other response details.
-- Returns: An object of type `Response` containing:
-  - `responseCode`: Determines the response code based on the transaction status and specific error codes.
-  - `responseMessage`: Contains either `SUCCESS`, `IN_SUFFICIENT_LIQUIDITY_ERROR`, or other messages based on the transaction response.
-  - `transactionHash`: Transaction hash if available.
-
-### Function: `filterEVMResponseMessage(tx: any): Response`
-
-Filters and modifies the response message for an EVM transaction.
-
-- Parameters:
-  - `tx`: Transaction object which is expected to contain specific fields to filter.
-- Returns: An object of type `Response` with default or modified values, though this function currently returns a response with default values (indicating this function might be a placeholder or requires further implementation).
-
-These functions are designed to facilitate the handling and normalization of blockchain transaction responses within different blockchain environments, ensuring that the response structure is consistent regardless of the underlying blockchain technology used.
+    - **Parameters**: `tx` (any) - Transaction object.
+    - **Returns**: `Response` - Filtered response object with default values.

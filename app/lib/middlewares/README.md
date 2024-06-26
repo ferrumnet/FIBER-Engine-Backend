@@ -66,10 +66,6 @@ This comprehensive set of functions is instrumental for interacting with various
 
 - Location: `app/lib/middlewares/pagination.ts`
 
-typescript
-
-Copy code
-
 `module.exports = function () {
   return function (req: any, res: any, next: any) {
     req.query.limit = parseInt(req.query.limit) || 10;

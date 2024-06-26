@@ -28,10 +28,6 @@ This middleware ensures that only requests with valid authorization tokens can p
 
 ### File Content
 
-typescript
-
-Copy code
-
 `var bunyan = require('bunyan');
 module.exports = bunyan.createLogger({"name": "FIBER Engine","level": 10});`
 
