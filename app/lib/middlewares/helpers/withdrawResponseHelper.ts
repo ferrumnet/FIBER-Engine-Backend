@@ -1,8 +1,3 @@
-import {
-  attestationSignatureError,
-  genericProviderError,
-} from "./stringHelper";
-
 const SUCCESS = "success";
 export const IN_SUFFICIENT_LIQUIDITY_ERROR = "Insufficient liquidity";
 
@@ -10,8 +5,6 @@ export const CODE_100 = 100;
 export const CODE_200 = 200;
 export const CODE_201 = 201;
 export const CODE_701 = 701;
-export const CODE_702 = 702;
-export const CODE_703 = 703;
 
 interface Response {
   responseCode: number;
@@ -48,12 +41,6 @@ export const createEVMResponse = (tx: any): Response => {
   } else if (tx?.code == CODE_701) {
     responseCode = CODE_701;
     responseMessage = IN_SUFFICIENT_LIQUIDITY_ERROR;
-  } else if (tx?.code == CODE_702) {
-    responseCode = CODE_702;
-    responseMessage = genericProviderError;
-  } else if (tx?.code == CODE_703) {
-    responseCode = CODE_702;
-    responseMessage = attestationSignatureError;
   }
 
   let response: Response = {

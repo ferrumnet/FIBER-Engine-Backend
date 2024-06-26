@@ -3,7 +3,6 @@
 var app = require("./index");
 var http = require("http");
 var webSockets = require("./app/lib/webSockets")();
-import { getAllNetworks } from "./app/lib/httpCalls/multiSwapAxiosHelper";
 
 var mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
@@ -11,13 +10,10 @@ mongoose.Promise = require("bluebird");
   await (global as any).awsHelper.awsSecretsManagerInit();
   (global as any).commonFunctions.setPrivateKey();
   (global as any).fiberEngine = require("./scripts/fiberEngine");
+  (global as any).fiberNode = require("./scripts/fiberNode");
 
-  await getAllNetworks();
+  await (global as any).networksAxiosHelper.getAllNetworks();
   var mongoString = (global as any).environment.mongoConnectionUrl;
-  let isLocalEnv = (global as any).environment.isLocalEnv;
-  if (isLocalEnv) {
-    mongoString = (global as any).environment.localMongoConnectionUrl;
-  }
   var mongoLogger = function (coll: any, method: any, query: any, doc: any) {
     (global as any).log.debug(
       coll +
@@ -39,9 +35,7 @@ mongoose.Promise = require("bluebird");
     } else {
       (global as any).removeRandomKeyJob();
       (global as any).getAllNetworkJob();
-      (global as any).owlracleGasJob();
-      (global as any).infuraGasJob();
-      (global as any).scrollGasJob();
+      (global as any).getGasEstimationJob();
       (global as any).log.info("Connected to MongoDB");
     }
   });

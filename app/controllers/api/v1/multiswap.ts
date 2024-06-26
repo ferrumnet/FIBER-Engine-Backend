@@ -1,20 +1,20 @@
-let asyncMiddleware = require("../../../lib/response/asyncMiddleware");
-import { convertIntoFeeDistributionObject } from "../../../lib/middlewares/helpers/feeDistribution/feeDistributionHelper";
-import {
-  getQuoteAndTokenTypeInformation,
-  getSwapSigned,
-  getWithdrawSigned,
-  isSameNetworksSwap,
-  quotAndTokenValidation,
-  swapSignedValidation,
-  withdrawSignedValidation,
-} from "../../../lib/middlewares/helpers/multiSwapHelper";
-
 module.exports = function (router: any) {
   router.get(
     "/token/categorized/quote/info",
     asyncMiddleware(async (req: any, res: any) => {
-      quotAndTokenValidation(req);
+      if (
+        !req.query.sourceWalletAddress ||
+        !req.query.sourceTokenContractAddress ||
+        !req.query.sourceNetworkChainId ||
+        !req.query.sourceAmount ||
+        !req.query.destinationTokenContractAddress ||
+        !req.query.destinationNetworkChainId
+      ) {
+        return res.http401(
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId are missing"
+        );
+      }
+
       if (req.query.destinationWalletAddress) {
         req.query.destinationWalletAddress =
           req.query.destinationWalletAddress.toLowerCase();
@@ -22,31 +22,36 @@ module.exports = function (router: any) {
         req.query.destinationWalletAddress =
           req.query.sourceWalletAddress.toLowerCase();
       }
+
+      multiSwapHelper.validatonForSameSourceAndDestination(req);
+
       return res.http200({
-        data: await getQuoteAndTokenTypeInformation(req),
+        data: await multiSwapHelper.getTokenCategorizedInformation(req),
       });
     })
   );
 
-  router.post(
+  router.get(
     "/swap/signed",
     asyncMiddleware(async (req: any, res: any) => {
-      swapSignedValidation(req);
-      const isSameNetworkSwap = isSameNetworksSwap(
-        req.query.sourceNetworkChainId,
-        req.query.destinationNetworkChainId
-      );
-      if (isSameNetworkSwap) {
-        req.query.gasPrice = "";
-      } else {
-        req.body.feeDistribution = convertIntoFeeDistributionObject(
-          req.body.feeDistribution,
-          req.query.sourceAmountIn,
-          req.query.sourceAmountOut,
-          req.query.destinationAmountIn,
-          req.query.destinationAmountOut
+      if (
+        !req.query.sourceWalletAddress ||
+        !req.query.sourceTokenContractAddress ||
+        !req.query.sourceNetworkChainId ||
+        !req.query.sourceAmount ||
+        !req.query.destinationTokenContractAddress ||
+        !req.query.destinationNetworkChainId ||
+        !req.query.sourceAssetType ||
+        !req.query.destinationAssetType ||
+        !req.query.gasPrice
+      ) {
+        return res.http401(
+          "sourceWalletAddress & sourceTokenContractAddress & sourceNetworkChainId & sourceAmount & destinationTokenContractAddress & destinationNetworkChainId & sourceAssetType & destinationAssetType & gasPrice are missing"
         );
       }
+
+      multiSwapHelper.validatonForSameSourceAndDestination(req);
+
       req.query.sourceWalletAddress =
         req.query.sourceWalletAddress.toLowerCase();
 
@@ -56,8 +61,9 @@ module.exports = function (router: any) {
       } else {
         req.query.destinationWalletAddress = req.query.sourceWalletAddress;
       }
+
       return res.http200({
-        data: await getSwapSigned(req),
+        data: await multiSwapHelper.getSwapSigned(req),
       });
     })
   );
@@ -65,9 +71,35 @@ module.exports = function (router: any) {
   router.post(
     "/withdraw/signed/:txHash",
     asyncMiddleware(async (req: any, res: any) => {
-      withdrawSignedValidation(req);
+      if (
+        !req.body.sourceWalletAddress ||
+        !req.body.sourceTokenContractAddress ||
+        !req.body.sourceNetworkChainId ||
+        !req.body.sourceAmount ||
+        !req.body.destinationTokenContractAddress ||
+        !req.body.destinationNetworkChainId ||
+        !req.body.salt ||
+        !req.body.hash ||
+        !req.body.signatures ||
+        !req.params.txHash
+        // ||
+        // !req.body.gasLimit
+      ) {
+        return res.http401(
+          "sourceWalletAddress & sourceTokenContractAddress &" +
+            " sourceNetworkChainId & sourceAmount & destinationTokenContractAddress &" +
+            " destinationNetworkChainId & salt & hash & signatures &" +
+            " swapTransactionHash & gasLimit are missing"
+        );
+      }
+
+      if (req.body.signatures && req.body.signatures.length == 0) {
+        return res.http401("signatures can not be empty");
+      }
+
       req.query = { ...req.query, ...req.body };
       req.query.swapTransactionHash = req.params.txHash;
+      multiSwapHelper.validatonForSameSourceAndDestination(req);
       console.log("body", req.query);
       if (req.query.destinationWalletAddress) {
         req.query.destinationWalletAddress =
@@ -75,7 +107,7 @@ module.exports = function (router: any) {
       } else {
         req.query.destinationWalletAddress = req.query.sourceWalletAddress;
       }
-      let data = await getWithdrawSigned(req);
+      let data = await multiSwapHelper.getWithdrawSigned(req);
       return res.http200(data);
     })
   );

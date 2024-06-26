@@ -71,6 +71,9 @@ if (
 ).multiSwapHelper = require("./app/lib/middlewares/helpers/multiSwapHelper");
 (
   global as any
+).networksAxiosHelper = require("./app/lib/httpCalls/networksAxiosHelper");
+(
+  global as any
 ).web3ConfigurationHelper = require("./app/lib/middlewares/helpers/web3Helpers/web3ConfigurationHelper");
 (
   global as any
@@ -78,15 +81,21 @@ if (
 (
   global as any
 ).cudosPriceAxiosHelper = require("./app/lib/httpCalls/cudosPriceAxiosHelper");
+(
+  global as any
+).transactionUpdateAxiosHelper = require("./app/lib/httpCalls/transactionUpdateAxiosHelper");
+(
+  global as any
+).gasEstimationAxiosHelper = require("./app/lib/httpCalls/gasEstimationAxiosHelper");
 
 // crons
 (
   global as any
 ).removeRandomKeyJob = require("./app/lib/crons/removeRandomKeyJob");
 (global as any).getAllNetworkJob = require("./app/lib/crons/getAllNetworkJob");
-(global as any).owlracleGasJob = require("./app/lib/crons/owlracleGasJob");
-(global as any).infuraGasJob = require("./app/lib/crons/infuraGasJob");
-(global as any).scrollGasJob = require("./app/lib/crons/scrollGasJob");
+(
+  global as any
+).getGasEstimationJob = require("./app/lib/crons/getGasEstimationJob");
 
 // fiber
 (global as any).networkHelper = require("./network");
