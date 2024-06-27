@@ -4,6 +4,7 @@ import { isKyberSwap, getChainKyberSwap } from "../configurationHelper";
 let common = (global as any).commonFunctions;
 
 export const chooseProviderAndGetData = async (
+  walletAddress: string,
   chainId: string,
   src: string,
   dst: string,
@@ -29,6 +30,7 @@ export const chooseProviderAndGetData = async (
   } else {
     console.log("OneInch provider");
     return await oneInchProvider(
+      walletAddress,
       chainId,
       src,
       dst,
@@ -42,6 +44,7 @@ export const chooseProviderAndGetData = async (
 };
 
 export const oneInchProvider = async (
+  walletAddress: string,
   chainId: string,
   src: string,
   dst: string,
@@ -54,6 +57,7 @@ export const oneInchProvider = async (
   let callData;
   let amounts;
   let response = await OneInchSwap(
+    walletAddress,
     chainId,
     src,
     dst,
