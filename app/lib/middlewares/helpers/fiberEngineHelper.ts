@@ -534,6 +534,7 @@ const doMessageTransmitter = async (
 };
 
 export const getLatestCallData = async (
+  walletAddress: string,
   chainId: string,
   src: any,
   dst: string,
@@ -544,6 +545,7 @@ export const getLatestCallData = async (
   recursionCount = 0
 ) => {
   let providerResponse: any = await chooseProviderAndGetData(
+    walletAddress,
     chainId,
     src,
     dst,
@@ -562,6 +564,7 @@ export const getLatestCallData = async (
     await delay();
     recursionCount = recursionCount + 1;
     providerResponse = await getLatestCallData(
+      walletAddress,
       chainId,
       src,
       dst,
