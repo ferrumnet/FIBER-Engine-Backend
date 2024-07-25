@@ -10,7 +10,9 @@ mongoose.Promise = require("bluebird");
 (async () => {
   await (global as any).awsHelper.awsSecretsManagerInit();
   (global as any).commonFunctions.setPrivateKey();
-  (global as any).fiberEngine = require("./scripts/fiberEngine");
+  (
+    global as any
+  ).fiberEngine = require("./app/lib/middlewares/helpers/swapWithdrawHelper");
 
   await getAllNetworks();
   var mongoString = (global as any).environment.mongoConnectionUrl;
@@ -47,7 +49,7 @@ mongoose.Promise = require("bluebird");
   });
 
   var server = http.Server(app);
-  server.listen(process.env.PORT || 8080);
+  server.listen(process.env.PORT || 8081);
 
   server.on("listening", function () {
     (global as any).log.info(

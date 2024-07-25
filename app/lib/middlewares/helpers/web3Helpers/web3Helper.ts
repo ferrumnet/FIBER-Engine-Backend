@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import { abi as contractABI } from "../../../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json";
+import { abi as contractABI } from "../../../../../artifacts/contracts/fiber/FiberRouter.sol/FiberRouter.json";
 
 export const getTransactionReceipt = async (
   txId: string,

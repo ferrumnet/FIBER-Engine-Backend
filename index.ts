@@ -88,9 +88,6 @@ if (
 (global as any).infuraGasJob = require("./app/lib/crons/infuraGasJob");
 (global as any).scrollGasJob = require("./app/lib/crons/scrollGasJob");
 
-// fiber
-(global as any).networkHelper = require("./network");
-
 (global as any).utils.IS_LOCAL_ENV = (global as any).environment.isLocalEnv;
 (global as any).kraken = app.kraken;
 
