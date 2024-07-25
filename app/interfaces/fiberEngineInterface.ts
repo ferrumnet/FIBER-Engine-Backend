@@ -46,6 +46,7 @@ export interface Swap {
   value: string;
   isCCTP: boolean;
   feeDistribution: FeeDistribution;
+  isStargate: boolean;
 }
 
 export interface SwapOneInch {

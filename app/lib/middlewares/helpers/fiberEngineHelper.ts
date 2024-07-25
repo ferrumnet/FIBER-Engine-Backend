@@ -283,6 +283,7 @@ export const doSwap = async (obj: Swap, fiberRouter: any): Promise<any> => {
       },
       obj.withdrawalData,
       obj.isCCTP,
+      obj.isStargate,
       obj.feeDistribution
     );
   } catch (e) {

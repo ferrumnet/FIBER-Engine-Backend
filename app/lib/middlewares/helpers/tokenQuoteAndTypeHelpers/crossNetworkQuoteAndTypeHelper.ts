@@ -5,7 +5,7 @@ import {
   getSourceAssetTypes,
   getTargetAssetTypes,
 } from "../tokenQuoteAndTypeHelpers/assetTypeHelper";
-import { checkForCCTP } from "../liquidityHelper";
+import { checkForCCTPAndStargate } from "../liquidityHelper";
 import { swapIsNotAvailable } from "../stringHelper";
 import { getSourceAmountOut } from "../fiberNodeHelper";
 import { chooseProviderAndGetData } from "../tokenQuoteAndTypeHelpers/quoteProvidersHelper";
@@ -54,6 +54,7 @@ export const getQouteAndTypeForCrossNetworks = async (
   let totalPlatformFee: any;
   let targetFoundryTokenAddress;
   let isCCTP = false;
+  let isStargate = false;
 
   let sResponse: SourceCrossNetowrObject = await handleSource(
     sourceChainId,
@@ -83,7 +84,8 @@ export const getQouteAndTypeForCrossNetworks = async (
     targetNetwork,
     sResponse.sourceAmountInNumber,
     sResponse.sourceSlippageInNumber,
-    sourceWalletAddress
+    sourceWalletAddress,
+    sourceAssetType
   );
   targetAssetType = dResponse?.targetAssetType;
   destinationCallData = dResponse?.destinationCallData;
@@ -93,8 +95,14 @@ export const getQouteAndTypeForCrossNetworks = async (
   machineDestinationAmountOut = dResponse?.destinationAmountOut;
   targetFoundryTokenAddress = dResponse?.targetFoundryTokenAddress;
   isCCTP = dResponse?.isCCTP;
+  isStargate = dResponse?.isStargate;
 
-  let data: any = { source: {}, destination: {}, isCCTP: isCCTP };
+  let data: any = {
+    source: {},
+    destination: {},
+    isCCTP: isCCTP,
+    isStargate: isStargate,
+  };
   data.source.type = sourceAssetType;
   data.source.amount = inputAmount;
   data.source.sourceAmountIn = machineSourceAmountIn;
@@ -267,7 +275,8 @@ const handleDestination = async (
   targetNetwork: any,
   sourceAmountInNumber: any,
   sourceSlippageInNumber: any,
-  sourceWalletAddress: any
+  sourceWalletAddress: any,
+  sourceAssetType: string
 ) => {
   const common = (global as any).commonFunctions;
   const utils = (global as any).utils;
@@ -280,6 +289,7 @@ const handleDestination = async (
     destinationAmountOut: undefined,
     targetFoundryTokenAddress: undefined,
     isCCTP: false,
+    isStargate: false,
   };
 
   const targetTokenContract = new ethers.Contract(
@@ -387,15 +397,19 @@ const handleDestination = async (
       targetTokenDecimal
     );
   }
-  response.isCCTP = await checkForCCTP(
+  let protocolType = await checkForCCTPAndStargate(
     targetNetwork.foundryTokenAddress,
     targetNetwork.fundManager,
     targetNetwork.provider,
     utils.convertFromExponentialToDecimal(response.destinationAmountIn),
     targetFoundryTokenDecimal,
     sourceChainId,
-    targetChainId
+    targetChainId,
+    sourceAssetType,
+    response.targetAssetType
   );
+  response.isStargate = protocolType.isStargate;
+  response.isCCTP = protocolType.isCCTP;
   console.log("machineDestinationAmountIn", response.destinationAmountIn);
   console.log("machineDestinationAmountOut", response.destinationAmountOut);
 
