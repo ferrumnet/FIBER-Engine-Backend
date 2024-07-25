@@ -13,6 +13,7 @@ export interface WithdrawSigned {
   signatureExpiry: number;
   signature: string;
   isCCTP: boolean;
+  isStargate: boolean;
 }
 
 export interface WithdrawSignedAndSwapOneInch {
@@ -41,6 +42,7 @@ export interface Swap {
   value: string;
   isCCTP: boolean;
   feeDistribution: FeeDistribution;
+  isStargate: boolean;
 }
 
 export interface SwapOneInch {

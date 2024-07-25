@@ -35,6 +35,7 @@ import {
 import { getWithdrawalDataHashForSwap } from "../signatureHelper";
 import { getValueForSwap } from "../fiberEngineHelper";
 import { getIsCCTP, getForgeFundManager } from "../cctpHelpers/cctpHelper";
+import { getIsStargate } from "../stargateHelpers/stargateHelper";
 import { isSameNetworksSwap } from "../multiSwapHelper";
 
 export const gasEstimationValidation = (req: any): any => {
@@ -151,6 +152,7 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
   if (req.query.destinationAssetType == FOUNDARY) {
     gasPrice = await doDestinationFoundaryGasEstimation(
       contractObj,
+      SOURCE_NETWORK,
       TARGET_NETWORK,
       req,
       SALT,
@@ -168,20 +170,26 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
       TARGET_NETWORK
     );
   }
+  let isStargate = getIsStargate(req.query.isStargate);
+  let destinationGasPrices;
   console.log("destination gas limit", gasPrice.toString());
-  let destinationGasPrices = await getDestinationGasPrices(
-    req.query.destinationNetworkChainId,
-    TARGET_NETWORK.rpcUrl,
-    gasPrice,
-    TARGET_NETWORK.provider,
-    getIsCCTP(req.query.isCCTP)
-  );
+  if (!isStargate) {
+    destinationGasPrices = await getDestinationGasPrices(
+      req.query.destinationNetworkChainId,
+      TARGET_NETWORK.rpcUrl,
+      gasPrice,
+      TARGET_NETWORK.provider,
+      getIsCCTP(req.query.isCCTP)
+    );
+    gasPrice = destinationGasPrices?.gasPriceInUSD;
+  }
 
   let gasPrices: any = await convertIntoSourceGasPrices(
     req.query.sourceNetworkChainId,
     SOURCE_NETWORK.rpcUrl,
-    destinationGasPrices?.gasPriceInUSD,
-    SOURCE_NETWORK.provider
+    gasPrice,
+    SOURCE_NETWORK.provider,
+    isStargate
   );
   gasPrices.gasLimit = destinationGasPrices?.gasLimit;
   return gasPrices;
@@ -189,7 +197,8 @@ export const destinationGasEstimation = async (req: any): Promise<any> => {
 
 export const doDestinationFoundaryGasEstimation = async (
   contract: Contract,
-  network: any,
+  srcNetwork: any,
+  desNetwork: any,
   req: any,
   salt: string,
   expiry: number,
@@ -207,8 +216,14 @@ export const doDestinationFoundaryGasEstimation = async (
     signatureExpiry: expiry,
     signature: signature,
     isCCTP: getIsCCTP(req.query.isCCTP),
+    isStargate: getIsStargate(req.query.isStargate),
   };
-  return await destinationFoundaryGasEstimation(contract, network, obj);
+  return await destinationFoundaryGasEstimation(
+    contract,
+    srcNetwork,
+    desNetwork,
+    obj
+  );
 };
 
 export const doDestinationOneInchGasEstimation = async (
@@ -244,7 +259,7 @@ export const doDestinationOneInchGasEstimation = async (
 
 export const doSourceFoundaryGasEstimation = async (
   contractObj: Contract,
-  network: any,
+  srcNetwork: any,
   req: any,
   provider: any,
   gasPrice: string
@@ -286,8 +301,9 @@ export const doSourceFoundaryGasEstimation = async (
     ),
     isCCTP: getIsCCTP(req.query.isCCTP),
     feeDistribution: feeDistribution,
+    isStargate: getIsStargate(req.query.isStargate),
   };
-  return await sourceFoundaryGasEstimation(contractObj, network, obj);
+  return await sourceFoundaryGasEstimation(contractObj, srcNetwork, obj);
 };
 
 export const doSourceOneInchGasEstimation = async (
@@ -488,8 +504,7 @@ async function getDestinationGasPrices(
 ) {
   try {
     let currentGasPrice = await getCurrentGasPrice(chainId, provider, false);
-    let gasPriceInMachine = new Big(gasPrice);
-    gasPriceInMachine = gasPriceInMachine.mul(currentGasPrice);
+    let gasPriceInMachine = new Big(gasPrice).mul(currentGasPrice);
     let nativeToken = await (global as any).commonFunctions.getTokenByChainId(
       chainId
     );
@@ -519,19 +534,28 @@ async function getDestinationGasPrices(
 async function convertIntoSourceGasPrices(
   chainId: string,
   rpcUrl: string,
-  destinationGasPricesInUsd: any,
-  provider: any
+  gasPrice: any,
+  provider: any,
+  isStargate: any
 ) {
   try {
+    let gasPriceInNative;
     let nativeToken = await (global as any).commonFunctions.getTokenByChainId(
       chainId
     );
     let usdPrice = await getQuote(nativeToken?.symbol);
-    let gasPriceInNative = new Big(destinationGasPricesInUsd).div(usdPrice);
     let decimals = await (global as any).commonFunctions.decimals(
       provider,
       nativeToken?.wrappedAddress
     );
+    if (isStargate) {
+      gasPriceInNative = (global as any).commonFunctions.decimalsIntoNumber(
+        gasPrice.toString(),
+        decimals
+      );
+    } else {
+      gasPriceInNative = new Big(gasPrice).div(usdPrice);
+    }
     let gasPriceInDecimal = (
       global as any
     ).commonFunctions.numberIntoDecimals__(

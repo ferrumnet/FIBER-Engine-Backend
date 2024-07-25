@@ -19,4 +19,5 @@ export interface DestinationCrossNetowrObject {
   destinationAmountOut: any;
   targetFoundryTokenAddress: any;
   isCCTP: boolean;
+  isStargate: boolean;
 }
