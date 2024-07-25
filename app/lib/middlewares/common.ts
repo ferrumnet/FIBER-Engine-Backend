@@ -5,8 +5,8 @@ var fs = require("fs");
 var { Big } = require("big.js");
 const { ethers } = require("ethers");
 const routerAbiMainnet = require("../../../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
-const fundManagerAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FundManager.sol/FundManager.json");
-const fiberRouterAbiMainnet = require("../../../artifacts/contracts/upgradeable-Bridge/FiberRouter.sol/FiberRouter.json");
+const fundManagerAbiMainnet = require("../../../artifacts/contracts/fiber/FundManager.sol/FundManager.json");
+const fiberRouterAbiMainnet = require("../../../artifacts/contracts/fiber/FiberRouter.sol/FiberRouter.json");
 var tokenAbi = require("../../../artifacts/contracts/token/Token.sol/Token.json");
 
 import {
@@ -257,6 +257,13 @@ module.exports = {
   },
 
   decimalsIntoNumber(amount: any, decimal: any) {
+    amount = (global as any).utils.convertFromExponentialToDecimal(
+      amount.toString()
+    );
+    if (amount.includes(".")) {
+      amount = amount.split(".")[0];
+    }
+    console.log("amount", amount.toString());
     const bigNumberValue = ethers.BigNumber.from(amount.toString());
     let formattedValue = ethers.utils.formatUnits(bigNumberValue, decimal);
     formattedValue = (global as any).utils.convertFromExponentialToDecimal(

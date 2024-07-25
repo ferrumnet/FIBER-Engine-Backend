@@ -280,6 +280,9 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
     data.sourceTokenCategorizedInfo = sourceTokenCategorizedInfo;
     data.destinationTokenCategorizedInfo = destinationTokenCategorizedInfo;
     data.isCCTP = categorizedInfo?.isCCTP ? categorizedInfo?.isCCTP : false;
+    data.isStargate = categorizedInfo?.isStargate
+      ? categorizedInfo?.isStargate
+      : false;
     data.feeDistribution = categorizedInfo?.feeDistribution;
     data.platformFee = categorizedInfo?.platformFee;
   }
