@@ -48,11 +48,17 @@ export const destinationFoundaryGasEstimation = async (
   try {
     let forge = forgeContract(desNetwork.provider, contract.contractAddress);
     if (obj.isStargate) {
-      console.log("i am here stargate");
+      console.log(
+        "i am here stargate",
+        "desNetwork.stargateEndpointID",
+        desNetwork.stargateEndpointID,
+        "obj.sourceAmountIn",
+        obj.sourceAmountIn
+      );
       response = await prepareTakeTaxiGasEstimation(
         srcNetwork,
-        30110, // desNetwork.stargateEndpointID
-        1000000,
+        desNetwork.stargateEndpointID,
+        obj.sourceAmountIn,
         desNetwork.fundManager,
         obj.destinationWalletAddress,
         obj

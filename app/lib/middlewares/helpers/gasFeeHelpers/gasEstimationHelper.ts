@@ -86,7 +86,7 @@ export const addBuffer_ = async (
 ): Promise<any> => {
   console.log("beForBufferGasLimit", amount?.toString());
   let buffer = 100 + (await getGasBuffer(chainId, isFromWithdrawal));
-  amount = amount.mul(buffer).div(100);
+  amount = Big(amount).mul(Big(buffer)).div(100);
   console.log("afterBufferGasLimit", amount?.toString(), "buffer", buffer);
   return amount;
 };

@@ -49,7 +49,7 @@ mongoose.Promise = require("bluebird");
   });
 
   var server = http.Server(app);
-  server.listen(process.env.PORT || 8081);
+  server.listen(process.env.PORT || 8080);
 
   server.on("listening", function () {
     (global as any).log.info(
