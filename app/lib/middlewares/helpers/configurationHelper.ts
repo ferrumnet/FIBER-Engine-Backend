@@ -150,3 +150,16 @@ export const getOneInchExcludedProtocols = async (): Promise<any> => {
   }
   return protocols ? protocols : "";
 };
+
+export const isStargate = async (chainId: string): Promise<boolean> => {
+  let filter: any = {
+    "allowedNetworksForStargate.chainId": {
+      $eq: chainId,
+    },
+  };
+  let count = await db.Configurations.countDocuments(filter);
+  if (count > 0) {
+    return true;
+  }
+  return false;
+};

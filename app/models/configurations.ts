@@ -45,6 +45,12 @@ var schema = mongoose.Schema(
         chainId: { type: String, default: "" },
       },
     ],
+    allowedNetworksForStargate: [
+      {
+        name: { type: String, default: "" },
+        chainId: { type: String, default: "" },
+      },
+    ],
     oneInchExcludedProtocols: [],
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: new Date() },
