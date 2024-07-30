@@ -19,6 +19,7 @@ import {
   SourceCrossNetowrObject,
 } from "../../../../interfaces/quoteAndTypeInterface";
 import { FeeDistribution } from "../../../../interfaces/feeDistributionInterface";
+import { isStargateFlow } from "../stargateHelpers/stargateHelper";
 
 export const getQouteAndTypeForCrossNetworks = async (
   sourceChainId: any,
@@ -56,15 +57,24 @@ export const getQouteAndTypeForCrossNetworks = async (
   let isCCTP = false;
   let isStargate = false;
 
+  // get target type for stargate flow
+  let targetTypeResponse = await getTargetAssetTypes(
+    targetNetwork,
+    await common.getWrappedNativeTokenAddress(targetTokenAddress, targetChainId)
+  );
+  const isTargetTokenFoundry = targetTypeResponse.isFoundryAsset;
+
   let sResponse: SourceCrossNetowrObject = await handleSource(
     sourceChainId,
+    targetChainId,
     sourceTokenAddress,
     sourceWalletAddress,
     inputAmount,
     gasEstimationDestinationAmount,
     sourceSlippage,
     referralCode,
-    sourceNetwork
+    sourceNetwork,
+    isTargetTokenFoundry
   );
   sourceAssetType = sResponse?.sourceAssetType;
   feeDistribution = sResponse?.feeDistribution;
@@ -137,13 +147,15 @@ export const getQouteAndTypeForCrossNetworks = async (
 
 const handleSource = async (
   sourceChainId: any,
+  targetChainId: any,
   sourceTokenAddress: any,
   sourceWalletAddress: string,
   inputAmount: any,
   gasEstimationDestinationAmount: string,
   sourceSlippage: string,
   referralCode: string,
-  sourceNetwork: any
+  sourceNetwork: any,
+  isTargetTokenFoundry: boolean
 ) => {
   const common = (global as any).commonFunctions;
   const utils = (global as any).utils;
@@ -192,12 +204,19 @@ const handleSource = async (
   if (isFoundryAsset) {
     response.sourceAssetType = utils.assetType.FOUNDARY;
     response.sourceAmountOut = response.sourceAmountIn;
+    const isStargate = await isStargateFlow(
+      isFoundryAsset,
+      isTargetTokenFoundry,
+      sourceChainId,
+      targetChainId
+    );
     const { error, amountAfterCut, totalFee, data } =
       await getDataAfterCutDistributionFee(
         referralCode,
         sourceWalletAddress,
         response.sourceAmountOut,
-        sourceFoundryTokenDecimal
+        sourceFoundryTokenDecimal,
+        isStargate
       );
     if (error) {
       throw error;
@@ -245,7 +264,8 @@ const handleSource = async (
         referralCode,
         sourceWalletAddress,
         response.sourceAmountOut,
-        sourceFoundryTokenDecimal
+        sourceFoundryTokenDecimal,
+        false
       );
     if (error) {
       throw error;
@@ -315,17 +335,9 @@ const handleDestination = async (
   );
   const targetTokenDecimal = await targetTokenContract.decimals();
   const targetFoundryTokenDecimal = await targetFoundryTokenContract.decimals();
-  let amountIn: any = common.numberIntoDecimals__(
-    getSourceAmountOut(gasEstimationDestinationAmount, sourceAmountInNumber),
-    targetFoundryTokenDecimal
-  );
   let targetTypeResponse = await getTargetAssetTypes(
     targetNetwork,
-    await common.getWrappedNativeTokenAddress(
-      targetTokenAddress,
-      targetChainId
-    ),
-    amountIn
+    await common.getWrappedNativeTokenAddress(targetTokenAddress, targetChainId)
   );
   const isTargetTokenFoundry = targetTypeResponse.isFoundryAsset;
   if (isTargetTokenFoundry) {

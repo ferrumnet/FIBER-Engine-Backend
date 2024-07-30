@@ -35,19 +35,14 @@ export const getSourceAssetTypes = async (
 
 export const getTargetAssetTypes = async (
   targetNetwork: any,
-  targetTokenAddress: any,
-  amount: any
+  targetTokenAddress: any
 ): Promise<AssetType> => {
   let isFoundryAsset = false;
   let isRefineryAsset = false;
   let isIonicAsset = false;
   let isOneInch = false;
 
-  isFoundryAsset = await targetFACCheck(
-    targetNetwork,
-    targetTokenAddress,
-    amount
-  );
+  isFoundryAsset = await targetFACCheck(targetNetwork, targetTokenAddress);
 
   if (!isFoundryAsset) {
     isOneInch = true;
@@ -186,8 +181,7 @@ async function isSourceRefineryAsset(
 
 async function targetFACCheck(
   targetNetwork: any,
-  tokenAddress: any,
-  amount: any
+  tokenAddress: any
 ): Promise<boolean> {
   const targetTokenContract = new ethers.Contract(
     tokenAddress,
@@ -199,14 +193,6 @@ async function targetFACCheck(
   const targetFoundryAssetLiquidity = await targetTokenContract.balanceOf(
     targetNetwork.fundManagerContract.address
   );
-  // if (
-  //   isTargetTokenFoundryAsset === true &&
-  //   Number(targetFoundryAssetLiquidity) > Number(amount)
-  // ) {
-  //   return true;
-  // } else {
-  //   return false;
-  // }
   if (isTargetTokenFoundryAsset === true) {
     return true;
   } else {
@@ -222,8 +208,7 @@ async function isTargetRefineryAsset(
   try {
     const isTokenFoundryAsset = await targetFACCheck(
       targetNetwork,
-      tokenAddress,
-      amount
+      tokenAddress
     );
 
     let path = [targetNetwork.foundryTokenAddress, tokenAddress];
