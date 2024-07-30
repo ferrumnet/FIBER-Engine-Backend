@@ -8,6 +8,7 @@ export interface Contract {
 export interface WithdrawSigned {
   targetTokenAddress: string;
   destinationWalletAddress: string;
+  sourceAmountIn: string;
   destinationAmountIn: string;
   salt: string;
   signatureExpiry: number;

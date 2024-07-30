@@ -1,7 +1,12 @@
 var { ethers } = require("ethers");
 var tokenAbi = require("../../../../artifacts/contracts/token/Token.sol/Token.json");
 var { Big } = require("big.js");
-import { getCCTPBalanceThreshold, isCCTPNetwork } from "./configurationHelper";
+import { promises } from "dns";
+import {
+  getCCTPBalanceThreshold,
+  isCCTPNetwork,
+  isStargate,
+} from "./configurationHelper";
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "./withdrawResponseHelper";
 
 export const isLiquidityAvailableForEVM = async (
@@ -36,7 +41,7 @@ export const checkForCCTPAndStargate = async (
 ) => {
   let isCCTP = false;
   let isStargate = false;
-  if (checkForStargate(srcType, desType)) {
+  if (await checkForStargate(srcType, desType, srcChainId, desChainId)) {
     isStargate = true;
   } else {
     isCCTP = await checkForCCTP(
@@ -104,9 +109,21 @@ const checkForCCTP = async (
   return false;
 };
 
-export const checkForStargate = (srcType: string, desType: string): boolean => {
+export const checkForStargate = async (
+  srcType: string,
+  desType: string,
+  srcChainId: string,
+  desChainId: string
+): Promise<boolean> => {
   const FOUNDARY = (global as any).utils.assetType.FOUNDARY;
-  if (srcType == FOUNDARY && desType == FOUNDARY) {
+  const isSrcChainStargate = await isStargate(srcChainId);
+  const isDesChainStargate = await isStargate(desChainId);
+  if (
+    srcType == FOUNDARY &&
+    desType == FOUNDARY &&
+    isSrcChainStargate &&
+    isDesChainStargate
+  ) {
     return true;
   }
   return false;
