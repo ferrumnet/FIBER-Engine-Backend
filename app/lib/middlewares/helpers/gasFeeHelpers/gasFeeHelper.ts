@@ -204,6 +204,14 @@ export const doDestinationFoundaryGasEstimation = async (
   expiry: number,
   signature: string
 ): Promise<any> => {
+  let amount = await getSourceAmount(
+    req.query.sourceAmount,
+    await (global as any).commonFunctions.getWrappedNativeTokenAddress(
+      req.query.sourceTokenContractAddress,
+      req.query.sourceNetworkChainId
+    ),
+    srcNetwork.provider
+  );
   let obj: WithdrawSigned = {
     targetTokenAddress: await (
       global as any
@@ -211,6 +219,7 @@ export const doDestinationFoundaryGasEstimation = async (
       req.query.destinationTokenContractAddress
     ),
     destinationWalletAddress: req.query.destinationWalletAddress,
+    sourceAmountIn: amount,
     destinationAmountIn: req.query.destinationAmountIn,
     salt: salt,
     signatureExpiry: expiry,
@@ -553,6 +562,7 @@ async function convertIntoSourceGasPrices(
         gasPrice.toString(),
         decimals
       );
+      gasPriceInNative = await addBuffer_(gasPriceInNative, chainId, false);
     } else {
       gasPriceInNative = new Big(gasPrice).div(usdPrice);
     }
