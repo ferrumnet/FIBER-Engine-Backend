@@ -5,7 +5,7 @@ import {
   getSourceAssetTypes,
   getTargetAssetTypes,
 } from "../tokenQuoteAndTypeHelpers/assetTypeHelper";
-import { checkForCCTP } from "../liquidityHelper";
+import { checkForCCTPAndStargate } from "../liquidityHelper";
 import { swapIsNotAvailable } from "../stringHelper";
 import { getSourceAmountOut } from "../fiberNodeHelper";
 import { chooseProviderAndGetData } from "../tokenQuoteAndTypeHelpers/quoteProvidersHelper";
@@ -19,6 +19,7 @@ import {
   SourceCrossNetowrObject,
 } from "../../../../interfaces/quoteAndTypeInterface";
 import { FeeDistribution } from "../../../../interfaces/feeDistributionInterface";
+import { isStargateFlow } from "../stargateHelpers/stargateHelper";
 
 export const getQouteAndTypeForCrossNetworks = async (
   sourceChainId: any,
@@ -54,16 +55,26 @@ export const getQouteAndTypeForCrossNetworks = async (
   let totalPlatformFee: any;
   let targetFoundryTokenAddress;
   let isCCTP = false;
+  let isStargate = false;
+
+  // get target type for stargate flow
+  let targetTypeResponse = await getTargetAssetTypes(
+    targetNetwork,
+    await common.getWrappedNativeTokenAddress(targetTokenAddress, targetChainId)
+  );
+  const isTargetTokenFoundry = targetTypeResponse.isFoundryAsset;
 
   let sResponse: SourceCrossNetowrObject = await handleSource(
     sourceChainId,
+    targetChainId,
     sourceTokenAddress,
     sourceWalletAddress,
     inputAmount,
     gasEstimationDestinationAmount,
     sourceSlippage,
     referralCode,
-    sourceNetwork
+    sourceNetwork,
+    isTargetTokenFoundry
   );
   sourceAssetType = sResponse?.sourceAssetType;
   feeDistribution = sResponse?.feeDistribution;
@@ -83,7 +94,8 @@ export const getQouteAndTypeForCrossNetworks = async (
     targetNetwork,
     sResponse.sourceAmountInNumber,
     sResponse.sourceSlippageInNumber,
-    sourceWalletAddress
+    sourceWalletAddress,
+    sourceAssetType
   );
   targetAssetType = dResponse?.targetAssetType;
   destinationCallData = dResponse?.destinationCallData;
@@ -93,8 +105,14 @@ export const getQouteAndTypeForCrossNetworks = async (
   machineDestinationAmountOut = dResponse?.destinationAmountOut;
   targetFoundryTokenAddress = dResponse?.targetFoundryTokenAddress;
   isCCTP = dResponse?.isCCTP;
+  isStargate = dResponse?.isStargate;
 
-  let data: any = { source: {}, destination: {}, isCCTP: isCCTP };
+  let data: any = {
+    source: {},
+    destination: {},
+    isCCTP: isCCTP,
+    isStargate: isStargate,
+  };
   data.source.type = sourceAssetType;
   data.source.amount = inputAmount;
   data.source.sourceAmountIn = machineSourceAmountIn;
@@ -129,13 +147,15 @@ export const getQouteAndTypeForCrossNetworks = async (
 
 const handleSource = async (
   sourceChainId: any,
+  targetChainId: any,
   sourceTokenAddress: any,
   sourceWalletAddress: string,
   inputAmount: any,
   gasEstimationDestinationAmount: string,
   sourceSlippage: string,
   referralCode: string,
-  sourceNetwork: any
+  sourceNetwork: any,
+  isTargetTokenFoundry: boolean
 ) => {
   const common = (global as any).commonFunctions;
   const utils = (global as any).utils;
@@ -184,12 +204,19 @@ const handleSource = async (
   if (isFoundryAsset) {
     response.sourceAssetType = utils.assetType.FOUNDARY;
     response.sourceAmountOut = response.sourceAmountIn;
+    const isStargate = await isStargateFlow(
+      isFoundryAsset,
+      isTargetTokenFoundry,
+      sourceChainId,
+      targetChainId
+    );
     const { error, amountAfterCut, totalFee, data } =
       await getDataAfterCutDistributionFee(
         referralCode,
         sourceWalletAddress,
         response.sourceAmountOut,
-        sourceFoundryTokenDecimal
+        sourceFoundryTokenDecimal,
+        isStargate
       );
     if (error) {
       throw error;
@@ -237,7 +264,8 @@ const handleSource = async (
         referralCode,
         sourceWalletAddress,
         response.sourceAmountOut,
-        sourceFoundryTokenDecimal
+        sourceFoundryTokenDecimal,
+        false
       );
     if (error) {
       throw error;
@@ -267,7 +295,8 @@ const handleDestination = async (
   targetNetwork: any,
   sourceAmountInNumber: any,
   sourceSlippageInNumber: any,
-  sourceWalletAddress: any
+  sourceWalletAddress: any,
+  sourceAssetType: string
 ) => {
   const common = (global as any).commonFunctions;
   const utils = (global as any).utils;
@@ -280,6 +309,7 @@ const handleDestination = async (
     destinationAmountOut: undefined,
     targetFoundryTokenAddress: undefined,
     isCCTP: false,
+    isStargate: false,
   };
 
   const targetTokenContract = new ethers.Contract(
@@ -305,17 +335,9 @@ const handleDestination = async (
   );
   const targetTokenDecimal = await targetTokenContract.decimals();
   const targetFoundryTokenDecimal = await targetFoundryTokenContract.decimals();
-  let amountIn: any = common.numberIntoDecimals__(
-    getSourceAmountOut(gasEstimationDestinationAmount, sourceAmountInNumber),
-    targetFoundryTokenDecimal
-  );
   let targetTypeResponse = await getTargetAssetTypes(
     targetNetwork,
-    await common.getWrappedNativeTokenAddress(
-      targetTokenAddress,
-      targetChainId
-    ),
-    amountIn
+    await common.getWrappedNativeTokenAddress(targetTokenAddress, targetChainId)
   );
   const isTargetTokenFoundry = targetTypeResponse.isFoundryAsset;
   if (isTargetTokenFoundry) {
@@ -387,15 +409,19 @@ const handleDestination = async (
       targetTokenDecimal
     );
   }
-  response.isCCTP = await checkForCCTP(
+  let protocolType = await checkForCCTPAndStargate(
     targetNetwork.foundryTokenAddress,
     targetNetwork.fundManager,
     targetNetwork.provider,
     utils.convertFromExponentialToDecimal(response.destinationAmountIn),
     targetFoundryTokenDecimal,
     sourceChainId,
-    targetChainId
+    targetChainId,
+    sourceAssetType,
+    response.targetAssetType
   );
+  response.isStargate = protocolType.isStargate;
+  response.isCCTP = protocolType.isCCTP;
   console.log("machineDestinationAmountIn", response.destinationAmountIn);
   console.log("machineDestinationAmountOut", response.destinationAmountOut);
 

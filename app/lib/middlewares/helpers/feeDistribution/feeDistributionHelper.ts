@@ -47,7 +47,8 @@ export async function getDataAfterCutDistributionFee(
   referralCode: string,
   sourceWalletAddress: string,
   decimalAmount: any,
-  foundaryDecimals: any
+  foundaryDecimals: any,
+  isStargate: boolean
 ): Promise<any> {
   let amountAfterCut = decimalAmount;
   let totalFee: any = "0";
@@ -63,45 +64,48 @@ export async function getDataAfterCutDistributionFee(
     expiry: 0,
     signature: "",
   };
+  let refData: any;
   try {
-    let pf = await getPlatformFee();
-    let pfInNumber = pf;
-    if (!pf) {
-      return {
-        error: invalidPlatformFee,
-      };
-    }
-    pf = common.numberIntoDecimals__(pf, foundaryDecimals);
-    if (!isValidAmountSwap(decimalAmount, pf)) {
-      return {
-        error: `Swap amount should be more than ${getPlatformFeeInNumber(
-          pfInNumber
-        )} USDC`,
-      };
-    }
-    totalFee = pf;
-    amountAfterCut = common.getAmountAfterAbsoluteCut(decimalAmount, pf);
-    console.log(
-      "amountAfterCut",
-      amountAfterCut,
-      "totalPlatformFee",
-      totalFee,
-      "totalPlatformFee%",
-      pf
-    );
-    const refData: any = await getReferralData(
-      referralCode,
-      sourceWalletAddress,
-      totalFee
-    );
-    totalFee = refData?.totalPlatformFee;
-    if (refData?.referralDiscountAmount) {
-      amountAfterCut = Big(amountAfterCut).add(
-        Big(refData?.referralDiscountAmount)
+    if (!isStargate) {
+      let pf = await getPlatformFee();
+      let pfInNumber = pf;
+      if (!pf) {
+        return {
+          error: invalidPlatformFee,
+        };
+      }
+      pf = common.numberIntoDecimals__(pf, foundaryDecimals);
+      if (!isValidAmountSwap(decimalAmount, pf)) {
+        return {
+          error: `Swap amount should be more than ${getPlatformFeeInNumber(
+            pfInNumber
+          )} USDC`,
+        };
+      }
+      totalFee = pf;
+      amountAfterCut = common.getAmountAfterAbsoluteCut(decimalAmount, pf);
+      console.log(
+        "amountAfterCut",
+        amountAfterCut,
+        "totalPlatformFee",
+        totalFee,
+        "totalPlatformFee%",
+        pf
       );
+      refData = await getReferralData(
+        referralCode,
+        sourceWalletAddress,
+        totalFee
+      );
+      totalFee = refData?.totalPlatformFee;
+      if (refData?.referralDiscountAmount) {
+        amountAfterCut = Big(amountAfterCut).add(
+          Big(refData?.referralDiscountAmount)
+        );
+      }
+      console.log("totalPlatformFee", totalFee?.toString(), refData);
+      console.log("amountAfterCut", amountAfterCut?.toString());
     }
-    console.log("totalPlatformFee", totalFee?.toString(), refData);
-    console.log("amountAfterCut", amountAfterCut?.toString());
     data = {
       referral: refData?.recipient ? refData?.recipient : emptyReferral,
       referralFee: refData?.referralFee ? refData?.referralFee : "0",

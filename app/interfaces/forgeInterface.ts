@@ -8,11 +8,13 @@ export interface Contract {
 export interface WithdrawSigned {
   targetTokenAddress: string;
   destinationWalletAddress: string;
+  sourceAmountIn: string;
   destinationAmountIn: string;
   salt: string;
   signatureExpiry: number;
   signature: string;
   isCCTP: boolean;
+  isStargate: boolean;
 }
 
 export interface WithdrawSignedAndSwapOneInch {
@@ -41,6 +43,7 @@ export interface Swap {
   value: string;
   isCCTP: boolean;
   feeDistribution: FeeDistribution;
+  isStargate: boolean;
 }
 
 export interface SwapOneInch {

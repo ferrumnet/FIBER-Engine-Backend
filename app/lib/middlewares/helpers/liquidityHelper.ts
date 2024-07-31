@@ -1,8 +1,12 @@
 var { ethers } = require("ethers");
 var tokenAbi = require("../../../../artifacts/contracts/token/Token.sol/Token.json");
-const cudosBalance = require("../../../../scripts/cudosBalance");
 var { Big } = require("big.js");
-import { getCCTPBalanceThreshold, isCCTPNetwork } from "./configurationHelper";
+import { promises } from "dns";
+import {
+  getCCTPBalanceThreshold,
+  isCCTPNetwork,
+  isStargate,
+} from "./configurationHelper";
 import { IN_SUFFICIENT_LIQUIDITY_ERROR } from "./withdrawResponseHelper";
 
 export const isLiquidityAvailableForEVM = async (
@@ -24,33 +28,43 @@ export const isLiquidityAvailableForEVM = async (
   return isValid;
 };
 
-export const isLiquidityAvailableForCudos = async (
+export const checkForCCTPAndStargate = async (
   foundryTokenAddress: string,
   fundManagerAddress: string,
-  rpc: any,
-  privateKey: string,
-  amount: number
-): Promise<boolean> => {
-  let isValid = false;
-  let balance: any = await cudosBalance(
-    foundryTokenAddress,
-    fundManagerAddress,
-    rpc,
-    privateKey
-  );
-  if (balance && balance.amount) {
-    balance.amount = (global as any).utils.convertFromExponentialToDecimal(
-      balance?.amount
+  provider: any,
+  amount: any,
+  foundaryDecimals: any,
+  srcChainId: string,
+  desChainId: string,
+  srcType: string,
+  desType: string
+) => {
+  let isCCTP = false;
+  let isStargate = false;
+  if (await checkForStargate(srcType, desType, srcChainId, desChainId)) {
+    isStargate = true;
+  } else {
+    isCCTP = await checkForCCTP(
+      foundryTokenAddress,
+      fundManagerAddress,
+      provider,
+      amount,
+      foundaryDecimals,
+      srcChainId,
+      desChainId
     );
   }
-  console.log("balance", balance?.amount, "amount", amount);
-  if (balance && balance.amount && balance.amount >= amount) {
-    isValid = true;
-  }
-  return isValid;
+  console.log("{isCCTP,isStargate}", {
+    isCCTP,
+    isStargate,
+  });
+  return {
+    isCCTP,
+    isStargate,
+  };
 };
 
-export const checkForCCTP = async (
+const checkForCCTP = async (
   foundryTokenAddress: string,
   fundManagerAddress: string,
   provider: any,
@@ -91,6 +105,26 @@ export const checkForCCTP = async (
     } else if (amount.gt(balance)) {
       throw IN_SUFFICIENT_LIQUIDITY_ERROR;
     }
+  }
+  return false;
+};
+
+export const checkForStargate = async (
+  srcType: string,
+  desType: string,
+  srcChainId: string,
+  desChainId: string
+): Promise<boolean> => {
+  const FOUNDARY = (global as any).utils.assetType.FOUNDARY;
+  const isSrcChainStargate = await isStargate(srcChainId);
+  const isDesChainStargate = await isStargate(desChainId);
+  if (
+    srcType == FOUNDARY &&
+    desType == FOUNDARY &&
+    isSrcChainStargate &&
+    isDesChainStargate
+  ) {
+    return true;
   }
   return false;
 };

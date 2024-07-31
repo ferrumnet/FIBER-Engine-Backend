@@ -1,6 +1,6 @@
 var { ethers } = require("ethers");
 var tokenAbi = require("../../../../../artifacts/contracts/token/Token.sol/Token.json");
-import { getSourceAssetTypes, getTargetAssetTypes } from "./assetTypeHelper";
+import { getSourceAssetTypes } from "./assetTypeHelper";
 import { chooseProviderAndGetData } from "./quoteProvidersHelper";
 import { DEFAULT_SLIPPAGE } from "../configurationHelper";
 import { getSourceAmountOut } from "../fiberNodeHelper";
