@@ -1,8 +1,8 @@
 var { ethers } = require("ethers");
 var Web3 = require("web3");
 require("dotenv").config();
-const fiberRouterAbi = require("../../../../artifacts/contracts/fiber/FiberRouter.sol/FiberRouter.json");
-var tokenAbi = require("../../../../artifacts/contracts/token/Token.sol/Token.json");
+const fiberRouterAbi = require("../../../../config/FiberRouter.json");
+var tokenAbi = require("../../../../config/Token.json");
 import {
   convertIntoAssetTypesObjectForSource,
   convertIntoAssetTypesObjectForTarget,

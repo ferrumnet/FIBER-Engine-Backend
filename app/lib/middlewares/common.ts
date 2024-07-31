@@ -4,10 +4,10 @@ import * as jwt from "jsonwebtoken";
 var fs = require("fs");
 var { Big } = require("big.js");
 const { ethers } = require("ethers");
-const routerAbiMainnet = require("../../../artifacts/contracts/common/uniswap/IUniswapV2Router02.sol/IUniswapV2Router02.json");
-const fundManagerAbiMainnet = require("../../../artifacts/contracts/fiber/FundManager.sol/FundManager.json");
-const fiberRouterAbiMainnet = require("../../../artifacts/contracts/fiber/FiberRouter.sol/FiberRouter.json");
-var tokenAbi = require("../../../artifacts/contracts/token/Token.sol/Token.json");
+const routerAbiMainnet = require("../../../config/IUniswapV2Router02.json");
+const fundManagerAbiMainnet = require("../../../config/FundManager.json");
+const fiberRouterAbiMainnet = require("../../../config/FiberRouter.json");
+var tokenAbi = require("../../../config/Token.json");
 
 import {
   getSlippage,

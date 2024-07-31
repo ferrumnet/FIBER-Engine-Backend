@@ -1,5 +1,5 @@
 var { ethers } = require("ethers");
-var tokenAbi = require("../../../../artifacts/contracts/token/Token.sol/Token.json");
+var tokenAbi = require("../../../../config/Token.json");
 var { Big } = require("big.js");
 import { promises } from "dns";
 import {
