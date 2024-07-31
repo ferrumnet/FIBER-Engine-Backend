@@ -10,8 +10,8 @@ import {
   SwapSameNetwork,
 } from "../../../../interfaces/forgeInterface";
 const forgeAbi: any = require("../../../../../config/forge.json");
-const fiberRouterAbi: any = require("../../../../../artifacts/contracts/fiber/FiberRouter.sol/FiberRouter.json");
-const fundManagerAbi: any = require("../../../../../artifacts/contracts/fiber/FundManager.sol/FundManager.json");
+const fiberRouterAbi: any = require("../../../../../config/FiberRouter.json");
+const fundManagerAbi: any = require("../../../../../config/FundManager.json");
 
 const forgeContract = (provider: any, tokenContractAddress: any) => {
   return new ethers.Contract(tokenContractAddress, forgeAbi.abi, provider);

@@ -1,7 +1,7 @@
 // import Web3 from 'web3';
 var Web3 = require("web3");
-import fiberRouter from "../../../../../artifacts/contracts/fiber/FiberRouter.sol/FiberRouter.json";
-import erc20Abi from "../../../../../artifacts/contracts/fiber/FiberRouter.sol/IERC20.json";
+import fiberRouter from "../../../../../config/FiberRouter.json";
+import erc20Abi from "../../../../../config/IERC20.json";
 
 module.exports = {
   web3(rpcUrl: string) {

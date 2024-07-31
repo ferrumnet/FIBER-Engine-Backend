@@ -1,5 +1,5 @@
 var { ethers } = require("ethers");
-var tokenAbi = require("../../../../../artifacts/contracts/token/Token.sol/Token.json");
+var tokenAbi = require("../../../../../config/Token.json");
 import { getSourceAssetTypes } from "./assetTypeHelper";
 import { chooseProviderAndGetData } from "./quoteProvidersHelper";
 import { DEFAULT_SLIPPAGE } from "../configurationHelper";
