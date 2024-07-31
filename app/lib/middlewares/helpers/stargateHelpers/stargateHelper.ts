@@ -9,7 +9,7 @@ export const getIsStargate = (isStargate: any): boolean => {
   } catch (e) {
     console.log(e);
   }
-  return true;
+  return false;
 };
 
 export const isStargateFlow = async (
