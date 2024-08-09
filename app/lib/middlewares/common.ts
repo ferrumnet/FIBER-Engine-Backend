@@ -257,6 +257,13 @@ module.exports = {
   },
 
   decimalsIntoNumber(amount: any, decimal: any) {
+    amount = (global as any).utils.convertFromExponentialToDecimal(
+      amount.toString()
+    );
+    if (amount.includes(".")) {
+      amount = amount.split(".")[0];
+    }
+    console.log("amount", amount.toString());
     const bigNumberValue = ethers.BigNumber.from(amount.toString());
     let formattedValue = ethers.utils.formatUnits(bigNumberValue, decimal);
     formattedValue = (global as any).utils.convertFromExponentialToDecimal(
