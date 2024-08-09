@@ -202,11 +202,14 @@ export function getSourceAmountWithFee(amount: string, fee: string) {
       );
       amount = Big(amount).add(Big(fee));
       console.log("after", amount.toString());
+      amount = (global as any).utils.convertFromExponentialToDecimal(
+        amount.toString()
+      );
     }
   } catch (e) {
     console.log(e);
   }
-  return amount ? amount.toString() : "";
+  return amount ? amount : "";
 }
 
 function isValidAmountSwap(amount: any, pf: any): boolean {
