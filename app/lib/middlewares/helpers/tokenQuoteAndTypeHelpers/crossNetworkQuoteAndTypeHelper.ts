@@ -120,6 +120,7 @@ export const getQouteAndTypeForCrossNetworks = async (
     machineSourceAmountOut,
     totalPlatformFee
   );
+  data.source.usdcAmount = sResponse?.usdcAmount;
   data.source.callData = sourceCallData;
 
   machineDestinationAmountOut = machineDestinationAmountOut
@@ -130,6 +131,7 @@ export const getQouteAndTypeForCrossNetworks = async (
   data.destination.minAmount = minDestinationAmountOut;
   data.destination.destinationAmountIn = machineDestinationAmountIn;
   data.destination.destinationAmountOut = machineDestinationAmountOut;
+  data.destination.usdcAmount = dResponse?.usdcAmount;
   data.destination.callData = destinationCallData;
   data.platformFee = sResponse?.totalPlatformFeeInNumber;
   if (!gasEstimationDestinationAmount) {
@@ -169,6 +171,7 @@ const handleSource = async (
     sourceSlippageInNumber: "0",
     totalPlatformFee: "0",
     totalPlatformFeeInNumber: "",
+    usdcAmount: undefined,
   };
   if (gasEstimationDestinationAmount) {
     return response;
@@ -204,6 +207,7 @@ const handleSource = async (
   if (isFoundryAsset) {
     response.sourceAssetType = utils.assetType.FOUNDARY;
     response.sourceAmountOut = response.sourceAmountIn;
+    response.usdcAmount = inputAmount;
     const isStargate = await isStargateFlow(
       isFoundryAsset,
       isTargetTokenFoundry,
@@ -246,6 +250,10 @@ const handleSource = async (
     );
     response.sourceCallData = responseProvider.callData;
     response.sourceAmountOut = responseProvider.amounts;
+    response.usdcAmount = common.decimalsIntoNumber(
+      responseProvider.amounts,
+      sourceFoundryTokenDecimal
+    );
     response.sourceAmountOut = await common.addSlippageInDecimal(
       response.sourceAmountOut,
       sourceSlippage
@@ -310,6 +318,7 @@ const handleDestination = async (
     targetFoundryTokenAddress: undefined,
     isCCTP: false,
     isStargate: false,
+    usdcAmount: undefined,
   };
 
   const targetTokenContract = new ethers.Contract(
@@ -352,11 +361,11 @@ const handleDestination = async (
     );
     response.destinationAmountOutInNumber = sourceAmountInNumber;
     response.minDestinationAmountOut = sourceAmountInNumber;
-    response.destinationAmountOutInNumber =
-      getFoundaryAmountWithoutSourceSlippage(
-        response.destinationAmountOutInNumber,
-        sourceSlippageInNumber
-      );
+    response.destinationAmountOutInNumber = getAmountWithoutSourceSlippage(
+      response.destinationAmountOutInNumber,
+      sourceSlippageInNumber
+    );
+    response.usdcAmount = response.destinationAmountOutInNumber;
     response.destinationAmountIn = common.numberIntoDecimals__(
       sourceAmountInNumber,
       targetFoundryTokenDecimal
@@ -388,14 +397,17 @@ const handleDestination = async (
     );
     response.destinationCallData = providerResponse.callData;
     response.destinationAmountOut = providerResponse.amounts;
-    response.destinationAmountOutInNumber =
-      getInchDesAmountWithoutSourceSlippage(
-        machineAmount,
-        response.destinationAmountOut,
-        sourceSlippageInNumber,
-        targetFoundryTokenDecimal,
-        targetTokenDecimal
-      );
+    response.destinationAmountOutInNumber = getAmountWithoutSourceSlippage_(
+      machineAmount,
+      response.destinationAmountOut,
+      sourceSlippageInNumber,
+      targetFoundryTokenDecimal,
+      targetTokenDecimal
+    );
+    response.usdcAmount = getAmountWithoutSourceSlippage(
+      common.decimalsIntoNumber(machineAmount, targetFoundryTokenDecimal),
+      sourceSlippageInNumber
+    );
     response.destinationAmountOut = await (
       global as any
     ).commonFunctions.addSlippageInDecimal(
@@ -446,7 +458,22 @@ const getSlippageInNumber = (
   return common.decimalsIntoNumber(diff, decimals);
 };
 
-const getInchDesAmountWithoutSourceSlippage = (
+const getAmountWithoutSourceSlippage = (
+  destinationAmount: any,
+  sourceSlippageInNumber: any
+) => {
+  console.log(
+    "destinationAmount",
+    destinationAmount,
+    "sourceSlippageInNumber",
+    sourceSlippageInNumber
+  );
+  let finalAmount = Big(destinationAmount).add(Big(sourceSlippageInNumber));
+  console.log("finalAmount", finalAmount.toString());
+  return finalAmount?.toString();
+};
+
+const getAmountWithoutSourceSlippage_ = (
   desAmountIn: any,
   desAmountOut: any,
   sourceSlippageInNumber: any,
@@ -479,21 +506,6 @@ const getInchDesAmountWithoutSourceSlippage = (
   let finalAmount = Big(destinationAmount).add(Big(amountToAdd));
   console.log("finalAmount", finalAmount.toString());
   return finalAmount.toString();
-};
-
-const getFoundaryAmountWithoutSourceSlippage = (
-  destinationAmount: any,
-  sourceSlippageInNumber: any
-) => {
-  console.log(
-    "destinationAmount",
-    destinationAmount,
-    "sourceSlippageInNumber",
-    sourceSlippageInNumber
-  );
-  let finalAmount = Big(destinationAmount).add(Big(sourceSlippageInNumber));
-  console.log("finalAmount", finalAmount.toString());
-  return finalAmount?.toString();
 };
 
 const getPlatformFeeInNumber = (fee: any, decimals: any) => {
