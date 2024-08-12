@@ -8,6 +8,7 @@ export interface SourceCrossNetowrObject {
   sourceSlippageInNumber: "0";
   totalPlatformFee: "0";
   totalPlatformFeeInNumber: any;
+  usdcAmount: any;
 }
 
 export interface DestinationCrossNetowrObject {
@@ -20,4 +21,5 @@ export interface DestinationCrossNetowrObject {
   targetFoundryTokenAddress: any;
   isCCTP: boolean;
   isStargate: boolean;
+  usdcAmount: any;
 }

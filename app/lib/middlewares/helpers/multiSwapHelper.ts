@@ -262,6 +262,7 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
       categorizedInfo?.source?.sourceAmountIn;
     sourceTokenCategorizedInfo.sourceAmountOut =
       categorizedInfo?.source?.sourceAmountOut;
+    sourceTokenCategorizedInfo.usdcAmount = categorizedInfo?.source?.usdcAmount;
     sourceTokenCategorizedInfo.sourceOneInchData = sourceCallData;
 
     let destinationTokenCategorizedInfo: any = {};
@@ -272,6 +273,8 @@ const getResponseForQuoteAndTokenTypeInformation = async function (
       categorizedInfo?.destination?.destinationAmountIn;
     destinationTokenCategorizedInfo.destinationAmountOut =
       categorizedInfo?.destination?.destinationAmountOut;
+    destinationTokenCategorizedInfo.usdcAmount =
+      categorizedInfo?.destination?.usdcAmount;
     destinationTokenCategorizedInfo.destinationOneInchData =
       destinationCallData;
     data.sourceSlippage = await getSlippage(req.query.sourceSlippage);

@@ -100,6 +100,34 @@ const handleSource = async (
     sourceChainId,
     inputAmountIntoDecimals
   );
+  response.usdcAmount = inputAmount;
+  if (assetType != (global as any).utils.assetType.FOUNDARY) {
+    let responseProvider: any = await chooseProviderAndGetData(
+      sourceWallet,
+      sourceChainId,
+      await common.getWrappedNativeTokenAddress(
+        sourceTokenAddress,
+        sourceChainId
+      ),
+      sourceNetwork?.foundryTokenAddress,
+      inputAmountIntoDecimals,
+      slippage,
+      sourceNetwork?.fiberRouter,
+      sourceNetwork?.fiberRouter,
+      false
+    );
+    const sourceFoundryTokenContract = new ethers.Contract(
+      sourceNetwork.foundryTokenAddress,
+      tokenAbi.abi,
+      sourceNetwork.provider
+    );
+    const sourceFoundryTokenDecimal =
+      await sourceFoundryTokenContract.decimals();
+    response.usdcAmount = common.decimalsIntoNumber(
+      responseProvider.amounts,
+      sourceFoundryTokenDecimal
+    );
+  }
   let amountOutIntoDecimals = await common.numberIntoDecimals__(
     inputAmount,
     sourceTokenDecimals
@@ -169,7 +197,7 @@ const handleDestination = async (
     slippage
   );
   response.minAmountOutIntoNumber = common.decimalsIntoNumber(
-    response.amounts,
+    response.amountOutIntoDecimals,
     destinationTokenDecimals
   );
   response.amountInIntoDecimals = inputAmountIntoDecimals;
@@ -241,6 +269,7 @@ const convertResponseForSameNetworksIntoDesire = (
   if (sData.amountOutIntoDecimals) {
     response.source.sourceAmountOut = sData.amountOutIntoDecimals;
   }
+  response.source.usdcAmount = sData?.usdcAmount;
   response.source.callData = sData?.oneInchData;
 
   response.destination.type = dData.destinationAssetType;
@@ -248,6 +277,7 @@ const convertResponseForSameNetworksIntoDesire = (
   response.destination.minAmount = dData.minAmountOutIntoNumber;
   response.destination.destinationAmountIn = dData.amountInIntoDecimals;
   response.destination.destinationAmountOut = dData.amountOutIntoDecimals;
+  response.destination.usdcAmount = sData?.usdcAmount;
   response.destination.callData = dData?.callData;
 
   return response;
