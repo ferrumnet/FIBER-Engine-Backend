@@ -208,19 +208,13 @@ const handleSource = async (
     response.sourceAssetType = utils.assetType.FOUNDARY;
     response.sourceAmountOut = response.sourceAmountIn;
     response.usdcAmount = inputAmount;
-    const isStargate = await isStargateFlow(
-      isFoundryAsset,
-      isTargetTokenFoundry,
-      sourceChainId,
-      targetChainId
-    );
     const { error, amountAfterCut, totalFee, data } =
       await getDataAfterCutDistributionFee(
         referralCode,
         sourceWalletAddress,
         response.sourceAmountOut,
         sourceFoundryTokenDecimal,
-        isStargate
+        false
       );
     if (error) {
       throw error;
